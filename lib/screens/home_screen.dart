@@ -19,16 +19,23 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-            "Koofy 스도쿠",
-            style: TextStyle(
-            fontSize: 24,         // 글자 크기
-            fontWeight: FontWeight.bold, // 굵게
-            color: Colors.black,  // 글자 색 (AppBar 색상 대비해서 선택)
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/icons/favicon.png', height: 48),
+            const SizedBox(width: 8),
+            const Text(
+              "Koofy 스도쿠",
+              style: TextStyle(
+                fontSize: 24,         // 글자 크기
+                fontWeight: FontWeight.bold, // 굵게
+                color: Colors.black,  // 글자 색 (AppBar 색상 대비해서 선택)
+              ),
             ),
+          ],
         ),
         centerTitle: true, // 타이틀을 가운데 정렬 (선택 사항)
-        ),
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
