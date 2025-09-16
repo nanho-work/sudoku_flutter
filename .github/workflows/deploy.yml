@@ -29,7 +29,6 @@ jobs:
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: nhchoi2s-projects         # ORG ID
           vercel-project-id: prj_IYog2pkCvL71iue2MV8qYwqAlMvR # 프로젝트 ID
           working-directory: ./build/web
           vercel-args: '--prod'
