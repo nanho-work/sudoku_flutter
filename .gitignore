@@ -1,45 +1,64 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
+# ---------------------------
+# 기본 OS / 에디터 관련
+# ---------------------------
 .DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# IntelliJ related
+*.log
+*.swp
+.idea/
 *.iml
 *.ipr
 *.iws
-.idea/
+.vscode/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# ---------------------------
+# Flutter / Dart 관련
+# ---------------------------
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
-/build/
 /coverage/
+/build/
 
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
+# ---------------------------
+# Android 관련
+# ---------------------------
+/android/.gradle/
+/android/local.properties
+/android/app/release
 /android/app/debug
 /android/app/profile
-/android/app/release
+/android/key.properties
+*.jks
+*.keystore
+*.apk
+*.aab
+
+# ---------------------------
+# iOS / Xcode 관련
+# ---------------------------
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/Generated.xcconfig
+/ios/Flutter/ephemeral/
+/ios/build/
+/ios/Runner/GeneratedPluginRegistrant.*
+
+# ---------------------------
+# 기타
+# ---------------------------
+app.*.map.json
+app.*.symbols
+.vercel
+
+# ---------------------------
+# 플랫폼 관련 전체 무시 (로컬 전용 빌드)
+# ---------------------------
+/android/
+/ios/
+/build/
+/android/app/build/

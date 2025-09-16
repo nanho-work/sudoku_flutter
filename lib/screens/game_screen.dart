@@ -3,6 +3,7 @@ import '../widgets/sudoku_board.dart';
 import '../widgets/number_pad.dart';
 import '../services/sudoku_solver.dart';
 import '../services/sudoku_generator.dart';
+import '../services/mission_service.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import '../widgets/button_styles.dart';
@@ -18,6 +19,11 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  final Map<String, String> difficultyLabels = {
+    "easy": "쉬움",
+    "normal": "보통",
+    "hard": "어려움"
+  };
   final AudioPlayer _audioPlayer = AudioPlayer();
   final AudioPlayer _bgmPlayer = AudioPlayer();
   bool _bgmStarted = false;
@@ -67,6 +73,7 @@ class _GameScreenState extends State<GameScreen> {
       if (mounted) setState(() {});
     });
     // 웹 자동재생 제한: 최초 사용자 인터랙션 시 시작합니다.
+    _startBgmIfNeeded();
   }
   Future<void> _playBgm() async {
     await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
@@ -171,6 +178,7 @@ class _GameScreenState extends State<GameScreen> {
 
   void _showCompleteDialog() {
     _playSound('complete');
+    MissionService.setCleared(DateTime.now());
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -397,7 +405,7 @@ class _GameScreenState extends State<GameScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "난이도: ${widget.difficulty}",
+                      "난이도: ${difficultyLabels[widget.difficulty] ?? widget.difficulty}",
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Column(
