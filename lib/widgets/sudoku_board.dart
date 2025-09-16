@@ -39,6 +39,12 @@ class SudokuBoard extends StatelessWidget {
             (selectedCol != null && col == selectedCol);
         final isInvalid = (row == invalidRow && col == invalidCol);
 
+        final selectedValue = (selectedRow != null && selectedCol != null)
+            ? board[selectedRow!][selectedCol!]
+            : 0;
+        final isSameValueHighlighted =
+            value != 0 && selectedValue != 0 && value == selectedValue;
+
         return GestureDetector(
           onTap: () => onCellTap(row, col),
           child: Container(
@@ -46,8 +52,8 @@ class SudokuBoard extends StatelessWidget {
               color: isInvalid
                   ? Colors.red.withOpacity(0.4)
                   : isSelected
-                      ? Colors.yellow[200]
-                      : (isHighlighted ? Colors.grey[200] : Colors.white),
+                      ? Colors.blue.withOpacity(0.3)
+                      : (isHighlighted ? Colors.grey.withOpacity(0.15) : Colors.white),
               border: Border(
                 top: BorderSide(
                   color: Colors.black,
@@ -71,7 +77,12 @@ class SudokuBoard extends StatelessWidget {
               child: value != 0
                   ? Text(
                       value.toString(),
-                      style: const TextStyle(fontSize: 20),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight:
+                            isSameValueHighlighted ? FontWeight.bold : FontWeight.normal,
+                        color: isSameValueHighlighted ? Colors.blue[900] : Colors.black,
+                      ),
                     )
                   : (notes[row][col].isNotEmpty
                       ? Wrap(

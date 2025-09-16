@@ -15,6 +15,7 @@ class SudokuApp extends StatelessWidget {
       title: 'Sudoku Flutter',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.brown[50], // 기본 배경색 황토색
       ),
       home: const HomeScreen(),
     );

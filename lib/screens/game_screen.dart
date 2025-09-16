@@ -5,6 +5,7 @@ import '../services/sudoku_solver.dart';
 import '../services/sudoku_generator.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import '../widgets/button_styles.dart';
 
 /// 스도쿠 보드 + 숫자 입력 화면
 class GameScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _GameScreenState extends State<GameScreen> {
 
   late List<List<int>> board;     // 퍼즐 보드 (빈칸 포함)
   late List<List<int>> solution;  // 정답 보드
+  late List<List<bool>> fixed;
   int? selectedRow;
   int? selectedCol;
   int? invalidRow;
@@ -49,6 +51,7 @@ class _GameScreenState extends State<GameScreen> {
     final generated = SudokuGenerator.generatePuzzle(widget.difficulty);
     board = generated["puzzle"]!;
     solution = generated["solution"]!;
+    fixed = List.generate(9, (r) => List.generate(9, (c) => board[r][c] != 0));
     _updateCounts();
     notes = List.generate(9, (_) => List.generate(9, (_) => <int>{}));
     _stopwatch = Stopwatch()..start();
@@ -82,6 +85,8 @@ class _GameScreenState extends State<GameScreen> {
 
   void _onNumberInput(int number) {
     if (selectedRow != null && selectedCol != null) {
+      if (fixed[selectedRow!][selectedCol!]) return;
+      if (board[selectedRow!][selectedCol!] != 0) return;
       if (noteMode) {
         setState(() {
           if (notes[selectedRow!][selectedCol!].contains(number)) {
@@ -100,31 +105,19 @@ class _GameScreenState extends State<GameScreen> {
             invalidRow = null;
             invalidCol = null;
             _updateCounts();
-            cellScale = 1.2;
+            fixed[selectedRow!][selectedCol!] = true;
+            // cellScale = 1.2; // scaling animation removed
           });
-          Future.delayed(const Duration(milliseconds: 200), () {
-            if (!mounted) return;
-            setState(() {
-              cellScale = 1.0;
-            });
-          });
+          // Future.delayed(const Duration(milliseconds: 200), () {
+          //   if (!mounted) return;
+          //   setState(() {
+          //     cellScale = 1.0;
+          //   });
+          // });
 
           // 퍼즐 완성 여부 체크
           if (_isSolved()) {
-            _playSound('complete');
-            showDialog(
-              context: context,
-              builder: (_) => AlertDialog(
-                title: const Text("축하합니다!"),
-                content: Text("퍼즐을 완성했습니다 🎉\n시간: ${_formatElapsedTime()}"),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("확인"),
-                  ),
-                ],
-              ),
-            );
+            _showCompleteDialog();
           }
         } else {
           _playSound('fail');
@@ -156,6 +149,33 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
     }
+  }
+
+  void _showCompleteDialog() {
+    _playSound('complete');
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("축하합니다!"),
+        content: Text("퍼즐을 완성했습니다 🎉\n시간: ${_formatElapsedTime()}"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // close dialog
+              Navigator.of(context).pop(); // close game screen, go to home
+            },
+            child: const Text("홈으로"),
+          ),
+          TextButton(
+            onPressed: () {
+              _restartGame();
+              Navigator.of(context).pop(); // close dialog only
+            },
+            child: const Text("새 게임"),
+          ),
+        ],
+      ),
+    );
   }
 
   void _gameOver() {
@@ -193,6 +213,7 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {
       board = generated["puzzle"]!;
       solution = generated["solution"]!;
+      fixed = List.generate(9, (r) => List.generate(9, (c) => board[r][c] != 0));
       selectedRow = null;
       selectedCol = null;
       notes = List.generate(9, (_) => List.generate(9, (_) => <int>{}));
@@ -208,6 +229,7 @@ class _GameScreenState extends State<GameScreen> {
   void _clearCell() {
     _playSound('click');
     if (selectedRow != null && selectedCol != null) {
+      if (fixed[selectedRow!][selectedCol!]) return;
       setState(() {
         board[selectedRow!][selectedCol!] = 0;
         notes[selectedRow!][selectedCol!] = <int>{};
@@ -217,19 +239,23 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showHint() {
-    if (hintsRemaining <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("힌트가 모두 소진되었습니다")),
-      );
-      return;
-    }
-    _playSound('hint');
     if (selectedRow != null && selectedCol != null) {
+      if (fixed[selectedRow!][selectedCol!]) return;
+      if (hintsRemaining <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("힌트가 모두 소진되었습니다")),
+        );
+        return;
+      }
+      _playSound('hint');
       setState(() {
         board[selectedRow!][selectedCol!] = solution[selectedRow!][selectedCol!];
         _updateCounts();
         hintsRemaining--;
       });
+      if (_isSolved()) {
+        _showCompleteDialog();
+      }
     }
   }
 
@@ -247,12 +273,14 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
       if (emptyCount == 1) {
-        setState(() {
-          board[r][emptyCol] = solution[r][emptyCol];
-          notes[r][emptyCol] = <int>{};
-          _updateCounts();
-        });
-        filledAny = true;
+        if (!fixed[r][emptyCol]) {
+          setState(() {
+            board[r][emptyCol] = solution[r][emptyCol];
+            notes[r][emptyCol] = <int>{};
+            _updateCounts();
+          });
+          filledAny = true;
+        }
       }
     }
 
@@ -267,12 +295,14 @@ class _GameScreenState extends State<GameScreen> {
         }
       }
       if (emptyCount == 1) {
-        setState(() {
-          board[emptyRow][c] = solution[emptyRow][c];
-          notes[emptyRow][c] = <int>{};
-          _updateCounts();
-        });
-        filledAny = true;
+        if (!fixed[emptyRow][c]) {
+          setState(() {
+            board[emptyRow][c] = solution[emptyRow][c];
+            notes[emptyRow][c] = <int>{};
+            _updateCounts();
+          });
+          filledAny = true;
+        }
       }
     }
 
@@ -292,12 +322,14 @@ class _GameScreenState extends State<GameScreen> {
           }
         }
         if (emptyCount == 1) {
-          setState(() {
-            board[emptyR][emptyC] = solution[emptyR][emptyC];
-            notes[emptyR][emptyC] = <int>{};
-            _updateCounts();
-          });
-          filledAny = true;
+          if (!fixed[emptyR][emptyC]) {
+            setState(() {
+              board[emptyR][emptyC] = solution[emptyR][emptyC];
+              notes[emptyR][emptyC] = <int>{};
+              _updateCounts();
+            });
+            filledAny = true;
+          }
         }
       }
     }
@@ -314,6 +346,9 @@ class _GameScreenState extends State<GameScreen> {
       );
     } else {
       _playSound('success');
+      if (_isSolved()) {
+        _showCompleteDialog();
+      }
     }
   }
 
@@ -371,18 +406,14 @@ class _GameScreenState extends State<GameScreen> {
             SizedBox(
               width: boardSize,
               height: boardSize,
-              child: AnimatedScale(
-                scale: cellScale,
-                duration: const Duration(milliseconds: 200),
-                child: SudokuBoard(
-                  board: board,
-                  notes: notes, 
-                  onCellTap: _onCellTap,
-                  selectedRow: selectedRow,
-                  selectedCol: selectedCol,
-                  invalidRow: invalidRow,
-                  invalidCol: invalidCol,
-                ),
+              child: SudokuBoard(
+                board: board,
+                notes: notes, 
+                onCellTap: _onCellTap,
+                selectedRow: selectedRow,
+                selectedCol: selectedCol,
+                invalidRow: invalidRow,
+                invalidCol: invalidCol,
               ),
             ),
             const SizedBox(height: 16),
@@ -394,87 +425,79 @@ class _GameScreenState extends State<GameScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: _restartGame,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.refresh),
-                      SizedBox(height: 4),
-                      Text("새 게임"),
-                    ],
+            SizedBox(
+              width: boardSize,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _restartGame,
+                    style: actionButtonStyle,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.refresh),
+                        SizedBox(height: 4),
+                        Text("새 게임"),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _clearCell,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.delete_outline),
-                      SizedBox(height: 4),
-                      Text("지우기"),
-                    ],
+                  ElevatedButton(
+                    onPressed: hintsRemaining > 0 ? _showHint : null,
+                    style: actionButtonStyle,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.lightbulb),
+                        const SizedBox(height: 4),
+                        Text("힌트 ($hintsRemaining)"),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: hintsRemaining > 0 ? _showHint : null,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.lightbulb),
-                      const SizedBox(height: 4),
-                      Text("힌트 ($hintsRemaining)"),
-                    ],
+                  ElevatedButton(
+                    onPressed: () {
+                      _playSound('click');
+                      setState(() {
+                        noteMode = !noteMode;
+                      });
+                    },
+                    style: actionButtonStyle.copyWith(
+                      backgroundColor: WidgetStatePropertyAll(noteMode ? Colors.blue : Colors.grey[600]),
+                      foregroundColor: noteMode
+                          ? const WidgetStatePropertyAll(Colors.white) // on 상태에서만 override
+                          : null, // off 상태는 기본 스타일 상속
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.edit_note),
+                        const SizedBox(height: 4),
+                        Text(noteMode ? "메모 " : "메모 "),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    _playSound('click');
-                    setState(() {
-                      noteMode = !noteMode;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: noteMode ? Colors.orange : null,
+                  ElevatedButton(
+                    onPressed: _autoFill,
+                    style: actionButtonStyle,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.auto_fix_high),
+                        SizedBox(height: 4),
+                        Text("채우기"),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.edit_note),
-                      const SizedBox(height: 4),
-                      Text(noteMode ? "메모 " : "메모 "),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _autoFill,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.auto_fix_high),
-                      SizedBox(height: 4),
-                      Text("자동 채우기"),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
