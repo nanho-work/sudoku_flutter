@@ -30,11 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+    
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   audioplayers: ^5.2.1
+  flame: ^1.32.0
+  flame_audio: ^2.10.1
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -60,9 +63,4 @@ flutter:
 
   assets:
     - assets/icons/
-    - assets/sounds/gameover.mp3
-    - assets/sounds/hint.mp3
-    - assets/sounds/complete.mp3
-    - assets/sounds/success.mp3
-    - assets/sounds/click.mp3
-    - assets/sounds/fail.mp3
+    - assets/sounds/

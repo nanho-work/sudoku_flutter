@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   runApp(const SudokuApp());
@@ -12,12 +13,12 @@ class SudokuApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sudoku Flutter',
+      title: 'Sudoku',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.brown[50], // 기본 배경색 황토색
       ),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

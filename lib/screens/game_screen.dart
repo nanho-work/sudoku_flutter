@@ -19,6 +19,14 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioPlayer _bgmPlayer = AudioPlayer();
+  bool _bgmStarted = false;
+  void _startBgmIfNeeded() {
+    if (!_bgmStarted) {
+      _bgmStarted = true;
+      _playBgm();
+    }
+  }
 
   late List<List<int>> board;     // 퍼즐 보드 (빈칸 포함)
   late List<List<int>> solution;  // 정답 보드
@@ -58,6 +66,12 @@ class _GameScreenState extends State<GameScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
+    // 웹 자동재생 제한: 최초 사용자 인터랙션 시 시작합니다.
+  }
+  Future<void> _playBgm() async {
+    await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
+    await _bgmPlayer.setSource(AssetSource('sounds/bgm.mp3')); // 경로+확장자 포함
+    await _bgmPlayer.resume();
   }
 
   void _updateCounts() {
@@ -73,10 +87,13 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     _timer?.cancel();
     _stopwatch.stop();
+    _bgmPlayer.stop();
+    _bgmPlayer.dispose();
     super.dispose();
   }
 
   void _onCellTap(int row, int col) {
+    _startBgmIfNeeded();
     setState(() {
       selectedRow = row;
       selectedCol = col;
@@ -84,6 +101,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onNumberInput(int number) {
+    _startBgmIfNeeded();
     if (selectedRow != null && selectedCol != null) {
       if (fixed[selectedRow!][selectedCol!]) return;
       if (board[selectedRow!][selectedCol!] != 0) return;
@@ -208,6 +226,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _restartGame() {
+    _startBgmIfNeeded();
     _playSound('click');
     final generated = SudokuGenerator.generatePuzzle(widget.difficulty);
     setState(() {
@@ -239,6 +258,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showHint() {
+    _startBgmIfNeeded();
     if (selectedRow != null && selectedCol != null) {
       if (fixed[selectedRow!][selectedCol!]) return;
       if (hintsRemaining <= 0) {
@@ -362,7 +382,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final boardSize = screenSize.height * 0.6; // 세로 기준 반응형
+    final boardSize = screenSize.width * 0.9; // 가로 기준
     return Scaffold(
       appBar: AppBar(title: const Text("스도쿠")),
       body: Center(
