@@ -16,7 +16,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6' # Dart 3.9.2 포함된 Flutter 버전
+          flutter-version: '3.35.3'
           channel: 'stable'
 
       - name: Install dependencies
@@ -31,4 +31,5 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./build/web
+          working-directory: ./
+          vercel-args: '--prod --local-config=vercel.json --cwd ./build/web'
