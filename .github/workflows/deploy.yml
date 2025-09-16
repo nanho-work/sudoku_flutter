@@ -1,0 +1,38 @@
+name: Build and Deploy Flutter Web
+
+on:
+  push:
+    branches:
+      - main   # 메인 브랜치에 push될 때 실행 (필요시 브랜치 변경 가능)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Flutter 설치
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2' # 프로젝트 SDK 버전에 맞춰 수정
+
+      # 3. 의존성 설치
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Flutter 웹 빌드
+      - name: Build Flutter Web
+        run: flutter build web --release
+
+      # 5. Vercel 배포
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}        # Vercel Personal Token
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}      # Vercel Org ID
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }} # Vercel Project ID
+          working-directory: ./build/web                   # 빌드된 웹 폴더
