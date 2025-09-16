@@ -1,10 +1,9 @@
-name: Flutter CI
+name: Deploy
 
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
   build:
@@ -14,7 +13,6 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # Flutter SDK 설치 (3.19.x 같은 최신 기본값이 아니라, 우리가 쓰는 버전 명시)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -27,7 +25,6 @@ jobs:
       - name: Build web
         run: flutter build web --release
 
-      # Vercel 배포
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
