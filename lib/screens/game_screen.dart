@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../widgets/sudoku_board.dart';
 import '../widgets/number_pad.dart';
 import '../services/sudoku_solver.dart';
@@ -27,6 +28,8 @@ class _GameScreenState extends State<GameScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final AudioPlayer _bgmPlayer = AudioPlayer();
   bool _bgmStarted = false;
+  late BannerAd _bannerAd;
+  bool _isBannerReady = false;
   void _startBgmIfNeeded() {
     if (!_bgmStarted) {
       _bgmStarted = true;
@@ -74,6 +77,21 @@ class _GameScreenState extends State<GameScreen> {
     });
     // 웹 자동재생 제한: 최초 사용자 인터랙션 시 시작합니다.
     _startBgmIfNeeded();
+    _bannerAd = BannerAd(
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111', // 테스트용 배너 ID
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isBannerReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      ),
+    )..load();
   }
   Future<void> _playBgm() async {
     await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
@@ -96,6 +114,7 @@ class _GameScreenState extends State<GameScreen> {
     _stopwatch.stop();
     _bgmPlayer.stop();
     _bgmPlayer.dispose();
+    _bannerAd.dispose();
     super.dispose();
   }
 
@@ -176,9 +195,9 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  void _showCompleteDialog() {
+  Future<void> _showCompleteDialog() async {
     _playSound('complete');
-    MissionService.setCleared(DateTime.now());
+    await MissionService.setCleared(DateTime.now());
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -393,142 +412,155 @@ class _GameScreenState extends State<GameScreen> {
     final boardSize = screenSize.width * 0.9; // 가로 기준
     return Scaffold(
       appBar: AppBar(title: const Text("스도쿠")),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: SizedBox(
-                width: boardSize,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "난이도: ${difficultyLabels[widget.difficulty] ?? widget.difficulty}",
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          "시간: ${_formatElapsedTime()}",
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: List.generate(5, (index) {
-                            return Icon(
-                              index < hearts ? Icons.favorite : Icons.favorite_border,
-                              color: Colors.red,
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+      body: Column(
+        children: [
+          if (_isBannerReady)
+            Container(
+              width: _bannerAd.size.width.toDouble(),
+              height: _bannerAd.size.height.toDouble(),
+              alignment: Alignment.center,
+              child: AdWidget(ad: _bannerAd),
             ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: boardSize,
-              height: boardSize,
-              child: SudokuBoard(
-                board: board,
-                notes: notes, 
-                onCellTap: _onCellTap,
-                selectedRow: selectedRow,
-                selectedCol: selectedCol,
-                invalidRow: invalidRow,
-                invalidCol: invalidCol,
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: boardSize,
-              child: NumberPad(
-                onNumberInput: _onNumberInput,
-                numberCounts: numberCounts,
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: boardSize,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: _restartGame,
-                    style: actionButtonStyle,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.refresh),
-                        SizedBox(height: 4),
-                        Text("새 게임"),
-                      ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: SizedBox(
+                      width: boardSize,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "난이도: ${difficultyLabels[widget.difficulty] ?? widget.difficulty}",
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                "시간: ${_formatElapsedTime()}",
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: List.generate(5, (index) {
+                                  return Icon(
+                                    index < hearts ? Icons.favorite : Icons.favorite_border,
+                                    color: Colors.red,
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  ElevatedButton(
-                    onPressed: hintsRemaining > 0 ? _showHint : null,
-                    style: actionButtonStyle,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: boardSize,
+                    height: boardSize,
+                    child: SudokuBoard(
+                      board: board,
+                      notes: notes,
+                      onCellTap: _onCellTap,
+                      selectedRow: selectedRow,
+                      selectedCol: selectedCol,
+                      invalidRow: invalidRow,
+                      invalidCol: invalidCol,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: boardSize,
+                    child: NumberPad(
+                      onNumberInput: _onNumberInput,
+                      numberCounts: numberCounts,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: boardSize,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        const Icon(Icons.lightbulb),
-                        const SizedBox(height: 4),
-                        Text("힌트 ($hintsRemaining)"),
-                      ],
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _playSound('click');
-                      setState(() {
-                        noteMode = !noteMode;
-                      });
-                    },
-                    style: actionButtonStyle.copyWith(
-                      backgroundColor: WidgetStatePropertyAll(noteMode ? Colors.blue : Colors.grey[600]),
-                      foregroundColor: noteMode
-                          ? const WidgetStatePropertyAll(Colors.white) // on 상태에서만 override
-                          : null, // off 상태는 기본 스타일 상속
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.edit_note),
-                        const SizedBox(height: 4),
-                        Text(noteMode ? "메모 " : "메모 "),
-                      ],
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _autoFill,
-                    style: actionButtonStyle,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.auto_fix_high),
-                        SizedBox(height: 4),
-                        Text("채우기"),
+                        ElevatedButton(
+                          onPressed: _restartGame,
+                          style: actionButtonStyle,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.refresh),
+                              SizedBox(height: 4),
+                              Text("새 게임"),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: hintsRemaining > 0 ? _showHint : null,
+                          style: actionButtonStyle,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.lightbulb),
+                              const SizedBox(height: 4),
+                              Text("힌트 ($hintsRemaining)"),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            _playSound('click');
+                            setState(() {
+                              noteMode = !noteMode;
+                            });
+                          },
+                          style: actionButtonStyle.copyWith(
+                            backgroundColor: WidgetStatePropertyAll(noteMode ? Colors.blue : Colors.grey[600]),
+                            foregroundColor: noteMode
+                                ? const WidgetStatePropertyAll(Colors.white)
+                                : null,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.edit_note),
+                              const SizedBox(height: 4),
+                              Text(noteMode ? "메모 " : "메모 "),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: _autoFill,
+                          style: actionButtonStyle,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.auto_fix_high),
+                              SizedBox(height: 4),
+                              Text("채우기"),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

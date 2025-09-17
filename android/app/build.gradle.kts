@@ -1,3 +1,7 @@
+import java.util.Properties
+import java.io.FileInputStream
+import java.io.File
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,10 +9,38 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+
+val keystoreProps = Properties()
+val propsFile = File(rootDir, "key.properties")
+if (propsFile.exists()) {
+    keystoreProps.load(FileInputStream(propsFile))
+    println("Loaded signing config from android/key.properties")
+    println(">>> DEBUG: propsFile absolute path = ${propsFile.absolutePath}")
+} else {
+    println("Warning: android/key.properties not found, skipping release signing config")
+    println(">>> DEBUG: propsFile absolute path = ${propsFile.absolutePath}")
+}
+
+val kpStorePassword = keystoreProps.getProperty("storePassword") ?: error("storePassword missing in key.properties")
+println(">>> DEBUG: keystoreProps keys = ${keystoreProps.keys}")
+println(">>> DEBUG: storePassword = ${keystoreProps.getProperty("storePassword")}")
+val kpKeyPassword = keystoreProps.getProperty("keyPassword") ?: error("keyPassword missing in key.properties")
+val kpKeyAlias = keystoreProps.getProperty("keyAlias") ?: error("keyAlias missing in key.properties")
+val kpStoreFilePath = keystoreProps.getProperty("storeFile") ?: error("storeFile missing in key.properties")
+
 android {
-    namespace = "com.example.sudoku_flutter"
+    namespace = "com.koofy.sudoku"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    signingConfigs {
+        create("release") {
+            keyAlias = kpKeyAlias
+            keyPassword = kpKeyPassword
+            storeFile = File(rootDir, kpStoreFilePath)
+            storePassword = kpStorePassword
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -21,7 +53,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.sudoku_flutter"
+        applicationId = "com.koofy.sudoku"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -32,10 +64,24 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            ndk {
+                debugSymbolLevel = "none"
+            }
         }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+        doNotStrip("**/*.so")
     }
 }
 

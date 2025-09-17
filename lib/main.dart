@@ -1,24 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'screens/home_screen.dart';
-import 'screens/splash_screen.dart';
+import 'screens/mission_screen.dart';
+import 'screens/info_screen.dart';
+import 'screens/game_screen.dart';
+import 'screens/guide_screen.dart';
+import 'widgets/app_footer.dart';
 
-void main() {
-  runApp(const SudokuApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 광고 초기화 (웹 제외)
+  if (!kIsWeb) {
+    try {
+      final initStatus = await MobileAds.instance.initialize();
+      debugPrint('✅ Google Mobile Ads 초기화 성공: $initStatus');
+    } catch (e, stack) {
+      debugPrint('❌ Google Mobile Ads 초기화 실패: $e');
+      debugPrint('$stack');
+    }
+  }
+
+  runApp(const MyApp());
 }
 
-/// 앱 구동 파일 (앱 시작점)
-class SudokuApp extends StatelessWidget {
-  const SudokuApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sudoku',
+      debugShowCheckedModeBanner: false,
+      title: 'Koofy',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.brown[50], // 기본 배경색 황토색
       ),
-      home: const SplashScreen(),
+      home: const MainLayout(),
+    );
+  }
+}
+
+/// 메인 레이아웃 - 하단 푸터 포함
+class MainLayout extends StatefulWidget {
+  const MainLayout({super.key});
+
+  @override
+  State<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends State<MainLayout> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = const [
+    HomeScreen(),
+    MissionScreen(),
+    GuideScreen(),
+    InfoScreen(),
+    
+  ];
+
+  void _onTap(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: AppFooter(
+        currentIndex: _currentIndex,
+        onTap: _onTap,
+      ),
     );
   }
 }
