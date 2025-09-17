@@ -13,13 +13,13 @@ class SudokuGenerator {
     int removeCount;
     switch (difficulty.toLowerCase()) {
       case 'easy':
-        removeCount = 35; // 약 35칸 제거 (쉬움)
+        removeCount = 40; // 약 35칸 제거 (쉬움)
         break;
       case 'normal':
-        removeCount = 45; // 약 45칸 제거 (보통)
+        removeCount = 50; // 약 50칸 제거 (보통)
         break;
       case 'hard':
-        removeCount = 55; // 약 55칸 제거 (어려움)
+        removeCount = 60; // 약 65칸 제거 (어려움)
         break;
       default:
         removeCount = 40;
@@ -89,10 +89,45 @@ class SudokuGenerator {
       int col = _random.nextInt(9);
 
       if (puzzle[row][col] != 0) {
+        int temp = puzzle[row][col];
         puzzle[row][col] = 0;
-        removed++;
+        if (_hasUniqueSolution(puzzle)) {
+          removed++;
+        } else {
+          puzzle[row][col] = temp;
+        }
       }
     }
     return puzzle;
+  }
+
+  static bool _hasUniqueSolution(List<List<int>> board) {
+    int solutions = 0;
+
+    bool solve(List<List<int>> b) {
+      for (int r = 0; r < 9; r++) {
+        for (int c = 0; c < 9; c++) {
+          if (b[r][c] == 0) {
+            for (int num = 1; num <= 9; num++) {
+              if (_isSafe(b, r, c, num)) {
+                b[r][c] = num;
+                if (solve(b)) {
+                  b[r][c] = 0;
+                  return true;
+                }
+                b[r][c] = 0;
+              }
+            }
+            return false;
+          }
+        }
+      }
+      solutions++;
+      return solutions > 1 ? true : false;
+    }
+
+    List<List<int>> copyBoard = board.map((row) => List<int>.from(row)).toList();
+    solve(copyBoard);
+    return solutions == 1;
   }
 }

@@ -14,16 +14,10 @@ val keystoreProps = Properties()
 val propsFile = File(rootDir, "key.properties")
 if (propsFile.exists()) {
     keystoreProps.load(FileInputStream(propsFile))
-    println("Loaded signing config from android/key.properties")
-    println(">>> DEBUG: propsFile absolute path = ${propsFile.absolutePath}")
 } else {
-    println("Warning: android/key.properties not found, skipping release signing config")
-    println(">>> DEBUG: propsFile absolute path = ${propsFile.absolutePath}")
 }
 
 val kpStorePassword = keystoreProps.getProperty("storePassword") ?: error("storePassword missing in key.properties")
-println(">>> DEBUG: keystoreProps keys = ${keystoreProps.keys}")
-println(">>> DEBUG: storePassword = ${keystoreProps.getProperty("storePassword")}")
 val kpKeyPassword = keystoreProps.getProperty("keyPassword") ?: error("keyPassword missing in key.properties")
 val kpKeyAlias = keystoreProps.getProperty("keyAlias") ?: error("keyAlias missing in key.properties")
 val kpStoreFilePath = keystoreProps.getProperty("storeFile") ?: error("storeFile missing in key.properties")

@@ -7,6 +7,7 @@ import 'screens/info_screen.dart';
 import 'screens/game_screen.dart';
 import 'screens/guide_screen.dart';
 import 'widgets/app_footer.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,11 +15,8 @@ void main() async {
   // 광고 초기화 (웹 제외)
   if (!kIsWeb) {
     try {
-      final initStatus = await MobileAds.instance.initialize();
-      debugPrint('✅ Google Mobile Ads 초기화 성공: $initStatus');
+      final initStatus = await MobileAds.instance.initialize();     
     } catch (e, stack) {
-      debugPrint('❌ Google Mobile Ads 초기화 실패: $e');
-      debugPrint('$stack');
     }
   }
 
@@ -36,7 +34,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MainLayout(),
+      home: const SplashScreen(),
     );
   }
 }

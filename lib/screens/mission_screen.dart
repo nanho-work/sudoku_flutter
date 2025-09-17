@@ -11,11 +11,11 @@ class MissionScreen extends StatefulWidget {
 }
 
 class _MissionScreenState extends State<MissionScreen> {
-  Future<void> _startGame(String difficulty) async {
+  Future<void> _startGame(String difficulty, DateTime missionDate) async {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => GameScreen(difficulty: difficulty),
+        builder: (_) => GameScreen(difficulty: difficulty, missionDate: missionDate),
       ),
     );
     setState(() {});
@@ -120,7 +120,15 @@ class _MissionScreenState extends State<MissionScreen> {
                                             ElevatedButton(
                                               onPressed: () {
                                                 Navigator.of(context).pop();
-                                                _startGame("easy");
+
+                                                // 난이도 리스트
+                                                final difficulties = ["easy", "normal", "hard"];
+
+                                                // 랜덤 선택
+                                                difficulties.shuffle();
+                                                final randomDifficulty = difficulties.first;
+
+                                                _startGame(randomDifficulty, DateTime(year, month, day));
                                               },
                                               child: const Text("시작"),
                                             ),

@@ -53,7 +53,9 @@ class SudokuBoard extends StatelessWidget {
                   ? Colors.red.withOpacity(0.4)
                   : isSelected
                       ? Colors.blue.withOpacity(0.3)
-                      : (isHighlighted ? Colors.grey.withOpacity(0.15) : Colors.white),
+                      : isSameValueHighlighted
+                        ? Colors.blue.withOpacity(0.3)  // 같은 숫자는 글씨와 함께 배경도 블루 300
+                        : (isHighlighted ? Colors.grey.withOpacity(0.15) : Colors.white),
               border: Border(
                 top: BorderSide(
                   color: Colors.black,

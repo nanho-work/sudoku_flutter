@@ -8,12 +8,14 @@ import '../services/mission_service.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import '../widgets/button_styles.dart';
+import 'dart:math';
 
 /// 스도쿠 보드 + 숫자 입력 화면
 class GameScreen extends StatefulWidget {
   final String difficulty;
+  final DateTime? missionDate;
 
-  const GameScreen({super.key, required this.difficulty});
+  const GameScreen({super.key, required this.difficulty, this.missionDate});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -198,6 +200,7 @@ class _GameScreenState extends State<GameScreen> {
   Future<void> _showCompleteDialog() async {
     _playSound('complete');
     await MissionService.setCleared(DateTime.now());
+    await MissionService.setCleared(widget.missionDate ?? DateTime.now());
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -409,7 +412,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final boardSize = screenSize.width * 0.9; // 가로 기준
+    final boardSize = min(screenSize.width * 0.9, screenSize.height * 0.5)- 40; // 0.5는 하단 버튼 포함 여유 고려 예시
     return Scaffold(
       appBar: AppBar(title: const Text("스도쿠")),
       body: Column(
