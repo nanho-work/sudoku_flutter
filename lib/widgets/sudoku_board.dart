@@ -5,6 +5,7 @@ class SudokuBoard extends StatelessWidget {
   final List<List<int>> board;
   final List<List<Set<int>>> notes;
   final Function(int, int) onCellTap;
+  final void Function(int)? onNumberInput;
   final int? selectedRow;
   final int? selectedCol;
   final int? invalidRow;
@@ -15,11 +16,38 @@ class SudokuBoard extends StatelessWidget {
     required this.board,
     required this.notes,
     required this.onCellTap,
+    this.onNumberInput,
     this.selectedRow,
     this.selectedCol,
     this.invalidRow,
     this.invalidCol,
   });
+
+  static bool canAddMemo(List<List<int>> board, int row, int col, int number) {
+    // Check row
+    for (int c = 0; c < 9; c++) {
+      if (board[row][c] == number) {
+        return false;
+      }
+    }
+    // Check column
+    for (int r = 0; r < 9; r++) {
+      if (board[r][col] == number) {
+        return false;
+      }
+    }
+    // Check 3x3 block
+    int startRow = (row ~/ 3) * 3;
+    int startCol = (col ~/ 3) * 3;
+    for (int r = startRow; r < startRow + 3; r++) {
+      for (int c = startCol; c < startCol + 3; c++) {
+        if (board[r][c] == number) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,17 +114,21 @@ class SudokuBoard extends StatelessWidget {
                         color: isSameValueHighlighted ? Colors.blue[900] : Colors.black,
                       ),
                     )
-                  : (notes[row][col].isNotEmpty
-                      ? Wrap(
-                          alignment: WrapAlignment.center,
-                          runAlignment: WrapAlignment.center,
-                          children: notes[row][col]
-                              .map((note) => Text(
-                                    note.toString(),
-                                    style: const TextStyle(
-                                        fontSize: 10, color: Colors.grey),
-                                  ))
-                              .toList(),
+                  : (notes[row][col].where((note) => SudokuBoard.canAddMemo(board, row, col, note)).isNotEmpty
+                      ? Align(
+                          alignment: Alignment.topLeft,
+                          child: Wrap(
+                            alignment: WrapAlignment.start,
+                            runAlignment: WrapAlignment.start,
+                            children: notes[row][col]
+                                .where((note) => SudokuBoard.canAddMemo(board, row, col, note))
+                                .map((note) => Text(
+                                      note.toString(),
+                                      style: const TextStyle(
+                                          fontSize: 10, color: Colors.grey),
+                                    ))
+                                .toList(),
+                          ),
                         )
                       : const SizedBox.shrink()),
             ),
