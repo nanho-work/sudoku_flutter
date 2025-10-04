@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'game_screen.dart';
+import 'package:sudoku_flutter/screens/game/game_screen.dart';
 import '../services/mission_service.dart';
 
 /// 미션 스크린 (일일 미션)
@@ -39,24 +39,6 @@ class _MissionScreenState extends State<MissionScreen> {
     final totalDays = daysInMonth(year, month);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset('assets/icons/koofy1.png', height: 48),
-            const SizedBox(width: 8),
-            const Text(
-              "모두의 즐거움! Koofy",
-              style: TextStyle(
-                fontSize: 24,         // 글자 크기
-                fontWeight: FontWeight.bold, // 굵게
-                color: Colors.black,  // 글자 색 (AppBar 색상 대비해서 선택)
-              ),
-            ),
-          ],
-        ),
-        centerTitle: true, // 타이틀을 가운데 정렬 (선택 사항)
-      ),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
