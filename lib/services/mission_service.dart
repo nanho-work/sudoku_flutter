@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart'; 
 
 class MissionService {
   static const String _missionKey = 'mission_completed_date';
@@ -21,11 +22,15 @@ class MissionService {
   /// 특정 날짜를 클리어로 저장
   static Future<void> setCleared(DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
-    final dateStr = date.toIso8601String().substring(0, 10); // yyyy-MM-dd
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    final dateStr = normalizedDate.toIso8601String().substring(0, 10); // yyyy-MM-dd
     final List<String> dates = prefs.getStringList(_missionsKey) ?? [];
     final Set<String> dateSet = dates.toSet();
     dateSet.add(dateStr);
     await prefs.setStringList(_missionsKey, dateSet.toList());
+
+    debugPrint("✅ [MissionService] Saved cleared date: $dateStr");
+    debugPrint("✅ [MissionService] All stored dates: ${dateSet.toList()}");
   }
 
   /// 특정 날짜가 클리어되었는지 확인
@@ -43,7 +48,7 @@ class MissionService {
     final int year = monthDate.year;
     final int month = monthDate.month;
     return dates
-        .map((s) => DateTime.tryParse(s))
+        .map((s) => DateTime.tryParse("${s}T00:00:00"))
         .where((d) => d != null && d.year == year && d.month == month)
         .cast<DateTime>()
         .toList();

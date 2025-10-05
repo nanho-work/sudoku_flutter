@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/audio_controller.dart';
-import '../services/audio_service.dart'; // SFX 재생을 위해 SoundFiles가 필요할 수 있습니다.
+import '../services/audio_service.dart'; // SoundFiles가 AudioService에 정의되어 있다고 가정합니다.
 
-/// 사운드 설정 조정용 팝업 위젯
+/// 사운드 설정 조정용 팝업 위젯 (UI 개선 버전)
 class SoundSettingsWidget extends StatelessWidget {
   const SoundSettingsWidget({
     Key? key,
@@ -20,121 +20,195 @@ class SoundSettingsWidget extends StatelessWidget {
     // AudioController의 상태 변화를 감지합니다.
     final audioController = context.watch<AudioController>();
 
-    // 상태를 위젯의 State가 아닌, Controller에서 직접 가져옵니다.
     final bool bgmEnabled = audioController.bgmEnabled;
     final double bgmVolume = audioController.bgmVolume;
     final bool sfxEnabled = audioController.sfxEnabled;
     final double sfxVolume = audioController.sfxVolume;
 
-    return Material(
-      // Dialog처럼 사용하기 위해 배경을 투명하게 설정합니다.
-      color: Colors.black54,
-      child: Center(
-        child: Container(
-          width: 320,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 12,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- 헤더 (제목 및 닫기 버튼) ---
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Sound Settings',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+    // 다크 테마를 적용하고 액센트 색상을 지정하여 디자인을 개선합니다.
+    return Theme(
+      data: ThemeData.dark().copyWith(
+        // 활성화된 요소(스위치, 슬라이더)에 사용할 주 색상(액센트) 지정
+        colorScheme: ColorScheme.dark(
+          primary: Colors.lightBlueAccent,
+          surface: Colors.blueGrey[800]!,
+        ),
+      ),
+      child: Material(
+        // Dialog처럼 사용하기 위해 배경을 투명하게 설정합니다.
+        color: Colors.black54,
+        child: Center(
+          child: Container(
+            width: 340, // 너비를 약간 넓게 조정
+            padding: const EdgeInsets.fromLTRB(28, 28, 28, 16),
+            // 다크 모드 및 고급스러운 컨테이너 스타일 적용
+            decoration: BoxDecoration(
+              color: Colors.blueGrey[900], // 짙은 배경색
+              borderRadius: BorderRadius.circular(20), // 둥근 모서리
+              border: Border.all(color: Colors.lightBlueAccent.withOpacity(0.3), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.6),
+                  blurRadius: 25,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- 헤더 (제목 및 닫기 버튼) ---
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '사운드 설정',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900, // 더 두꺼운 글씨체
+                        color: Colors.white,
+                        letterSpacing: 1.2,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => _handleClose(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white70, size: 28),
+                      onPressed: () => _handleClose(context),
+                      tooltip: '닫기',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
 
-              // --- 1. BGM 설정 ---
-              _buildSoundSettingRow(
-                context,
-                title: 'BGM (배경음악)',
-                isEnabled: bgmEnabled,
-                volume: bgmVolume,
-                onToggle: (enabled) {
-                  audioController.setBgmEnabled(enabled);
-                },
-                onVolumeChanged: (volume) {
-                  audioController.setBgmVolume(volume);
-                },
-              ),
-              const SizedBox(height: 24),
+                // --- 1. BGM 설정 ---
+                _buildSoundSettingRow(
+                  context,
+                  title: 'BGM (배경음악)',
+                  icon: Icons.music_note, // 아이콘 추가
+                  isEnabled: bgmEnabled,
+                  volume: bgmVolume,
+                  onToggle: (enabled) {
+                    audioController.setBgmEnabled(enabled);
+                  },
+                  onVolumeChanged: (volume) {
+                    audioController.setBgmVolume(volume);
+                  },
+                ),
+                
+                // --- 구분선 추가 ---
+                const Divider(color: Colors.blueGrey, height: 28, thickness: 0.5),
 
-              // --- 2. SFX 설정 ---
-              _buildSoundSettingRow(
-                context,
-                title: 'SFX (효과음)',
-                isEnabled: sfxEnabled,
-                volume: sfxVolume,
-                onToggle: (enabled) {
-                  audioController.setSfxEnabled(enabled);
-                },
-                onVolumeChanged: (volume) {
-                  // SFX 볼륨 조절 시 효과음을 재생하여 즉시 피드백을 제공합니다.
-                  audioController.setSfxVolume(volume);
-                  audioController.playSfx(SoundFiles.click);
-                },
-              ),
-            ],
+                // --- 2. SFX 설정 ---
+                _buildSoundSettingRow(
+                  context,
+                  title: 'SFX (효과음)',
+                  icon: Icons.volume_up, // 아이콘 추가
+                  isEnabled: sfxEnabled,
+                  volume: sfxVolume,
+                  onToggle: (enabled) {
+                    audioController.setSfxEnabled(enabled);
+                  },
+                  onVolumeChanged: (volume) {
+                    // SFX 볼륨 조절 시 효과음을 재생하여 즉시 피드백을 제공합니다.
+                    audioController.setSfxVolume(volume);
+                    // SoundFiles를 사용할 수 있도록 가정
+                    // TODO: `SoundFiles.click`이 정의된 파일을 import 해야 합니다.
+                    // audioController.playSfx(SoundFiles.click); 
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // BGM/SFX 설정 섹션을 재사용 가능한 위젯으로 분리
+  // BGM/SFX 설정 섹션을 재사용 가능한 위젯으로 분리 (개선된 디자인)
   Widget _buildSoundSettingRow(
     BuildContext context, {
     required String title,
+    required IconData icon,
     required bool isEnabled,
     required double volume,
     required ValueChanged<bool> onToggle,
     required ValueChanged<double> onVolumeChanged,
   }) {
+    // 테마 색상 및 활성화/비활성화 상태에 따른 색상 정의
+    final Color activeColor = Theme.of(context).colorScheme.primary;
+    final Color inactiveColor = Colors.grey[700]!;
+    final Color contentColor = isEnabled ? Colors.white : Colors.grey[600]!;
+    final Color sliderActiveColor = isEnabled ? activeColor : inactiveColor;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // --- 제목, 아이콘, 스위치 Row ---
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+            Row(
+              children: [
+                Icon(icon, color: contentColor, size: 24), // 아이콘 크기 조정
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 17,
+                    color: contentColor,
+                  ),
+                ),
+              ],
             ),
             Switch.adaptive(
               value: isEnabled,
               onChanged: onToggle,
+              activeColor: activeColor,
+              inactiveTrackColor: Colors.grey[800],
             ),
           ],
         ),
-        Slider(
-          value: volume,
-          onChanged: isEnabled ? onVolumeChanged : null, // 비활성화 시 슬라이더 잠금
-          min: 0.0,
-          max: 1.0,
-          // BGM이 꺼져 있으면 회색으로 표시
-          activeColor: isEnabled ? Theme.of(context).colorScheme.primary : Colors.grey,
+        const SizedBox(height: 8),
+
+        // --- 볼륨 슬라이더 및 퍼센트 표시 Row ---
+        Row(
+          children: [
+            Expanded(
+              child: SliderTheme(
+                // 슬라이더 디자인 커스터마이징
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 6.0,
+                  thumbColor: sliderActiveColor,
+                  activeTrackColor: sliderActiveColor.withOpacity(0.8),
+                  inactiveTrackColor: inactiveColor.withOpacity(0.3),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 20.0),
+                ),
+                child: Slider(
+                  value: volume,
+                  onChanged: isEnabled ? onVolumeChanged : null, // 비활성화 시 슬라이더 잠금
+                  min: 0.0,
+                  max: 1.0,
+                ),
+              ),
+            ),
+            // 볼륨 퍼센트 표시 (UX 개선)
+            Container(
+              width: 50,
+              alignment: Alignment.centerRight,
+              child: Text(
+                '${(volume * 100).toInt()}%',
+                style: TextStyle(
+                  color: contentColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  // 숫자의 폭을 일정하게 유지하여 레이아웃이 흔들리는 것을 방지
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

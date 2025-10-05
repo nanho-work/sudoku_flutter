@@ -33,22 +33,26 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     audioController = context.read<AudioController>();
-    audioController.playGameBgm();
-
-    // 💡 배너 로드 로직 추가
-    AdBannerService.loadBannerAd(
-      onLoaded: () {
-        setState(() {
-          _isBannerReady = true;
-        });
-      },
-      onFailed: (error) {
-        debugPrint("GameScreen Ad loading failed: $error");
-        setState(() {
-          _isBannerReady = false;
-        });
-      },
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      audioController.playGameBgm();
+      AdBannerService.loadBannerAd(
+        onLoaded: () {
+          if (mounted) {
+            setState(() {
+              _isBannerReady = true;
+            });
+          }
+        },
+        onFailed: (error) {
+          debugPrint("GameScreen Ad loading failed: $error");
+          if (mounted) {
+            setState(() {
+              _isBannerReady = false;
+            });
+          }
+        },
+      );
+    });
   }
 
   @override

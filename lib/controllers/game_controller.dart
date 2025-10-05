@@ -83,7 +83,8 @@ class GameController extends ChangeNotifier {
   }
 
   // 숫자 입력 시 노트 모드 여부에 따라 셀에 숫자 또는 노트를 추가/제거하며, 정답 여부에 따라 효과음을 재생하고 목숨을 차감합니다.
-  void onNumberInput(int number, void Function(bool correct) playSfx, void Function(String msg) showError) {
+  Future<void> onNumberInput(int number, void Function(bool correct) playSfx, void Function(String msg) showError) async {
+    debugPrint("🔢 [GameController] onNumberInput called with number: $number, selectedRow: $selectedRow, selectedCol: $selectedCol");
     if (selectedRow != null && selectedCol != null) {
       if (fixed[selectedRow!][selectedCol!]) return;
       if (board[selectedRow!][selectedCol!] != 0) return;
@@ -97,6 +98,7 @@ class GameController extends ChangeNotifier {
       } else {
         if (SudokuSolver.isValid(board, selectedRow!, selectedCol!, number) &&
           SudokuSolver.isCorrect(solution, selectedRow!, selectedCol!, number)) {
+          debugPrint("✔️ [GameController] Correct input detected at ($selectedRow, $selectedCol)");
           playSfx(true);
           board[selectedRow!][selectedCol!] = number;
           notes[selectedRow!][selectedCol!] = <int>{};
@@ -106,9 +108,14 @@ class GameController extends ChangeNotifier {
           fixed[selectedRow!][selectedCol!] = true;
           if (_isSolved()) {
             notifyListeners();
+            debugPrint("🎯 [GameController] Puzzle solved! missionDate = $missionDate");
+            if (missionDate != null) {
+              await MissionService.setCleared(missionDate!);
+            }
           }
           notifyListeners();
         } else {
+          debugPrint("❌ [GameController] Wrong input at ($selectedRow, $selectedCol)");
           playSfx(false);
           hearts--;
           invalidRow = selectedRow;
@@ -131,11 +138,13 @@ class GameController extends ChangeNotifier {
 
   // 퍼즐이 모두 올바르게 풀렸는지 확인합니다.
   bool _isSolved() {
+    debugPrint("🧩 [GameController] Checking if solved...");
     for (int r = 0; r < 9; r++) {
       for (int c = 0; c < 9; c++) {
         if (board[r][c] != solution[r][c]) return false;
       }
     }
+    debugPrint("✅ [GameController] Puzzle is fully solved.");
     return true;
   }
   bool get isSolved => _isSolved();

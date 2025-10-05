@@ -12,13 +12,20 @@ class AppFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const Color darkSurfaceColor = Color(0xFF263238); 
+    const Color accentColor = Colors.lightBlueAccent;
+
     return BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
         onTap: onTap,
-        backgroundColor: Colors.white,          // 푸터 배경색
-        selectedItemColor: Colors.blueAccent,   // 선택된 아이콘 색
-        unselectedItemColor: Colors.grey,       // 선택 안 된 아이콘 색
+        // 💡 UI 개선: 다크 테마 배경색 적용
+        backgroundColor: darkSurfaceColor,          
+        // 💡 UI 개선: 통일된 액센트 컬러 적용
+        selectedItemColor: accentColor,   
+        // 💡 UI 개선: 선택 안 된 아이콘 색상 조정
+        unselectedItemColor: Colors.white54,       
+        elevation: 12, // 깊이감 추가
         items: const [
             BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -36,8 +43,7 @@ class AppFooter extends StatelessWidget {
             icon: Icon(Icons.info),
             label: '정보',
             ),
-            
         ],
-        );
+    );
   }
 }
