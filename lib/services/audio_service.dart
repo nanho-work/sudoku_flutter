@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 
 class SoundFiles {
@@ -82,7 +83,7 @@ class AudioService {
     }
     await _bgmPlayer.setReleaseMode(loop ? ReleaseMode.loop : ReleaseMode.stop);
     await _bgmPlayer.setVolume(_bgmVolume);
-    await _bgmPlayer.play(AssetSource('sounds/$fileName'));
+    unawaited(_bgmPlayer.play(AssetSource('sounds/$fileName')));
   }
 
   /// BGM 정지
@@ -124,11 +125,11 @@ class AudioService {
     }
 
     // 저지연 재생 - 효과음 겹침에도 끊김 없이 재생
-    await _sfxPlayer.play(
+    unawaited(_sfxPlayer.play(
       AssetSource('sounds/$fileName'),
       volume: _sfxVolume,
       mode: PlayerMode.lowLatency,
-    );
+    ));
 
     // 재생 종료 후 덕킹 해제
     _sfxPlayer.onPlayerComplete.first.then((_) async {

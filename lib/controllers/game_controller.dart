@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 import '../services/sudoku_solver.dart';
 import '../services/sudoku_generator.dart';
 import '../services/mission_service.dart';
-import 'dart:async';
 
 class GameController extends ChangeNotifier {
-  final Map<String, String> difficultyLabels = {
+  final Map<String, String> difficultyLabels = const {
     "easy": "쉬움",
     "normal": "보통",
-    "hard": "어려움"
+    "hard": "어려움",
   };
 
+  // 상태
   late List<List<int>> board;
   late List<List<int>> solution;
   late List<List<bool>> fixed;
+
   int? selectedRow;
   int? selectedCol;
   int? invalidRow;
@@ -24,244 +27,285 @@ class GameController extends ChangeNotifier {
   int hearts = 5;
 
   late Stopwatch stopwatch;
-  Timer? timer;
+  Timer? _timer;
 
   List<int> numberCounts = List.filled(10, 0);
-
   int hintsRemaining = 3;
 
   final String difficulty;
   final DateTime? missionDate;
 
+  bool _disposed = false;
+
   GameController(this.difficulty, this.missionDate) {
     _initGame();
   }
 
-  // 게임을 초기화하고 퍼즐, 해답, 고정 셀, 노트, 타이머 등을 설정합니다.
+  // 안전 알림
+  void _safeNotify() {
+    if (_disposed) return;
+    notifyListeners();
+  }
+
+  // 초기화
   void _initGame() {
     final generated = SudokuGenerator.generatePuzzle(difficulty);
     board = generated["puzzle"]!;
     solution = generated["solution"]!;
     fixed = List.generate(9, (r) => List.generate(9, (c) => board[r][c] != 0));
+
     _updateCounts();
     notes = List.generate(9, (_) => List.generate(9, (_) => <int>{}));
+
     stopwatch = Stopwatch()..start();
-    timer?.cancel();
-    timer = Timer.periodic(const Duration(seconds: 1), (_) => notifyListeners());
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_disposed) return;
+      _safeNotify();
+    });
+
     selectedRow = null;
     selectedCol = null;
+    invalidRow = null;
+    invalidCol = null;
     noteMode = false;
     hearts = 5;
     hintsRemaining = 3;
-    invalidRow = null;
-    invalidCol = null;
-    notifyListeners();
+
+    _safeNotify();
   }
 
-  // 현재 보드에서 각 숫자의 사용 개수를 갱신합니다.
-  void _updateCounts() {
-    numberCounts = List.filled(10, 0);
-    for (var row in board) {
-      for (var value in row) {
-        if (value != 0) numberCounts[value]++;
-      }
-    }
-  }
-
-  // 컨트롤러가 dispose될 때 타이머와 스톱워치를 정지합니다.
-  void disposeController() {
-    timer?.cancel();
+  // 해제 (Provider가 호출)
+  @override
+  void dispose() {
+    _disposed = true;
+    _timer?.cancel();
     stopwatch.stop();
     super.dispose();
   }
 
-  // 셀을 터치했을 때 선택된 행과 열을 갱신하고 알림을 보냅니다.
-  void onCellTap(int row, int col) {
-    selectedRow = row;
-    selectedCol = col;
-    notifyListeners();
-  }
-
-  // 숫자 입력 시 노트 모드 여부에 따라 셀에 숫자 또는 노트를 추가/제거하며, 정답 여부에 따라 효과음을 재생하고 목숨을 차감합니다.
-  Future<void> onNumberInput(int number, void Function(bool correct) playSfx, void Function(String msg) showError) async {
-    debugPrint("🔢 [GameController] onNumberInput called with number: $number, selectedRow: $selectedRow, selectedCol: $selectedCol");
-    if (selectedRow != null && selectedCol != null) {
-      if (fixed[selectedRow!][selectedCol!]) return;
-      if (board[selectedRow!][selectedCol!] != 0) return;
-      if (noteMode) {
-        if (notes[selectedRow!][selectedCol!].contains(number)) {
-          notes[selectedRow!][selectedCol!].remove(number);
-        } else {
-          notes[selectedRow!][selectedCol!].add(number);
-        }
-        notifyListeners();
-      } else {
-        if (SudokuSolver.isValid(board, selectedRow!, selectedCol!, number) &&
-          SudokuSolver.isCorrect(solution, selectedRow!, selectedCol!, number)) {
-          debugPrint("✔️ [GameController] Correct input detected at ($selectedRow, $selectedCol)");
-          playSfx(true);
-          board[selectedRow!][selectedCol!] = number;
-          notes[selectedRow!][selectedCol!] = <int>{};
-          invalidRow = null;
-          invalidCol = null;
-          _updateCounts();
-          fixed[selectedRow!][selectedCol!] = true;
-          if (_isSolved()) {
-            notifyListeners();
-            debugPrint("🎯 [GameController] Puzzle solved! missionDate = $missionDate");
-            if (missionDate != null) {
-              await MissionService.setCleared(missionDate!);
-            }
-          }
-          notifyListeners();
-        } else {
-          debugPrint("❌ [GameController] Wrong input at ($selectedRow, $selectedCol)");
-          playSfx(false);
-          hearts--;
-          invalidRow = selectedRow;
-          invalidCol = selectedCol;
-          notifyListeners();
-          if (hearts <= 0) {
-            // Game Over handled by UI
-          } else {
-            showError("잘못된 숫자입니다!");
-            Future.delayed(const Duration(milliseconds: 500), () {
-              invalidRow = null;
-              invalidCol = null;
-              notifyListeners();
-            });
-          }
-        }
+  // 카운트 갱신
+  void _updateCounts() {
+    numberCounts = List.filled(10, 0);
+    for (final row in board) {
+      for (final v in row) {
+        if (v != 0) numberCounts[v]++;
       }
     }
   }
 
-  // 퍼즐이 모두 올바르게 풀렸는지 확인합니다.
+  // 셀 선택
+  void onCellTap(int r, int c) {
+    if (_disposed) return;
+    selectedRow = r;
+    selectedCol = c;
+    _safeNotify();
+  }
+
+  // ✅ 퍼즐 완성 공통 처리: "저장 → 검증 → 알림" (순서 중요)
+  Future<void> _onSolved() async {
+    if (missionDate != null) {
+      try {
+        await MissionService.setCleared(missionDate!);
+
+        // (선택) 즉시 검증해서 로그로 남김
+        final ok = await MissionService.isCleared(missionDate!);
+      } catch (e, st) {
+      }
+    }
+
+    // 저장이 끝난 뒤 알림 (여기서 UI가 pop될 수 있음)
+    _safeNotify();
+  }
+
+  // 숫자 입력
+  Future<void> onNumberInput(
+    int number,
+    void Function(bool correct) playSfx,
+    void Function(String msg) showError,
+  ) async {
+    if (_disposed) return;
+    if (selectedRow == null || selectedCol == null) return;
+
+    final r = selectedRow!, c = selectedCol!;
+    if (fixed[r][c]) return;
+    if (board[r][c] != 0) return;
+
+    if (noteMode) {
+      final s = notes[r][c];
+      if (s.contains(number)) {
+        s.remove(number);
+      } else {
+        s.add(number);
+      }
+      _safeNotify();
+      return;
+    }
+
+    final validPlacement = SudokuSolver.isValid(board, r, c, number);
+    final isCorrect = SudokuSolver.isCorrect(solution, r, c, number);
+
+    if (validPlacement && isCorrect) {
+      playSfx(true);
+
+      board[r][c] = number;
+      notes[r][c] = <int>{};
+      invalidRow = null;
+      invalidCol = null;
+      fixed[r][c] = true;
+      _updateCounts();
+
+      if (_isSolved()) {
+        // ✅ 저장 먼저
+        await _onSolved();
+      } else {
+        _safeNotify();
+      }
+    } else {
+      playSfx(false);
+      hearts--;
+      invalidRow = r;
+      invalidCol = c;
+      _safeNotify();
+
+      if (hearts > 0) {
+        showError("잘못된 숫자입니다!");
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (_disposed) return;
+          invalidRow = null;
+          invalidCol = null;
+          _safeNotify();
+        });
+      }
+    }
+  }
+
+  // 퍼즐 완성 판정
   bool _isSolved() {
-    debugPrint("🧩 [GameController] Checking if solved...");
     for (int r = 0; r < 9; r++) {
       for (int c = 0; c < 9; c++) {
         if (board[r][c] != solution[r][c]) return false;
       }
     }
-    debugPrint("✅ [GameController] Puzzle is fully solved.");
     return true;
   }
   bool get isSolved => _isSolved();
-  
 
-  // 게임을 재시작하며 효과음을 재생하고 초기화합니다.
+  // 재시작
   void restartGame(void Function() playSfx) {
+    if (_disposed) return;
     playSfx();
     _initGame();
   }
 
-  // 선택된 셀의 값을 지우고 노트도 초기화합니다.
+  // 지우기
   void clearCell() {
-    if (selectedRow != null && selectedCol != null) {
-      if (fixed[selectedRow!][selectedCol!]) return;
-      board[selectedRow!][selectedCol!] = 0;
-      notes[selectedRow!][selectedCol!] = <int>{};
-      _updateCounts();
-      notifyListeners();
+    if (_disposed) return;
+    if (selectedRow == null || selectedCol == null) return;
+    final r = selectedRow!, c = selectedCol!;
+    if (fixed[r][c]) return;
+
+    board[r][c] = 0;
+    notes[r][c] = <int>{};
+    _updateCounts();
+    _safeNotify();
+  }
+
+  // 힌트 (✅ 완성되면 저장 호출)
+  void showHint(void Function() playSfx, void Function(String) showToast) async {
+    if (_disposed) return;
+    playSfx();
+
+    if (selectedRow == null || selectedCol == null) return;
+    final r = selectedRow!, c = selectedCol!;
+    if (fixed[r][c]) return;
+
+    if (hintsRemaining <= 0) {
+      showToast("힌트가 모두 소진되었습니다");
+      return;
+    }
+
+    board[r][c] = solution[r][c];
+    notes[r][c] = <int>{};
+    _updateCounts();
+    hintsRemaining--;
+
+    if (_isSolved()) {
+      await _onSolved(); // ✅ 저장 먼저
+    } else {
+      _safeNotify();
     }
   }
 
-  // 힌트 사용 시 정답을 셀에 입력하고 힌트 개수를 차감합니다.
-  void showHint(void Function() playSfx, void Function(String) showToast) {
+  // 자동 채우기 (✅ 완성되면 저장 호출)
+  void autoFill(void Function() playSfx, void Function(String) showToast) async {
+    if (_disposed) return;
     playSfx();
-    if (selectedRow != null && selectedCol != null) {
-      if (fixed[selectedRow!][selectedCol!]) return;
-      if (hintsRemaining <= 0) {
-        showToast("힌트가 모두 소진되었습니다");
-        return;
-      }
-      board[selectedRow!][selectedCol!] = solution[selectedRow!][selectedCol!];
-      _updateCounts();
-      hintsRemaining--;
-      if (_isSolved()) {
-        notifyListeners();
-      }
-      notifyListeners();
-    }
-  }
 
-  // 자동 채우기: 한 행, 열, 박스에 비어있는 칸이 하나일 때 그 칸을 정답으로 채웁니다.
-  void autoFill(void Function() playSfx, void Function(String) showToast) {
-    playSfx();
     bool filledAny = false;
-    // ... 로직 생략 — 기존 autoFill 로직 동일하게 복붙 ...
 
+    // 행
     for (int r = 0; r < 9; r++) {
-      int emptyCount = 0;
-      int emptyCol = -1;
+      int empty = 0, ec = -1;
       for (int c = 0; c < 9; c++) {
-        if (board[r][c] == 0) {
-          emptyCount++;
-          emptyCol = c;
-        }
+        if (board[r][c] == 0) { empty++; ec = c; }
       }
-      if (emptyCount == 1) {
-        if (!fixed[r][emptyCol]) {
-          board[r][emptyCol] = solution[r][emptyCol];
-          notes[r][emptyCol] = <int>{};
-          _updateCounts();
-          filledAny = true;
-        }
+      if (empty == 1 && !fixed[r][ec]) {
+        board[r][ec] = solution[r][ec];
+        notes[r][ec] = <int>{};
+        _updateCounts();
+        filledAny = true;
       }
     }
+
+    // 열
     for (int c = 0; c < 9; c++) {
-      int emptyCount = 0;
-      int emptyRow = -1;
+      int empty = 0, er = -1;
       for (int r = 0; r < 9; r++) {
-        if (board[r][c] == 0) {
-          emptyCount++;
-          emptyRow = r;
-        }
+        if (board[r][c] == 0) { empty++; er = r; }
       }
-      if (emptyCount == 1) {
-        if (!fixed[emptyRow][c]) {
-          board[emptyRow][c] = solution[emptyRow][c];
-          notes[emptyRow][c] = <int>{};
-          _updateCounts();
-          filledAny = true;
-        }
+      if (empty == 1 && !fixed[er][c]) {
+        board[er][c] = solution[er][c];
+        notes[er][c] = <int>{};
+        _updateCounts();
+        filledAny = true;
       }
     }
-    for (int boxRow = 0; boxRow < 3; boxRow++) {
-      for (int boxCol = 0; boxCol < 3; boxCol++) {
-        int emptyCount = 0;
-        int emptyR = -1;
-        int emptyC = -1;
-        for (int r = boxRow * 3; r < boxRow * 3 + 3; r++) {
-          for (int c = boxCol * 3; c < boxCol * 3 + 3; c++) {
-            if (board[r][c] == 0) {
-              emptyCount++;
-              emptyR = r;
-              emptyC = c;
-            }
+
+    // 박스
+    for (int br = 0; br < 3; br++) {
+      for (int bc = 0; bc < 3; bc++) {
+        int empty = 0, er = -1, ec = -1;
+        for (int r = br * 3; r < br * 3 + 3; r++) {
+          for (int c = bc * 3; c < bc * 3 + 3; c++) {
+            if (board[r][c] == 0) { empty++; er = r; ec = c; }
           }
         }
-        if (emptyCount == 1 && !fixed[emptyR][emptyC]) {
-          board[emptyR][emptyC] = solution[emptyR][emptyC];
-          notes[emptyR][emptyC] = <int>{};
+        if (empty == 1 && !fixed[er][ec]) {
+          board[er][ec] = solution[er][ec];
+          notes[er][ec] = <int>{};
           _updateCounts();
           filledAny = true;
         }
       }
     }
+
     if (!filledAny) {
       showToast("자동 채우기할 수 있는 칸이 없습니다.");
     }
-    if (_isSolved()) notifyListeners();
-    notifyListeners();
+
+    if (_isSolved()) {
+      await _onSolved(); // ✅ 저장 먼저
+    } else {
+      _safeNotify();
+    }
   }
 
-  // 스톱워치의 경과 시간을 "MM:SS" 형식의 문자열로 반환합니다.
+  // 경과시간 포맷
   String formatElapsedTime() {
-    final seconds = stopwatch.elapsed.inSeconds;
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return "${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}";
+    final s = stopwatch.elapsed.inSeconds;
+    final m = s ~/ 60;
+    final rs = s % 60;
+    return "${m.toString().padLeft(2, '0')}:${rs.toString().padLeft(2, '0')}";
   }
 }

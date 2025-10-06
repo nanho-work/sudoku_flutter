@@ -26,7 +26,6 @@ class _MissionScreenState extends State<MissionScreen> {
     // GameScreen에서 돌아오면 상태를 갱신하여 FutureBuilder를 강제로 다시 실행합니다.
     setState(() { 
       _reload++; 
-      // print("[MissionScreen] UI force reload triggered: $_reload");
     });
   }
 
