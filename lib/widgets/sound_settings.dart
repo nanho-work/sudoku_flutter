@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../controllers/audio_controller.dart';
 import '../services/audio_service.dart'; // SoundFiles가 AudioService에 정의되어 있다고 가정합니다.
 import '../controllers/theme_controller.dart'; // ThemeController import 추가
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 
 /// 사운드 설정 조정용 팝업 위젯 (UI 개선 버전)
 class SoundSettingsWidget extends StatelessWidget {
@@ -21,6 +22,7 @@ class SoundSettingsWidget extends StatelessWidget {
     // ThemeController에서 색상 테마를 가져옵니다.
     final themeController = Provider.of<ThemeController>(context);
     final colors = themeController.colors;
+    final loc = AppLocalizations.of(context)!;
 
     // AudioController의 상태 변화를 감지합니다.
     final audioController = context.watch<AudioController>();
@@ -41,7 +43,7 @@ class SoundSettingsWidget extends StatelessWidget {
       ),
       child: Material(
         // Dialog처럼 사용하기 위해 배경을 투명하게 설정합니다.
-        color: colors.background.withOpacity(0.8),
+        color: colors.background.withOpacity(0.2),
         child: Center(
           child: Container(
             width: 340, // 너비를 약간 넓게 조정
@@ -68,7 +70,7 @@ class SoundSettingsWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '사운드 설정',
+                      loc.sound_title_main,
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900, // 더 두꺼운 글씨체
@@ -79,7 +81,7 @@ class SoundSettingsWidget extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.close, color: colors.textPrimary, size: 28),
                       onPressed: () => _handleClose(context),
-                      tooltip: '닫기',
+                      tooltip: loc.sound_button_close_tooltip,
                     ),
                   ],
                 ),
@@ -88,7 +90,7 @@ class SoundSettingsWidget extends StatelessWidget {
                 // --- 1. BGM 설정 ---
                 _buildSoundSettingRow(
                   context,
-                  title: 'BGM (배경음악)',
+                  title: loc.sound_section_bgm_title,
                   icon: Icons.music_note, // 아이콘 추가
                   isEnabled: bgmEnabled,
                   volume: bgmVolume,
@@ -107,7 +109,7 @@ class SoundSettingsWidget extends StatelessWidget {
                 // --- 2. SFX 설정 ---
                 _buildSoundSettingRow(
                   context,
-                  title: 'SFX (효과음)',
+                  title: loc.sound_section_sfx_title,
                   icon: Icons.volume_up, // 아이콘 추가
                   isEnabled: sfxEnabled,
                   volume: sfxVolume,

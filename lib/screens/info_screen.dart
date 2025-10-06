@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import '../controllers/theme_controller.dart';
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 
 class InfoScreen extends StatelessWidget {
   const InfoScreen({super.key});
@@ -22,7 +23,7 @@ class InfoScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: colors.background, // 💡 다크 배경 적용
       appBar: AppBar(
-        title: const Text('앱 정보'),
+        title: Text(AppLocalizations.of(context)!.info_app_bar_title),
         centerTitle: true,
         backgroundColor: colors.appBar,
         elevation: 0,
@@ -47,7 +48,7 @@ class InfoScreen extends StatelessWidget {
               shrinkWrap: true, // Card 내 ListView 크기 제한
               children: [
                 Text(
-                  "모두의 즐거움! Koofy",
+                  AppLocalizations.of(context)!.info_app_name,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -60,21 +61,21 @@ class InfoScreen extends StatelessWidget {
 
                 // 1. 앱 버전
                 _buildInfoRow(
-                  title: "앱 버전",
+                  title: AppLocalizations.of(context)!.info_row_version_title,
                   value: "1.0.0",
                   icon: Icons.info_outline,
                   colors: colors,
                 ),
                 // 2. 개발자
                 _buildInfoRow(
-                  title: "개발자",
+                  title: AppLocalizations.of(context)!.info_row_developer_title,
                   value: "LaonCode",
                   icon: Icons.code,
                   colors: colors,
                 ),
                 // 3. 문의
                 _buildInfoRow(
-                  title: "문의 이메일",
+                  title: AppLocalizations.of(context)!.info_row_email_title,
                   value: "koofylab@gmail.com",
                   icon: Icons.email_outlined,
                   colors: colors,
@@ -82,7 +83,7 @@ class InfoScreen extends StatelessWidget {
 
                 const SizedBox(height: 20),
                 Text(
-                  "법적 고지",
+                  AppLocalizations.of(context)!.info_section_legal,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -94,7 +95,7 @@ class InfoScreen extends StatelessWidget {
                 // 4. 개인정보 처리방침
                 _buildLegalLink(
                   context,
-                  title: "개인정보 처리방침",
+                  title: AppLocalizations.of(context)!.info_link_privacy,
                   url: "https://www.koofy.co.kr/privacy",
                   icon: Icons.privacy_tip_outlined,
                   onTap: () => _launchUrl("https://www.koofy.co.kr/privacy"),
@@ -104,7 +105,7 @@ class InfoScreen extends StatelessWidget {
                 // 5. 이용 약관
                 _buildLegalLink(
                   context,
-                  title: "이용 약관",
+                  title: AppLocalizations.of(context)!.info_link_terms,
                   url: "https://www.koofy.co.kr/terms",
                   icon: Icons.description_outlined,
                   onTap: () => _launchUrl("https://www.koofy.co.kr/terms"),

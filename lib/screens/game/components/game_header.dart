@@ -1,3 +1,4 @@
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/game_controller.dart';
@@ -30,6 +31,7 @@ class GameHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<GameController>();
+    final loc = AppLocalizations.of(context)!;
     
     // 💡 동적으로 계산된 패딩 값을 사용합니다.
     final double horizontalPadding = _calculateHorizontalPadding(context);
@@ -54,7 +56,7 @@ class GameHeader extends StatelessWidget {
               ),
               const SizedBox(width: 8), // 아이콘과 텍스트 사이 간격
               Text(
-                "난이도: ${controller.difficultyLabels[controller.difficulty] ?? controller.difficulty}",
+                "${loc.game_header_level}: ${controller.difficultyLabels[controller.difficulty] ?? controller.difficulty}",
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
@@ -64,7 +66,7 @@ class GameHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                "시간: ${controller.formatElapsedTime()}",
+                "${loc.game_header_time}: ${controller.formatElapsedTime()}",
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               Row(

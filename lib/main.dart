@@ -5,6 +5,9 @@ import 'providers/app_providers.dart';
 import 'controllers/theme_controller.dart';
 import 'screens/splash_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +36,19 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Koofy Sudoku',
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('ko'),
+            Locale('en'),
+            Locale('ja'),
+            Locale('zh'),
+          ],
+          // locale: const Locale('ko'), // Uncomment to force Korean
           theme: ThemeData(
             brightness: brightness,
             primaryColor: colors.primary,

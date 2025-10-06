@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/theme_controller.dart';
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 
 class ThemeSelectorWidget extends StatelessWidget {
   const ThemeSelectorWidget({super.key});
@@ -22,7 +23,7 @@ class ThemeSelectorWidget extends StatelessWidget {
     };
 
     return AlertDialog(
-      title: const Text("테마 선택"),
+      title: Text(AppLocalizations.of(context)!.theme),
       content: Wrap(
         spacing: 12,
         runSpacing: 12,

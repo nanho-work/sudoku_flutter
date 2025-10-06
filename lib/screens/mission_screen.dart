@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sudoku_flutter/screens/game/game_screen.dart';
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import '../controllers/theme_controller.dart';
 import '../services/mission_service.dart';
 
@@ -44,6 +45,7 @@ class _MissionScreenState extends State<MissionScreen> {
   }
 
   Widget _buildLegend(BuildContext context, colors) {
+    final loc = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -58,7 +60,7 @@ class _MissionScreenState extends State<MissionScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text('도전 가능', style: TextStyle(color: colors.textPrimary)),
+            Text(loc.mission_legend_available, style: TextStyle(color: colors.textPrimary)),
           ],
         ),
         Row(
@@ -80,7 +82,7 @@ class _MissionScreenState extends State<MissionScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text('도전 성공', style: TextStyle(color: colors.textPrimary)),
+            Text(loc.mission_legend_cleared, style: TextStyle(color: colors.textPrimary)),
           ],
         ),
         Row(
@@ -94,7 +96,7 @@ class _MissionScreenState extends State<MissionScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text('미공개', style: TextStyle(color: colors.textPrimary)),
+            Text(loc.mission_legend_unreleased, style: TextStyle(color: colors.textPrimary)),
           ],
         ),
       ],
@@ -119,7 +121,15 @@ class _MissionScreenState extends State<MissionScreen> {
     final totalDays = daysInMonth(year, month);
     final firstDayWeekday = DateTime(year, month, 1).weekday;
     final startPadding = (firstDayWeekday == 7) ? 0 : firstDayWeekday;
-    const weekdayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+    final weekdayLabels = [
+      AppLocalizations.of(context)!.mission_weekday_sun,
+      AppLocalizations.of(context)!.mission_weekday_mon,
+      AppLocalizations.of(context)!.mission_weekday_tue,
+      AppLocalizations.of(context)!.mission_weekday_wed,
+      AppLocalizations.of(context)!.mission_weekday_thu,
+      AppLocalizations.of(context)!.mission_weekday_fri,
+      AppLocalizations.of(context)!.mission_weekday_sat,
+    ];
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -132,7 +142,8 @@ class _MissionScreenState extends State<MissionScreen> {
               icon: Icon(Icons.chevron_left, color: colors.textPrimary),
             ),
             Text(
-              "$year년 $month월 미션",
+              AppLocalizations.of(context)!
+                  .mission_app_bar_month_format(month.toString(), year.toString()),
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 color: colors.textPrimary,
@@ -241,17 +252,27 @@ class _MissionScreenState extends State<MissionScreen> {
                                 return GestureDetector(
                                   onTap: () async {
                                     if (!isCleared && isPastOrToday) {
+                                      final loc = AppLocalizations.of(context)!;
                                       await showDialog(
                                         context: context,
                                         builder: (context) => AlertDialog(
                                           backgroundColor: colors.card,
-                                          title: Text("일일 미션 시작",
-                                              style: TextStyle(
-                                                  color: colors.textPrimary,
-                                                  fontWeight: FontWeight.bold),
-                                                  textAlign: TextAlign.center,),
+                                          title: Text(
+                                            loc.mission_dialog_title,
+                                            style: TextStyle(
+                                                color: colors.textPrimary,
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.center,
+                                          ),
                                           content: Text(
-                                            "$year년 $month월 $day일 미션!\n난이도 : 랜덤\n도전하시겠습니까?",
+                                            loc.mission_dialog_date_info_format(
+                                                day.toString(),
+                                                month.toString(),
+                                                year.toString()) +
+                                                '\n' +
+                                                loc.mission_dialog_difficulty_random +
+                                                '\n' +
+                                                loc.mission_dialog_challenge_question,
                                             style: TextStyle(
                                                 color: colors.textPrimary),
                                             textAlign: TextAlign.center,
@@ -263,10 +284,11 @@ class _MissionScreenState extends State<MissionScreen> {
                                                 TextButton(
                                                   onPressed: () =>
                                                       Navigator.of(context).pop(),
-                                                  child: Text("취소",
-                                                      style: TextStyle(
-                                                          color:
-                                                              colors.textPrimary)),
+                                                  child: Text(
+                                                    loc.mission_dialog_cancel,
+                                                    style: TextStyle(
+                                                        color: colors.textPrimary),
+                                                  ),
                                                 ),
                                                 const SizedBox(width: 16),
                                                 ElevatedButton(
@@ -290,7 +312,7 @@ class _MissionScreenState extends State<MissionScreen> {
                                                     _startGame(randomDifficulty,
                                                         missionDate);
                                                   },
-                                                  child: const Text("시작"),
+                                                  child: Text(loc.mission_dialog_start),
                                                 ),
                                               ],
                                             ),

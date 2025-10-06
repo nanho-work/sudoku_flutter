@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // 💡 에러 해결: AdSize 인식을 위해 import 추가
 import 'package:google_mobile_ads/google_mobile_ads.dart'; 
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import '../services/ad_banner_service.dart';
 
 /// 앱의 최상단 헤더 (배너 광고 포함) - 다크 테마 적용
@@ -61,8 +62,8 @@ class _AppHeaderState extends State<AppHeader> {
               height: AdSize.banner.height.toDouble(), 
               color: darkAdPlaceholderColor, // 어두운 배경색 적용
               alignment: Alignment.center,
-              child: const Text(
-                '광고 로드 중...', 
+              child: Text(
+                AppLocalizations.of(context)!.header_loading,
                 style: TextStyle(fontSize: 12, color: Colors.grey), // 회색 텍스트
               ),
             ),

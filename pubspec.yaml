@@ -19,6 +19,9 @@ dependencies:
   flame_audio: ^2.10.1
   shared_preferences: ^2.2.3
   provider: ^6.1.5+1
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -29,6 +32,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.0
 
 flutter:
+  generate: true
 
   # 머터리얼 아이콘 사용
   uses-material-design: true
@@ -36,6 +40,14 @@ flutter:
   assets:
     - assets/icons/
     - assets/sounds/
+
+flutter_gen:
+  l10n:
+    arb-dir: lib/l10n
+    template-arb-file: app_en.arb
+    output-localization-file: app_localizations.dart
+    output-class: AppLocalizations
+    preferred-supported-locales: [en, ko, ja, zh]
 
 flutter_launcher_icons:
   # 앱 아이콘 설정

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import '../../../controllers/game_controller.dart';
 import '../../../controllers/audio_controller.dart';
 import '../../../controllers/theme_controller.dart';
@@ -19,6 +20,7 @@ class GameButtonBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final controller = context.watch<GameController>();
     final audio = context.read<AudioController>();
     final colors = context.watch<ThemeController>().colors;
@@ -75,7 +77,7 @@ class GameButtonBar extends StatelessWidget {
                 children: [
                   Icon(Icons.refresh, size: 20, color: colors.textPrimary),
                   const SizedBox(height: 4),
-                  Text("새 게임", textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
+                  Text(loc.game_button_new_game, textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
                 ],
               ),
             ),
@@ -98,7 +100,7 @@ class GameButtonBar extends StatelessWidget {
                 children: [
                   Icon(Icons.lightbulb, size: 20, color: colors.textPrimary),
                   const SizedBox(height: 4),
-                  Text("힌트 (${controller.hintsRemaining})", textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
+                  Text('${loc.game_button_hint} (${controller.hintsRemaining})', textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
                 ],
               ),
             ),
@@ -124,7 +126,7 @@ class GameButtonBar extends StatelessWidget {
                 children: [
                   Icon(Icons.edit_note, size: 20, color: colors.textPrimary),
                   const SizedBox(height: 4),
-                  Text("메모", textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
+                  Text(loc.game_button_note, textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
                 ],
               ),
             ),
@@ -144,7 +146,7 @@ class GameButtonBar extends StatelessWidget {
                 children: [
                   Icon(Icons.auto_fix_high, size: 20, color: colors.textPrimary),
                   const SizedBox(height: 4),
-                  Text("채우기", textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
+                  Text(loc.game_button_auto_fill, textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
                 ],
               ),
             ),

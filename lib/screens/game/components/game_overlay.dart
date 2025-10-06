@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/game_controller.dart';
 import '../../../controllers/audio_controller.dart';
@@ -34,6 +35,7 @@ class _GameOverlayState extends State<GameOverlay> {
     if (_dialogShown) return;
     _dialogShown = true;
 
+    final loc = AppLocalizations.of(context)!;
     final audio = context.read<AudioController>();
     audio.playSfx(SoundFiles.gameover);
 
@@ -50,11 +52,11 @@ class _GameOverlayState extends State<GameOverlay> {
         backgroundColor: colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          '게임 오버',
+          loc.overlay_game_over_title,
           style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          '하트를 모두 소진했습니다.',
+          loc.overlay_game_over_content,
           style: TextStyle(color: colors.textPrimary),
         ),
         actions: [
@@ -70,7 +72,7 @@ class _GameOverlayState extends State<GameOverlay> {
               // 2. 홈으로 이동: GameScreen 닫기
               Navigator.of(outerContext).pop();
             },
-            child: const Text('확인'),
+            child: Text(loc.overlay_dialog_confirm),
           ),
         ],
       ),
@@ -81,6 +83,7 @@ class _GameOverlayState extends State<GameOverlay> {
     if (_dialogShown) return;
     _dialogShown = true;
 
+    final loc = AppLocalizations.of(context)!;
     final audio = context.read<AudioController>();
     final controller = context.read<GameController>();
     audio.playSfx(SoundFiles.complete);
@@ -97,11 +100,11 @@ class _GameOverlayState extends State<GameOverlay> {
         backgroundColor: colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          '축하합니다!',
+          loc.overlay_complete_title,
           style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          '퍼즐을 완성했습니다 🎉\n시간: ${controller.formatElapsedTime()}',
+          loc.overlay_complete_content_format(controller.formatElapsedTime()),
           style: TextStyle(color: colors.textPrimary),
         ),
         actions: [
@@ -117,7 +120,7 @@ class _GameOverlayState extends State<GameOverlay> {
               // 2. 홈으로 이동: GameScreen 닫기
               Navigator.of(outerContext).pop();
             },
-            child: const Text('홈으로'),
+            child: Text(loc.overlay_dialog_home),
           ),
           TextButton(
             // 💡 UI 개선: 액센트 컬러 버튼 스타일
@@ -136,7 +139,7 @@ class _GameOverlayState extends State<GameOverlay> {
               // 2. 다이얼로그 닫기
               Navigator.of(outerContext, rootNavigator: true).pop();
             },
-            child: const Text('새 게임'),
+            child: Text(loc.overlay_dialog_new_game),
           ),
         ],
       ),

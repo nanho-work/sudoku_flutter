@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/theme_controller.dart';
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 
 class AppFooter extends StatelessWidget {
   final int currentIndex;
@@ -25,22 +26,22 @@ class AppFooter extends StatelessWidget {
           selectedItemColor: colors.bottomItemUnselected,
           unselectedItemColor: colors.cellSelected,
           elevation: 12,
-          items: const [
+          items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
-              label: '홈',
+              label: AppLocalizations.of(context)!.footer_label_home,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),
-              label: '미션',
+              label: AppLocalizations.of(context)!.footer_label_mission,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.menu_book),
-              label: '가이드',
+              label: AppLocalizations.of(context)!.footer_label_guide,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.info),
-              label: '정보',
+              label: AppLocalizations.of(context)!.footer_label_info,
             ),
           ],
         );

@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
+
 import '../services/sudoku_solver.dart';
 import '../services/sudoku_generator.dart';
 import '../services/mission_service.dart';
 
 class GameController extends ChangeNotifier {
-  final Map<String, String> difficultyLabels = const {
-    "easy": "쉬움",
-    "normal": "보통",
-    "hard": "어려움",
-  };
+  final Map<String, String> difficultyLabels = {};
+
+  String getDifficultyLabel(BuildContext context, String key) {
+    final loc = AppLocalizations.of(context)!;
+    switch (key) {
+      case 'easy':
+        return loc.difficulty_easy;
+      case 'normal':
+        return loc.difficulty_normal;
+      case 'hard':
+        return loc.difficulty_hard;
+      default:
+        return key;
+    }
+  }
 
   // 상태
   late List<List<int>> board;
@@ -123,6 +135,7 @@ class GameController extends ChangeNotifier {
     int number,
     void Function(bool correct) playSfx,
     void Function(String msg) showError,
+    BuildContext context,
   ) async {
     if (_disposed) return;
     if (selectedRow == null || selectedCol == null) return;
@@ -169,7 +182,8 @@ class GameController extends ChangeNotifier {
       _safeNotify();
 
       if (hearts > 0) {
-        showError("잘못된 숫자입니다!");
+        final loc = AppLocalizations.of(context)!;
+        showError(loc.game_error_invalid_number);
         Future.delayed(const Duration(milliseconds: 500), () {
           if (_disposed) return;
           invalidRow = null;
@@ -212,7 +226,7 @@ class GameController extends ChangeNotifier {
   }
 
   // 힌트 (✅ 완성되면 저장 호출)
-  void showHint(void Function() playSfx, void Function(String) showToast) async {
+  void showHint(void Function() playSfx, void Function(String) showToast, BuildContext context) async {
     if (_disposed) return;
     playSfx();
 
@@ -221,7 +235,8 @@ class GameController extends ChangeNotifier {
     if (fixed[r][c]) return;
 
     if (hintsRemaining <= 0) {
-      showToast("힌트가 모두 소진되었습니다");
+      final loc = AppLocalizations.of(context)!;
+      showToast(loc.game_error_no_hints);
       return;
     }
 
@@ -238,7 +253,7 @@ class GameController extends ChangeNotifier {
   }
 
   // 자동 채우기 (✅ 완성되면 저장 호출)
-  void autoFill(void Function() playSfx, void Function(String) showToast) async {
+  void autoFill(void Function() playSfx, void Function(String) showToast, BuildContext context) async {
     if (_disposed) return;
     playSfx();
 
@@ -291,7 +306,8 @@ class GameController extends ChangeNotifier {
     }
 
     if (!filledAny) {
-      showToast("자동 채우기할 수 있는 칸이 없습니다.");
+      final loc = AppLocalizations.of(context)!;
+      showToast(loc.game_autofill_none);
     }
 
     if (_isSolved()) {

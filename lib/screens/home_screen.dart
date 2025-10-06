@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 // import 'package:google_mobile_ads/google_mobile_ads.dart'; // 불필요한 import 제거
 import 'package:sudoku_flutter/screens/game/game_screen.dart';
+import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import '../widgets/difficulty_card.dart';
 import '../widgets/sound_settings.dart';
 import '../widgets/theme_selector.dart';
@@ -57,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            "가나다가나다", // 앱 이름이나 메인 제목
+            AppLocalizations.of(context)!.home_header_instruction, // 앱 이름이나 메인 제목
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -65,37 +66,73 @@ class _HomeScreenState extends State<HomeScreen> {
               letterSpacing: 0.5,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.palette_outlined, size: 28),
-            color: colors.textPrimary,
-            tooltip: '테마 변경',
-            onPressed: () {
+          GestureDetector(
+            onTap: () {
               showDialog(
                 context: context,
                 builder: (_) => const ThemeSelectorWidget(),
               );
             },
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: colors.card.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: colors.textSecondary.withOpacity(0.4),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: const Offset(2, 3),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.palette_outlined,
+                color: colors.textPrimary,
+                size: 22,
+              ),
+            ),
           ),
           Consumer<AudioController>(
             builder: (context, audioController, _) {
               final sfxEnabled = audioController.sfxEnabled; // SFX 상태를 사용하여 아이콘 표시
-              return IconButton(
-                icon: Icon(
-                  sfxEnabled ? Icons.volume_up : Icons.volume_off,
-                  size: 28,
-                  // 활성화 시 액센트 컬러, 비활성화 시 회색 톤 사용
-                  color: colors.textPrimary,
-                ),
-                tooltip: '사운드 설정',
-                onPressed: () {
-                  // audioController.playSfx(SoundFiles.click); // 필요 시 SFX 재생
+              return GestureDetector(
+                onTap: () {
                   showDialog(
                     context: context,
                     barrierDismissible: true,
-                    // SoundSettingsWidget을 다크 테마로 감싸지 않아도, 내부에서 Theme.dark()를 사용하므로 문제 없음
                     builder: (_) => const SoundSettingsWidget(),
                   );
                 },
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: colors.card.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: colors.textSecondary.withOpacity(0.4),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 6,
+                        offset: const Offset(2, 3),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    sfxEnabled ? Icons.volume_up : Icons.volume_off,
+                    color: colors.textPrimary,
+                    size: 22,
+                  ),
+                ),
               );
             },
           ),
@@ -120,69 +157,62 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: colors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            // --- 1. 개선된 App Header ---
-            _buildAppHeader(context, colors),
-            const SizedBox(height: 32),
-
-            // --- 2. 난이도 선택 타이틀 ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "난이도를 선택하세요",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: colors.textPrimary,
-                    letterSpacing: 1.5,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              _buildAppHeader(context, colors),
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    AppLocalizations.of(context)!.home_difficulty_title,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: colors.textPrimary,
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 40),
-
-            // --- 3. 난이도 카드 목록 ---
-            Expanded(
-              child: SingleChildScrollView(
+              const SizedBox(height: 40),
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start, // 상단 정렬
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // 난이도 카드 색상 및 쉐도우 개선 (다크 테마에 어울리게 팔레트 색상 사용)
                     DifficultyCard(
                       color: colors.primary,
                       hoverColor: _hover(colors.primary),
-                      title: "쉬움 (Easy)",
-                      subtitle: "처음 도전하는 분께 추천!",
+                      title: AppLocalizations.of(context)!.difficulty_easy_title,
+                      subtitle: AppLocalizations.of(context)!.difficulty_easy_subtitle,
                       onTap: () => _startGame("easy"),
                     ),
-                    const SizedBox(height: 24), // 간격 증가
+                    const SizedBox(height: 24),
                     DifficultyCard(
                       color: colors.secondary,
                       hoverColor: _hover(colors.secondary),
-                      title: "보통 (Normal)",
-                      subtitle: "적당한 난이도로 두뇌 훈련",
+                      title: AppLocalizations.of(context)!.difficulty_normal_title,
+                      subtitle: AppLocalizations.of(context)!.difficulty_normal_subtitle,
                       onTap: () => _startGame("normal"),
                     ),
-                    const SizedBox(height: 24), // 간격 증가
+                    const SizedBox(height: 24),
                     DifficultyCard(
                       color: colors.error,
                       hoverColor: _hover(colors.error),
-                      title: "어려움 (Hard)",
-                      subtitle: "퍼즐 마스터에 도전하세요!",
+                      title: AppLocalizations.of(context)!.difficulty_hard_title,
+                      subtitle: AppLocalizations.of(context)!.difficulty_hard_subtitle,
                       onTap: () => _startGame("hard"),
                     ),
-                    const SizedBox(height: 40), // 하단 여백 추가
+                    const SizedBox(height: 60),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
