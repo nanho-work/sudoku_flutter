@@ -102,7 +102,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guide_desc_mission_3 => '🎁 Rewards: Unlock exclusive themes or profile icons by completing missions.';
 
   @override
-  String get home_header_instruction => 'Tap the icon to open settings ☞';
+  String get home_header_instruction => 'settings ☞';
 
   @override
   String get home_difficulty_title => 'Select Difficulty';

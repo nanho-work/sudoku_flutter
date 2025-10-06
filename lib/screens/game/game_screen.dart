@@ -110,6 +110,7 @@ class _GameScreenState extends State<GameScreen> {
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       ),
+                                      context,
                                     );
                                   },
                                   numberCounts: controller.numberCounts,

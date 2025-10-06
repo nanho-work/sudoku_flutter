@@ -102,7 +102,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get guide_desc_mission_3 => '🎁 報酬：ミッションを達成すると限定テーマやプロフィールアイコンがアンロックされます。';
 
   @override
-  String get home_header_instruction => 'アイコンをタップして設定を開く ☞';
+  String get home_header_instruction => '設定';
 
   @override
   String get home_difficulty_title => '難易度を選択してください';
@@ -151,7 +151,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String mission_app_bar_month_format(Object month, Object year) {
-    return '$year年$month月のミッション';
+    return '$year年$month月';
   }
 
   @override
@@ -208,7 +208,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get overlay_game_over_title => 'ゲームオーバー';
 
   @override
-  String get overlay_game_over_content => 'ハートをすべて使い切りました。';
+  String get overlay_game_over_content => 'ハートがなくなりました';
 
   @override
   String get overlay_dialog_confirm => '確認';
@@ -218,7 +218,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String overlay_complete_content_format(Object time) {
-    return 'パズルを完成しました 🎉\n時間：$time';
+    return 'パズルをクリアしました 🎉\n時間：$time';
   }
 
   @override

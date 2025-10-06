@@ -91,6 +91,7 @@ class GameButtonBar extends StatelessWidget {
                   ? () => controller.showHint(
                         () => audio.playSfx(SoundFiles.hint),
                         showToast,
+                        context,
                       )
                   : null,
               // 💡 힌트 비활성화 시 스타일 적용
@@ -139,6 +140,7 @@ class GameButtonBar extends StatelessWidget {
               onPressed: () => controller.autoFill(
                 () => audio.playSfx(SoundFiles.success),
                 showToast,
+                context,
               ),
               style: baseActionButtonStyle,
               child: Column(

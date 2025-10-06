@@ -288,7 +288,7 @@ abstract class AppLocalizations {
   /// No description provided for @home_header_instruction.
   ///
   /// In en, this message translates to:
-  /// **'Tap the icon to open settings ☞'**
+  /// **'settings ☞'**
   String get home_header_instruction;
 
   /// No description provided for @home_difficulty_title.
