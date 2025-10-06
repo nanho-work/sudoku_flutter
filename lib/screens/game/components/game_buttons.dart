@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/game_controller.dart';
 import '../../../controllers/audio_controller.dart';
+import '../../../controllers/theme_controller.dart';
 // import '../../../widgets/button_styles.dart'; // 외부 스타일 대신 내부에서 정의
 import '../../../services/audio_service.dart';
 
@@ -15,29 +16,29 @@ class GameButtonBar extends StatelessWidget {
   // 여기서는 외부 Padding 위젯에 기대어 0으로 설정하여 내부 여백만 관리합니다.
   static const double horizontalPadding = 16.0; // GameScreen의 기본 Padding과 맞춤
 
-  // 💡 다크 테마에 맞는 기본 버튼 스타일 정의
-  static final ButtonStyle baseActionButtonStyle = ElevatedButton.styleFrom(
-    foregroundColor: Colors.white,
-    backgroundColor: const Color(0xFF37474F), // 짙은 회색 배경
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-    textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-    elevation: 8,
-  );
-
-  // 💡 힌트 버튼 (비활성화 상태) 스타일 정의
-  static final ButtonStyle disabledActionButtonStyle = baseActionButtonStyle.copyWith(
-    backgroundColor: const WidgetStatePropertyAll(Color(0xFF263238)), // 더 어두운 비활성 배경
-    foregroundColor: const WidgetStatePropertyAll(Colors.white38),
-    elevation: const WidgetStatePropertyAll(0),
-  );
-
 
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<GameController>();
     final audio = context.read<AudioController>();
-    const Color accentColor = Colors.lightBlueAccent;
+    final colors = context.watch<ThemeController>().colors;
+
+    // 💡 다크 테마에 맞는 기본 버튼 스타일 정의
+    final ButtonStyle baseActionButtonStyle = ElevatedButton.styleFrom(
+      foregroundColor: colors.textPrimary,
+      backgroundColor: colors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      elevation: 8,
+    );
+
+    // 💡 힌트 버튼 (비활성화 상태) 스타일 정의
+    final ButtonStyle disabledActionButtonStyle = baseActionButtonStyle.copyWith(
+      backgroundColor: MaterialStatePropertyAll(colors.card),
+      foregroundColor: MaterialStatePropertyAll(colors.textSecondary),
+      elevation: const MaterialStatePropertyAll(0),
+    );
 
     void playSfx([bool success = true]) =>
         audio.playSfx(success ? SoundFiles.success : SoundFiles.fail);
@@ -46,9 +47,9 @@ class GameButtonBar extends StatelessWidget {
     void showToast(String msg) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(msg, style: const TextStyle(color: Colors.white)),
+          content: Text(msg, style: TextStyle(color: colors.textPrimary)),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: accentColor.withOpacity(0.9),
+          backgroundColor: colors.accent.withOpacity(0.9),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           duration: const Duration(seconds: 2),
@@ -69,12 +70,12 @@ class GameButtonBar extends StatelessWidget {
                 audio.playSfx(SoundFiles.click);
               }),
               style: baseActionButtonStyle,
-              child: const Column(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.refresh, size: 20),
-                  SizedBox(height: 4),
-                  Text("새 게임", textAlign: TextAlign.center),
+                  Icon(Icons.refresh, size: 20, color: colors.textPrimary),
+                  const SizedBox(height: 4),
+                  Text("새 게임", textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
                 ],
               ),
             ),
@@ -95,9 +96,9 @@ class GameButtonBar extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lightbulb, size: 20),
+                  Icon(Icons.lightbulb, size: 20, color: colors.textPrimary),
                   const SizedBox(height: 4),
-                  Text("힌트 (${controller.hintsRemaining})", textAlign: TextAlign.center),
+                  Text("힌트 (${controller.hintsRemaining})", textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
                 ],
               ),
             ),
@@ -113,17 +114,17 @@ class GameButtonBar extends StatelessWidget {
               },
               // 💡 메모 모드 활성화 시 액센트 색상 적용
               style: baseActionButtonStyle.copyWith(
-                backgroundColor: WidgetStatePropertyAll(
-                  controller.noteMode ? accentColor : baseActionButtonStyle.backgroundColor!.resolve({}),
+                backgroundColor: MaterialStatePropertyAll(
+                  controller.noteMode ? colors.accent : baseActionButtonStyle.backgroundColor!.resolve({}),
                 ),
-                foregroundColor: const WidgetStatePropertyAll(Colors.white),
+                foregroundColor: MaterialStatePropertyAll(colors.textPrimary),
               ),
-              child: const Column(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.edit_note, size: 20),
-                  SizedBox(height: 4),
-                  Text("메모", textAlign: TextAlign.center),
+                  Icon(Icons.edit_note, size: 20, color: colors.textPrimary),
+                  const SizedBox(height: 4),
+                  Text("메모", textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
                 ],
               ),
             ),
@@ -138,12 +139,12 @@ class GameButtonBar extends StatelessWidget {
                 showToast,
               ),
               style: baseActionButtonStyle,
-              child: const Column(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.auto_fix_high, size: 20),
-                  SizedBox(height: 4),
-                  Text("채우기", textAlign: TextAlign.center),
+                  Icon(Icons.auto_fix_high, size: 20, color: colors.textPrimary),
+                  const SizedBox(height: 4),
+                  Text("채우기", textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
                 ],
               ),
             ),

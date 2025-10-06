@@ -1,3 +1,5 @@
+import 'package:provider/provider.dart';
+import '../controllers/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../main_layout.dart'; // 정확한 경로로 수정 (폴더명 확인)
@@ -42,8 +44,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.watch<ThemeController>().colors;
     return Scaffold(
-      backgroundColor: Colors.brown[50],
+      backgroundColor: colors.splashBackground,
       body: Center(
         child: FadeTransition(
           opacity: _animation,
@@ -57,17 +60,17 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               const SizedBox(height: 24),
               ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Colors.blue, Colors.purple],
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [colors.primary, colors.secondary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
-                child: const Text(
+                child: Text(
                   "모두의 즐거움 Koofy",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: colors.textPrimary,
                   ),
                 ),
               ),

@@ -6,6 +6,7 @@ import '../../services/ad_banner_service.dart';
 import '../../controllers/game_controller.dart';
 import '../../controllers/audio_controller.dart';
 import '../../services/audio_service.dart';
+import '../../controllers/theme_controller.dart';
 import 'components/game_header.dart';
 import 'components/game_board.dart';
 import 'components/game_buttons.dart';
@@ -69,52 +70,58 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.watch<ThemeController>().colors;
+
     return ChangeNotifierProvider(
       create: (_) => GameController(widget.difficulty, widget.missionDate),
       child: Builder(
         builder: (context) {
           return Scaffold(
+            backgroundColor: colors.background,
             appBar: null,
             body: SafeArea(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  child: Column(
-                    children: [
-                      if (_isBannerReady) AdBannerService.bannerWidget(),
+              child: Container(
+                color: colors.background,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      children: [
+                        if (_isBannerReady) AdBannerService.bannerWidget(),
 
-                      const GameHeader(),
-                      const GameBoard(),
+                        const GameHeader(),
+                        const GameBoard(),
 
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Consumer<GameController>(
-                              builder: (context, controller, _) => NumberPad(
-                                onNumberInput: (number) {
-                                  controller.onNumberInput(
-                                    number,
-                                    (correct) => _audio.playSfx(
-                                      correct ? SoundFiles.success : SoundFiles.fail,
-                                    ),
-                                    (msg) => ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(msg),
-                                        behavior: SnackBarBehavior.floating,
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Consumer<GameController>(
+                                builder: (context, controller, _) => NumberPad(
+                                  onNumberInput: (number) {
+                                    controller.onNumberInput(
+                                      number,
+                                      (correct) => _audio.playSfx(
+                                        correct ? SoundFiles.success : SoundFiles.fail,
                                       ),
-                                    ),
-                                  );
-                                },
-                                numberCounts: controller.numberCounts,
+                                      (msg) => ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(msg),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  numberCounts: controller.numberCounts,
+                                ),
                               ),
-                            ),
-                            const GameButtonBar(),
-                          ],
+                              const GameButtonBar(),
+                            ],
+                          ),
                         ),
-                      ),
-                      const GameOverlay(),
-                    ],
+                        const GameOverlay(),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:sudoku_flutter/screens/game/game_screen.dart';
 import '../widgets/difficulty_card.dart';
 import '../widgets/sound_settings.dart';
+import '../widgets/theme_selector.dart';
 import '../controllers/audio_controller.dart';
+import '../controllers/theme_controller.dart';
 
 
 /// 홈 스크린 (난이도 선택 / 게임 시작 버튼)
@@ -44,9 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // UI 개선: 헤더 부분을 별도의 메서드로 분리하고 스타일링 강화
-  Widget _buildAppHeader(BuildContext context) {
+  Widget _buildAppHeader(BuildContext context, dynamic colors) {
     // SoundSettingsWidget에서 사용된 액센트 컬러를 가져옵니다.
-    const Color accentColor = Colors.lightBlueAccent;
+    final Color accentColor = colors.accent;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -54,14 +56,25 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            "Sudoku Challenge", // 앱 이름이나 메인 제목
+          Text(
+            "가나다가나다", // 앱 이름이나 메인 제목
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: Colors.white,
+              color: colors.textPrimary,
               letterSpacing: 0.5,
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.palette_outlined, size: 28),
+            color: colors.textPrimary,
+            tooltip: '테마 변경',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => const ThemeSelectorWidget(),
+              );
+            },
           ),
           Consumer<AudioController>(
             builder: (context, audioController, _) {
@@ -71,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   sfxEnabled ? Icons.volume_up : Icons.volume_off,
                   size: 28,
                   // 활성화 시 액센트 컬러, 비활성화 시 회색 톤 사용
-                  color: sfxEnabled ? accentColor : Colors.grey[600],
+                  color: colors.textPrimary,
                 ),
                 tooltip: '사운드 설정',
                 onPressed: () {
@@ -92,87 +105,84 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+  // 테마 팔레트의 기본색을 약간 어둡게 만들어 hover 효과에 사용
+  Color _hover(Color base, [double amount = .06]) {
+    final hsl = HSLColor.fromColor(base);
+    final darker = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return darker.toColor();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 다크 모드 테마를 HomeScreen 전체에 적용하여 일관성을 높입니다.
-    // SoundSettingsWidget에서 사용한 것과 유사한 다크 톤을 사용합니다.
-    return Theme(
-      data: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF1E272E), // 아주 어두운 배경색
-        // 팝업과 동일한 액센트 색상 사용
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.lightBlueAccent,
-          secondary: Colors.tealAccent,
-          surface: Color(0xFF263238),
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFF1E272E), // 다크 배경색 적용
-        body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              // --- 1. 개선된 App Header ---
-              _buildAppHeader(context),
-              const SizedBox(height: 32),
+    final themeController = Provider.of<ThemeController>(context);
+    final colors = themeController.colors;
 
-              // --- 2. 난이도 선택 타이틀 ---
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "난이도를 선택하세요",
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 1.5,
+    return Scaffold(
+      backgroundColor: colors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            // --- 1. 개선된 App Header ---
+            _buildAppHeader(context, colors),
+            const SizedBox(height: 32),
+
+            // --- 2. 난이도 선택 타이틀 ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "난이도를 선택하세요",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: colors.textPrimary,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+
+            // --- 3. 난이도 카드 목록 ---
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start, // 상단 정렬
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 난이도 카드 색상 및 쉐도우 개선 (다크 테마에 어울리게 팔레트 색상 사용)
+                    DifficultyCard(
+                      color: colors.primary,
+                      hoverColor: _hover(colors.primary),
+                      title: "쉬움 (Easy)",
+                      subtitle: "처음 도전하는 분께 추천!",
+                      onTap: () => _startGame("easy"),
                     ),
-                  ),
+                    const SizedBox(height: 24), // 간격 증가
+                    DifficultyCard(
+                      color: colors.secondary,
+                      hoverColor: _hover(colors.secondary),
+                      title: "보통 (Normal)",
+                      subtitle: "적당한 난이도로 두뇌 훈련",
+                      onTap: () => _startGame("normal"),
+                    ),
+                    const SizedBox(height: 24), // 간격 증가
+                    DifficultyCard(
+                      color: colors.error,
+                      hoverColor: _hover(colors.error),
+                      title: "어려움 (Hard)",
+                      subtitle: "퍼즐 마스터에 도전하세요!",
+                      onTap: () => _startGame("hard"),
+                    ),
+                    const SizedBox(height: 40), // 하단 여백 추가
+                  ],
                 ),
               ),
-              const SizedBox(height: 40),
-
-              // --- 3. 난이도 카드 목록 ---
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start, // 상단 정렬
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // 난이도 카드 색상 및 쉐도우 개선 (다크 테마에 어울리게 짙은 색 사용)
-                      DifficultyCard(
-                        color: Colors.green[700]!,
-                        hoverColor: Colors.green[600]!,
-                        title: "쉬움 (Easy)",
-                        subtitle: "처음 도전하는 분께 추천!",
-                        onTap: () => _startGame("easy"),
-                      ),
-                      const SizedBox(height: 24), // 간격 증가
-                      DifficultyCard(
-                        color: Colors.orange[700]!,
-                        hoverColor: Colors.orange[600]!,
-                        title: "보통 (Normal)",
-                        subtitle: "적당한 난이도로 두뇌 훈련",
-                        onTap: () => _startGame("normal"),
-                      ),
-                      const SizedBox(height: 24), // 간격 증가
-                      DifficultyCard(
-                        color: Colors.red[700]!,
-                        hoverColor: Colors.red[600]!,
-                        title: "어려움 (Hard)",
-                        subtitle: "퍼즐 마스터에 도전하세요!",
-                        onTap: () => _startGame("hard"),
-                      ),
-                      const SizedBox(height: 40), // 하단 여백 추가
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

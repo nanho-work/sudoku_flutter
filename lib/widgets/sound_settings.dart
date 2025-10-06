@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../controllers/audio_controller.dart';
 import '../services/audio_service.dart'; // SoundFiles가 AudioService에 정의되어 있다고 가정합니다.
+import '../controllers/theme_controller.dart'; // ThemeController import 추가
 
 /// 사운드 설정 조정용 팝업 위젯 (UI 개선 버전)
 class SoundSettingsWidget extends StatelessWidget {
@@ -17,6 +18,10 @@ class SoundSettingsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ThemeController에서 색상 테마를 가져옵니다.
+    final themeController = Provider.of<ThemeController>(context);
+    final colors = themeController.colors;
+
     // AudioController의 상태 변화를 감지합니다.
     final audioController = context.watch<AudioController>();
 
@@ -30,22 +35,22 @@ class SoundSettingsWidget extends StatelessWidget {
       data: ThemeData.dark().copyWith(
         // 활성화된 요소(스위치, 슬라이더)에 사용할 주 색상(액센트) 지정
         colorScheme: ColorScheme.dark(
-          primary: Colors.lightBlueAccent,
-          surface: Colors.blueGrey[800]!,
+          primary: colors.accent,
+          surface: colors.appBar,
         ),
       ),
       child: Material(
         // Dialog처럼 사용하기 위해 배경을 투명하게 설정합니다.
-        color: Colors.black54,
+        color: colors.background.withOpacity(0.8),
         child: Center(
           child: Container(
             width: 340, // 너비를 약간 넓게 조정
             padding: const EdgeInsets.fromLTRB(28, 28, 28, 16),
             // 다크 모드 및 고급스러운 컨테이너 스타일 적용
             decoration: BoxDecoration(
-              color: Colors.blueGrey[900], // 짙은 배경색
+              color: colors.surface, // 짙은 배경색
               borderRadius: BorderRadius.circular(20), // 둥근 모서리
-              border: Border.all(color: Colors.lightBlueAccent.withOpacity(0.3), width: 1),
+              border: Border.all(color: colors.accent.withOpacity(0.3), width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.6),
@@ -62,17 +67,17 @@ class SoundSettingsWidget extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       '사운드 설정',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900, // 더 두꺼운 글씨체
-                        color: Colors.white,
+                        color: colors.textPrimary,
                         letterSpacing: 1.2,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white70, size: 28),
+                      icon: Icon(Icons.close, color: colors.textPrimary, size: 28),
                       onPressed: () => _handleClose(context),
                       tooltip: '닫기',
                     ),
@@ -93,10 +98,11 @@ class SoundSettingsWidget extends StatelessWidget {
                   onVolumeChanged: (volume) {
                     audioController.setBgmVolume(volume);
                   },
+                  colors: colors,
                 ),
                 
                 // --- 구분선 추가 ---
-                const Divider(color: Colors.blueGrey, height: 28, thickness: 0.5),
+                Divider(color: colors.appBar, height: 28, thickness: 0.5),
 
                 // --- 2. SFX 설정 ---
                 _buildSoundSettingRow(
@@ -115,6 +121,7 @@ class SoundSettingsWidget extends StatelessWidget {
                     // TODO: `SoundFiles.click`이 정의된 파일을 import 해야 합니다.
                     // audioController.playSfx(SoundFiles.click); 
                   },
+                  colors: colors,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -134,11 +141,12 @@ class SoundSettingsWidget extends StatelessWidget {
     required double volume,
     required ValueChanged<bool> onToggle,
     required ValueChanged<double> onVolumeChanged,
+    required dynamic colors,
   }) {
     // 테마 색상 및 활성화/비활성화 상태에 따른 색상 정의
-    final Color activeColor = Theme.of(context).colorScheme.primary;
-    final Color inactiveColor = Colors.grey[700]!;
-    final Color contentColor = isEnabled ? Colors.white : Colors.grey[600]!;
+    final Color activeColor = colors.accent;
+    final Color inactiveColor = colors.placeholder;
+    final Color contentColor = isEnabled ? colors.textPrimary : colors.textSecondary;
     final Color sliderActiveColor = isEnabled ? activeColor : inactiveColor;
 
     return Column(
@@ -166,7 +174,7 @@ class SoundSettingsWidget extends StatelessWidget {
               value: isEnabled,
               onChanged: onToggle,
               activeColor: activeColor,
-              inactiveTrackColor: Colors.grey[800],
+              inactiveTrackColor: colors.card,
             ),
           ],
         ),

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'screens/splash_screen.dart';
 import 'providers/app_providers.dart';
+import 'controllers/theme_controller.dart';
+import 'screens/splash_screen.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 광고 초기화 (웹 제외)
   if (!kIsWeb) {
     try {
       await MobileAds.instance.initialize();
-    } catch (e, stack) {
+    } catch (e) {
       debugPrint("❌ Google Mobile Ads 초기화 실패: $e");
-      debugPrint(stack.toString());
     }
   }
 
@@ -25,13 +25,35 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Koofy Sudoku',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const SplashScreen(),
+    return Consumer<ThemeController>(
+      builder: (context, themeController, child) {
+        final colors = themeController.colors;
+        final brightness = themeController.brightness;
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Koofy Sudoku',
+          theme: ThemeData(
+            brightness: brightness,
+            primaryColor: colors.primary,
+            scaffoldBackgroundColor: colors.background,
+            colorScheme: ColorScheme(
+              brightness: brightness,
+              primary: colors.primary,
+              onPrimary: colors.textPrimary,
+              secondary: colors.accent,
+              onSecondary: colors.textSecondary,
+              error: colors.error,
+              onError: Colors.white,
+              background: colors.background,
+              onBackground: colors.textPrimary,
+              surface: colors.surface,
+              onSurface: colors.textPrimary,
+            ),
+          ),
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }

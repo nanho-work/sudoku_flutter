@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../controllers/game_controller.dart';
 import '../../../controllers/audio_controller.dart';
 import '../../../services/audio_service.dart';
+import '../../../controllers/theme_controller.dart';
 
 class GameOverlay extends StatefulWidget {
   const GameOverlay({Key? key}) : super(key: key);
@@ -13,11 +14,6 @@ class GameOverlay extends StatefulWidget {
 
 class _GameOverlayState extends State<GameOverlay> {
   bool _dialogShown = false;
-
-  // 💡 다크 테마 색상 정의
-  static const Color darkBackgroundColor = Color(0xFF37474F); // 카드/다이얼로그 배경
-  static const Color lightTextColor = Colors.white;
-  static const Color accentColor = Colors.lightBlueAccent;
 
   void _maybeShowDialogs(BuildContext outerContext, GameController controller) {
     // 다이얼로그가 닫혔을 때 플래그를 리셋하는 로직입니다.
@@ -41,6 +37,9 @@ class _GameOverlayState extends State<GameOverlay> {
     final audio = context.read<AudioController>();
     audio.playSfx(SoundFiles.gameover);
 
+    final themeController = Provider.of<ThemeController>(context, listen: false);
+    final colors = themeController.colors;
+
     showGeneralDialog(
       context: outerContext,
       barrierDismissible: false,
@@ -48,21 +47,21 @@ class _GameOverlayState extends State<GameOverlay> {
       transitionDuration: const Duration(milliseconds: 150),
       pageBuilder: (_, __, ___) => AlertDialog(
         // 💡 UI 개선: 다크 테마 적용
-        backgroundColor: darkBackgroundColor,
+        backgroundColor: colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           '게임 오버',
-          style: TextStyle(color: lightTextColor, fontWeight: FontWeight.bold),
+          style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
         ),
-        content: const Text(
+        content: Text(
           '하트를 모두 소진했습니다.',
-          style: TextStyle(color: lightTextColor),
+          style: TextStyle(color: colors.textPrimary),
         ),
         actions: [
           TextButton(
             // 💡 UI 개선: 액센트 컬러 버튼 스타일
             style: TextButton.styleFrom(
-              foregroundColor: accentColor,
+              foregroundColor: colors.textPrimary,
               textStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () {
@@ -86,27 +85,30 @@ class _GameOverlayState extends State<GameOverlay> {
     final controller = context.read<GameController>();
     audio.playSfx(SoundFiles.complete);
 
+    final themeController = Provider.of<ThemeController>(context, listen: false);
+    final colors = themeController.colors;
+
     showGeneralDialog(
       context: outerContext,
       barrierDismissible: false,
       barrierColor: Colors.black87, // 더 진한 배경으로 변경
       pageBuilder: (_, __, ___) => AlertDialog(
         // 💡 UI 개선: 다크 테마 적용
-        backgroundColor: darkBackgroundColor,
+        backgroundColor: colors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           '축하합니다!',
-          style: TextStyle(color: lightTextColor, fontWeight: FontWeight.bold),
+          style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
         ),
         content: Text(
           '퍼즐을 완성했습니다 🎉\n시간: ${controller.formatElapsedTime()}',
-          style: const TextStyle(color: lightTextColor),
+          style: TextStyle(color: colors.textPrimary),
         ),
         actions: [
           TextButton(
             // 💡 UI 개선: 액센트 컬러 버튼 스타일
             style: TextButton.styleFrom(
-              foregroundColor: accentColor,
+              foregroundColor: colors.textPrimary,
               textStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () {
@@ -120,7 +122,7 @@ class _GameOverlayState extends State<GameOverlay> {
           TextButton(
             // 💡 UI 개선: 액센트 컬러 버튼 스타일
             style: TextButton.styleFrom(
-              foregroundColor: accentColor,
+              foregroundColor: colors.accent,
               textStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () {
@@ -144,6 +146,8 @@ class _GameOverlayState extends State<GameOverlay> {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<GameController>();
+    final themeController = Provider.of<ThemeController>(context);
+    final colors = themeController.colors;
 
     // Widget life cycle에 따라 한 번만 호출되도록 보장합니다.
     WidgetsBinding.instance.addPostFrameCallback((_) {

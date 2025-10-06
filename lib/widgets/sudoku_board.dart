@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../controllers/theme_controller.dart';
 
 /// 스도쿠 보드 UI
 class SudokuBoard extends StatelessWidget {
@@ -51,6 +53,7 @@ class SudokuBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.watch<ThemeController>().colors;
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -78,12 +81,12 @@ class SudokuBoard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: isInvalid
-                  ? Colors.red.withOpacity(0.4)
+                  ? colors.cellInvalid.withOpacity(0.4)
                   : isSelected
-                      ? Colors.blue.withOpacity(0.3)
+                      ? colors.cellSelected.withOpacity(0.3)
                       : isSameValueHighlighted
-                        ? Colors.blue.withOpacity(0.3)  // 같은 숫자는 글씨와 함께 배경도 블루 300
-                        : (isHighlighted ? Colors.grey.withOpacity(0.15) : Colors.white),
+                        ? colors.cellSelected.withOpacity(0.3)  // 같은 숫자는 글씨와 함께 배경도 블루 300
+                        : (isHighlighted ? colors.cellHighlighted.withOpacity(0.15) : colors.cellDefault),
               border: Border(
                 top: BorderSide(
                   color: Colors.black,
@@ -111,7 +114,7 @@ class SudokuBoard extends StatelessWidget {
                         fontSize: 20,
                         fontWeight:
                             isSameValueHighlighted ? FontWeight.bold : FontWeight.normal,
-                        color: isSameValueHighlighted ? Colors.blue[900] : Colors.black,
+                        color: isSameValueHighlighted ? colors.textPrimary : colors.textSecondary,
                       ),
                     )
                   : (notes[row][col].where((note) => SudokuBoard.canAddMemo(board, row, col, note)).isNotEmpty
@@ -124,8 +127,8 @@ class SudokuBoard extends StatelessWidget {
                                 .where((note) => SudokuBoard.canAddMemo(board, row, col, note))
                                 .map((note) => Text(
                                       note.toString(),
-                                      style: const TextStyle(
-                                          fontSize: 10, color: Colors.grey),
+                                      style: TextStyle(
+                                          fontSize: 10, color: colors.placeholder),
                                     ))
                                 .toList(),
                           ),

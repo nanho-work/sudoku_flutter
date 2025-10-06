@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../controllers/theme_controller.dart';
 
 // 숫자 패드 전용 스타일
-final numberButtonStyle = ElevatedButton.styleFrom(
-  // 모양(border radius)
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-  // padding: 세로형 직사각형 버튼 크기 (세로 크게, 가로 작게)
-  padding: const EdgeInsets.all(4),
-  backgroundColor: Colors.blue[300],
-  foregroundColor: Colors.black,
-);
+ButtonStyle numberButtonStyle(BuildContext context) {
+  final colors = context.watch<ThemeController>().colors;
+  return ElevatedButton.styleFrom(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    padding: const EdgeInsets.all(4),
+    backgroundColor: colors.primary,
+    foregroundColor: colors.textPrimary,
+  );
+}
 
 // 기능 버튼 전용 스타일
-final actionButtonStyle = ElevatedButton.styleFrom(
-  // 모양(border radius)
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-  // padding: 세로형 직사각형 버튼 크기 조절
-  padding: const EdgeInsets.all(8),
-  backgroundColor: Colors.grey[600],
-  foregroundColor: Colors.white,
-);
+ButtonStyle actionButtonStyle(BuildContext context) {
+  final colors = context.watch<ThemeController>().colors;
+  return ElevatedButton.styleFrom(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    padding: const EdgeInsets.all(8),
+    backgroundColor: colors.secondary,
+    foregroundColor: colors.textPrimary,
+  );
+}

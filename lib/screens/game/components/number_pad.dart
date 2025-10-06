@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/audio_controller.dart';
+import '../../../controllers/theme_controller.dart';
 import '../../../services/audio_service.dart';
 // import '../../../widgets/button_styles.dart'; // 외부 스타일 대신 내부에서 정의
 
@@ -10,12 +11,6 @@ class NumberPad extends StatelessWidget {
   final Function(int) onNumberInput;
   final List<int> numberCounts; // 각 숫자 사용 횟수 (index 1~9 사용)
   final int? selectedNumber;    // 현재 선택된 셀의 숫자
-
-  // 💡 다크 테마 색상 상수 정의
-  static const Color accentColor = Colors.lightBlueAccent;
-  static const Color buttonBaseColor = Color(0xFF455A64); // Dark Blue Grey
-  static const Color disabledColor = Color(0xFF263238); // Even darker background
-  static const Color textColor = Colors.white;
 
   // 💡 버튼이 과도하게 커지는 것을 방지하기 위한 최대 너비 설정
   static const double maxButtonSize = 60.0;
@@ -38,6 +33,10 @@ class NumberPad extends StatelessWidget {
     required double buttonWidth,
     required double textSize,
     required AudioController audio,
+    required Color accentColor,
+    required Color buttonBaseColor,
+    required Color disabledColor,
+    required Color textColor,
   }) {
     // numberCounts는 1부터 9까지의 사용 횟수를 담고 있다고 가정
     bool isUsedUp = numberCounts[number] == 9;
@@ -119,6 +118,7 @@ class NumberPad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audio = context.read<AudioController>();
+    final colors = context.watch<ThemeController>().colors;
     
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -149,6 +149,10 @@ class NumberPad extends StatelessWidget {
               buttonWidth: buttonWidth,
               textSize: textSize,
               audio: audio,
+              accentColor: colors.accent,
+              buttonBaseColor: colors.surface,
+              disabledColor: colors.cleared,
+              textColor: colors.textPrimary,
             ));
             if (i < 5) {
               buttons.add(SizedBox(width: spacing));
@@ -166,6 +170,10 @@ class NumberPad extends StatelessWidget {
               buttonWidth: buttonWidth,
               textSize: textSize,
               audio: audio,
+              accentColor: colors.accent,
+              buttonBaseColor: colors.surface,
+              disabledColor: colors.cleared,
+              textColor: colors.textPrimary,
             ));
             buttons.add(SizedBox(width: spacing));
           }

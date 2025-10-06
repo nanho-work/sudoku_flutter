@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-// GuideScreen에서 가져온 다크 테마 색상 정의 (MaterialColor 사용)
-const Color darkBackgroundColor = Color(0xFF1E272E);
-const Color cardColor = Color(0xFF37474F);
-const Color lightTextColor = Colors.white;
-const Color secondaryTextColor = Colors.white70;
-const MaterialColor accentColor = Colors.cyan;
+import 'package:provider/provider.dart';
+import '../controllers/theme_controller.dart';
 
 class InfoScreen extends StatelessWidget {
   const InfoScreen({super.key});
@@ -21,16 +16,19 @@ class InfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeController = Provider.of<ThemeController>(context);
+    final colors = themeController.colors;
+
     return Scaffold(
-      backgroundColor: darkBackgroundColor, // 💡 다크 배경 적용
+      backgroundColor: colors.background, // 💡 다크 배경 적용
       appBar: AppBar(
         title: const Text('앱 정보'),
         centerTitle: true,
-        backgroundColor: darkBackgroundColor,
+        backgroundColor: colors.appBar,
         elevation: 0,
-        foregroundColor: lightTextColor, // 뒤로가기 버튼 색상
-        titleTextStyle: const TextStyle(
-          color: lightTextColor,
+        foregroundColor: colors.textPrimary, // 뒤로가기 버튼 색상
+        titleTextStyle: TextStyle(
+          color: colors.textPrimary,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -38,7 +36,7 @@ class InfoScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Card( // 💡 정보를 Card로 감싸 GuideScreen과 통일감 부여
-          color: cardColor,
+          color: colors.appBar,
           elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -48,16 +46,16 @@ class InfoScreen extends StatelessWidget {
             child: ListView(
               shrinkWrap: true, // Card 내 ListView 크기 제한
               children: [
-                const Text(
+                Text(
                   "모두의 즐거움! Koofy",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: accentColor, // 💡 앱 이름 강조
+                    color: colors.textPrimary, // 💡 앱 이름 강조
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Divider(color: secondaryTextColor),
+                Divider(color: colors.placeholder),
                 const SizedBox(height: 8),
 
                 // 1. 앱 버전
@@ -65,27 +63,30 @@ class InfoScreen extends StatelessWidget {
                   title: "앱 버전",
                   value: "1.0.0",
                   icon: Icons.info_outline,
+                  colors: colors,
                 ),
                 // 2. 개발자
                 _buildInfoRow(
                   title: "개발자",
                   value: "LaonCode",
                   icon: Icons.code,
+                  colors: colors,
                 ),
                 // 3. 문의
                 _buildInfoRow(
                   title: "문의 이메일",
                   value: "koofylab@gmail.com",
                   icon: Icons.email_outlined,
+                  colors: colors,
                 ),
 
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   "법적 고지",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: lightTextColor,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -97,6 +98,7 @@ class InfoScreen extends StatelessWidget {
                   url: "https://www.koofy.co.kr/privacy",
                   icon: Icons.privacy_tip_outlined,
                   onTap: () => _launchUrl("https://www.koofy.co.kr/privacy"),
+                  colors: colors,
                 ),
 
                 // 5. 이용 약관
@@ -106,6 +108,7 @@ class InfoScreen extends StatelessWidget {
                   url: "https://www.koofy.co.kr/terms",
                   icon: Icons.description_outlined,
                   onTap: () => _launchUrl("https://www.koofy.co.kr/terms"),
+                  colors: colors,
                 ),
               ],
             ),
@@ -119,6 +122,7 @@ class InfoScreen extends StatelessWidget {
     required String title,
     required String value,
     required IconData icon,
+    required dynamic colors,
   }) {
     // 💡 수정: Row 내부에 Column을 사용하여 제목과 내용을 줄바꿈 처리
     return Padding(
@@ -126,7 +130,7 @@ class InfoScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: accentColor.shade300, size: 24),
+          Icon(icon, color: colors.textPrimary, size: 24),
           const SizedBox(width: 12),
           Expanded( // 텍스트가 공간을 모두 차지하도록 하여 오버플로우 방지
             child: Column(
@@ -134,9 +138,9 @@ class InfoScreen extends StatelessWidget {
               children: [
                 Text(
                   '$title:',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
-                    color: lightTextColor,
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -146,9 +150,9 @@ class InfoScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 8.0), 
                   child: Text(
                     '- $value', // 하이픈 추가
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: secondaryTextColor,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ),
@@ -166,18 +170,19 @@ class InfoScreen extends StatelessWidget {
         required String url,
         required IconData icon,
         required VoidCallback onTap,
+        required dynamic colors,
       }) {
     return ListTile(
-      leading: Icon(icon, color: accentColor.shade300),
+      leading: Icon(icon, color: colors.textPrimary),
       title: Text(
         title,
-        style: const TextStyle(color: lightTextColor, fontWeight: FontWeight.w500),
+        style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.w500),
       ),
       subtitle: Text(
         url,
-        style: TextStyle(color: accentColor.shade300, fontSize: 13), // 💡 링크 색상 강조
+        style: TextStyle(color: colors.textPrimary, fontSize: 13), // 💡 링크 색상 강조
       ),
-      trailing: const Icon(Icons.chevron_right, color: secondaryTextColor),
+      trailing: Icon(Icons.chevron_right, color: colors.textSecondary),
       contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
       onTap: onTap,
     );
