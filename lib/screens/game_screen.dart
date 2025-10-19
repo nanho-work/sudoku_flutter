@@ -152,15 +152,7 @@ class _GameScreenState extends State<GameScreen> {
             invalidCol = null;
             _updateCounts();
             fixed[selectedRow!][selectedCol!] = true;
-            // cellScale = 1.2; // scaling animation removed
           });
-          // Future.delayed(const Duration(milliseconds: 200), () {
-          //   if (!mounted) return;
-          //   setState(() {
-          //     cellScale = 1.0;
-          //   });
-          // });
-
           // 퍼즐 완성 여부 체크
           if (_isSolved()) {
             _showCompleteDialog();
