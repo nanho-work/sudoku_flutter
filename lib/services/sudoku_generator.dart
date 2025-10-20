@@ -18,6 +18,9 @@ class SudokuGenerator {
       case 'hard':
         removeCount = 55; // 하드 난이도도 55~58로 제한 (성능 고려)
         break;
+      case 'extreme':
+        removeCount = 55; // 또는 65~70까지도 가능 (난이도 최상)
+        break;
       default:
         removeCount = 40;
     }
