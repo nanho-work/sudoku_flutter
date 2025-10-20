@@ -15,13 +15,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get guide_title_goal => '🎯 ゲームの目的';
 
   @override
-  String get guide_desc_goal_1 => '目標は9x9の数独ボードを完成させることです。';
+  String get guide_desc_goal_1 => '目標は9x9の数独盤を完成させることです。';
 
   @override
-  String get guide_desc_goal_2 => '空白のマスに数字を入力し、同じ行・列・3x3ボックス内で数字が重ならないようにします。';
+  String get guide_desc_goal_2 => '空白のマスに数字を入力し、同じ行・列・3x3ボックス内で重複しないようにします。';
 
   @override
-  String get guide_desc_goal_3 => 'すべてのマスを正しく埋めるとゲームクリアです！';
+  String get guide_desc_goal_3 => 'すべてのマスを正しく埋めるとクリアです！';
 
   @override
   String get guide_title_rules => '📘 ルール説明';
@@ -39,7 +39,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get guide_rule_col_desc => '各列にも1〜9の数字を重複なく配置します。';
 
   @override
-  String get guide_rule_box_title => '3. 3x3 ボックスのルール';
+  String get guide_rule_box_title => '3. 3x3ボックスのルール';
 
   @override
   String get guide_rule_box_desc => '9つの3x3ボックスそれぞれに1〜9の数字を重複なく配置します。';
@@ -48,82 +48,88 @@ class AppLocalizationsJa extends AppLocalizations {
   String get guide_title_control => '⚙️ 操作方法';
 
   @override
-  String get guide_desc_control_1 => '空白のマスをタップし、下部の数字パッドを使って数字を入力します。';
+  String get guide_desc_control_1 => '空白のマスをタップし、下部の数字パッドで入力します。';
 
   @override
-  String get guide_desc_control_2 => '間違いは自動的に表示され、ヒント機能も使用できます。';
+  String get guide_desc_control_2 => '間違いは自動的に表示され、ヒントを使うこともできます。';
 
   @override
-  String get guide_desc_control_3 => '長押しで数字を消去したり、スワイプで素早く移動できます。';
+  String get guide_desc_control_3 => '長押しで削除、スワイプで素早く移動できます。';
 
   @override
   String get guide_title_error => '🚫 エラー表示';
 
   @override
-  String get guide_desc_error_1 => '間違った数字は赤色で即座に表示されます。';
+  String get guide_desc_error_1 => '間違った数字は赤く表示されます。';
 
   @override
-  String get guide_desc_error_2 => '設定でエラー表示をオン/オフ切り替えできます。';
+  String get guide_desc_error_2 => '設定でエラー表示のオン・オフを切り替え可能です。';
 
   @override
-  String get guide_desc_error_3 => 'エラーが多いとヒントの使用が制限されることがあります。';
+  String get guide_desc_error_3 => 'エラーが多いとヒント使用が制限されます。';
 
   @override
   String get guide_title_stats => '📊 統計情報';
 
   @override
-  String get guide_desc_stats_1 => 'ゲームクリア後にプレイ時間・正答率・ヒント使用回数を確認できます。';
+  String get guide_desc_stats_1 => 'ゲームクリア後、プレイ時間や正答率、ヒント使用回数を確認できます。';
 
   @override
-  String get guide_desc_stats_2 => '統計は難易度ごとに分類され、自分の実力を把握できます。';
+  String get guide_desc_stats_2 => '統計は難易度ごとに分類されます。';
 
   @override
-  String get guide_title_difficulty => '難易度の説明';
+  String get guide_title_difficulty => '難易度';
 
   @override
-  String get guide_desc_difficulty_1 => '簡単・普通・難しいの3段階から選択できます。';
+  String get guide_desc_difficulty_1 => 'やさしい、ふつう、むずかしいから選べます。';
 
   @override
-  String get guide_desc_difficulty_2 => '難易度が高いほど、初期に埋められた数字が少なくなります。';
+  String get guide_desc_difficulty_2 => '難易度が高いほど初期入力の数字が少なくなります。';
 
   @override
-  String get guide_desc_difficulty_3 => '💡 ヒント回数や制限時間は難易度によって異なります。';
+  String get guide_desc_difficulty_3 => '💡 ヒント数や制限時間は難易度によって異なります。';
 
   @override
-  String get guide_title_mission => '🗓️ デイリーミッション';
+  String get guide_title_mission => '🗓️ ミッション案内';
 
   @override
-  String get guide_desc_mission_1 => 'デイリーミッションカレンダーで毎日新しいパズルに挑戦しましょう。';
+  String get guide_desc_mission_1 => 'デイリーミッションで毎日新しいパズルに挑戦！';
 
   @override
-  String get guide_desc_mission_2 => 'ミッションをクリアして特別な報酬を獲得！';
+  String get guide_desc_mission_2 => 'ミッションをクリアして報酬をゲット！';
 
   @override
-  String get guide_desc_mission_3 => '🎁 報酬：ミッションを達成すると限定テーマやプロフィールアイコンがアンロックされます。';
+  String get guide_desc_mission_3 => '🎁 報酬：テーマやアイコンをアンロック。';
 
   @override
-  String get home_header_instruction => '設定';
+  String get home_header_instruction => 'アイコンをクリックして設定へ ☞';
 
   @override
   String get home_difficulty_title => '難易度を選択してください';
 
   @override
-  String get difficulty_easy_title => 'やさしい (Easy)';
+  String get difficulty_easy => 'かんたん';
 
   @override
   String get difficulty_easy_subtitle => '初心者におすすめ！';
 
   @override
-  String get difficulty_normal_title => 'ふつう (Normal)';
+  String get difficulty_normal => 'ふつう';
 
   @override
-  String get difficulty_normal_subtitle => 'ちょうどよい難易度で脳トレ！';
+  String get difficulty_normal_subtitle => 'バランスの取れた難易度';
 
   @override
-  String get difficulty_hard_title => 'むずかしい (Hard)';
+  String get difficulty_hard => 'むずかしい';
 
   @override
   String get difficulty_hard_subtitle => 'パズルマスターに挑戦！';
+
+  @override
+  String get difficulty_extreme => '地獄';
+
+  @override
+  String get difficulty_extreme_subtitle => 'ヒント・自動入力なし、ハート3つのみ！';
 
   @override
   String get info_app_bar_title => 'アプリ情報';
@@ -141,7 +147,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get info_row_developer_title => '開発者';
 
   @override
-  String get info_row_email_title => 'お問い合わせメール';
+  String get info_row_email_title => 'お問い合わせ';
 
   @override
   String get info_link_privacy => 'プライバシーポリシー';
@@ -151,7 +157,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String mission_app_bar_month_format(Object month, Object year) {
-    return '$year年$month月';
+    return '$year年$month月ミッション';
   }
 
   @override
@@ -189,17 +195,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String mission_dialog_date_info_format(Object day, Object month, Object year) {
-    return '$year年$month月$day日のミッション！';
+    return '$year年$month月$day日ミッション！';
   }
 
   @override
   String get mission_dialog_difficulty_random => '難易度：ランダム';
 
   @override
-  String get mission_dialog_challenge_question => '挑戦を開始しますか？';
+  String get mission_dialog_challenge_question => '挑戦しますか？';
 
   @override
-  String get mission_dialog_cancel => 'キャンセル';
+  String get cancel => 'キャンセル';
 
   @override
   String get mission_dialog_start => 'スタート';
@@ -208,7 +214,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get overlay_game_over_title => 'ゲームオーバー';
 
   @override
-  String get overlay_game_over_content => 'ハートがなくなりました';
+  String get overlay_game_over_content => 'ハートがなくなりました。';
 
   @override
   String get overlay_dialog_confirm => '確認';
@@ -222,13 +228,10 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get overlay_dialog_home => 'ホーム';
+  String get new_game => '新しいゲーム';
 
   @override
-  String get overlay_dialog_new_game => '新しいゲーム';
-
-  @override
-  String get footer_label_home => 'ホーム';
+  String get home => 'ホーム';
 
   @override
   String get footer_label_mission => 'ミッション';
@@ -240,7 +243,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get footer_label_info => '情報';
 
   @override
-  String get header_loading => '広告を読み込み中...';
+  String get header_loading => '広告読み込み中...';
 
   @override
   String get theme => 'テーマ選択';
@@ -250,9 +253,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get game_header_time => '時間';
-
-  @override
-  String get game_button_new_game => '新しいゲーム';
 
   @override
   String get game_button_hint => 'ヒント';
@@ -290,20 +290,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get sound_switch_off => 'オフ';
 
   @override
-  String get difficulty_easy => 'かんたん';
-
-  @override
-  String get difficulty_normal => 'ふつう';
-
-  @override
-  String get difficulty_hard => 'むずかしい';
-
-  @override
   String get game_error_invalid_number => '無効な数字です！';
 
   @override
-  String get game_error_no_hints => 'ヒントがすべて使い切られました';
+  String get game_error_no_hints => 'ヒントがすべてなくなりました';
 
   @override
   String get game_autofill_none => '自動入力できるマスがありません。';
+
+  @override
+  String get dialog_confirm_exit_title => 'ホームに戻りますか？';
+
+  @override
+  String get dialog_confirm_exit_content => '現在のゲームが終了します。';
+
+  @override
+  String get exit => '終了';
 }

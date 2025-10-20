@@ -38,7 +38,7 @@ class SoundSettingsWidget extends StatelessWidget {
         // 활성화된 요소(스위치, 슬라이더)에 사용할 주 색상(액센트) 지정
         colorScheme: ColorScheme.dark(
           primary: colors.accent,
-          surface: colors.appBar,
+          surface: colors.background,
         ),
       ),
       child: Material(
@@ -74,12 +74,12 @@ class SoundSettingsWidget extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900, // 더 두꺼운 글씨체
-                        color: colors.textPrimary,
+                        color: colors.textMain,
                         letterSpacing: 1.2,
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: colors.textPrimary, size: 28),
+                      icon: Icon(Icons.close, color: colors.textMain, size: 28),
                       onPressed: () => _handleClose(context),
                       tooltip: loc.sound_button_close_tooltip,
                     ),
@@ -104,7 +104,7 @@ class SoundSettingsWidget extends StatelessWidget {
                 ),
                 
                 // --- 구분선 추가 ---
-                Divider(color: colors.appBar, height: 28, thickness: 0.5),
+                Divider(color: colors.background, height: 28, thickness: 0.5),
 
                 // --- 2. SFX 설정 ---
                 _buildSoundSettingRow(
@@ -148,7 +148,7 @@ class SoundSettingsWidget extends StatelessWidget {
     // 테마 색상 및 활성화/비활성화 상태에 따른 색상 정의
     final Color activeColor = colors.accent;
     final Color inactiveColor = colors.placeholder;
-    final Color contentColor = isEnabled ? colors.textPrimary : colors.textSecondary;
+    final Color contentColor = isEnabled ? colors.textMain : colors.textSub;
     final Color sliderActiveColor = isEnabled ? activeColor : inactiveColor;
 
     return Column(

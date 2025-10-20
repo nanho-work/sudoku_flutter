@@ -5,6 +5,7 @@ import '../../../controllers/game_controller.dart';
 import '../../../controllers/audio_controller.dart';
 import '../../../services/audio_service.dart';
 import '../../../controllers/theme_controller.dart';
+import '../../../services/ad_reward_service.dart';
 
 class GameOverlay extends StatefulWidget {
   const GameOverlay({Key? key}) : super(key: key);
@@ -35,8 +36,11 @@ class _GameOverlayState extends State<GameOverlay> {
     if (_dialogShown) return;
     _dialogShown = true;
 
+    bool _rewardUsed = false;
+
     final loc = AppLocalizations.of(context)!;
     final audio = context.read<AudioController>();
+    final controller = context.read<GameController>();
     audio.playSfx(SoundFiles.gameover);
 
     final themeController = Provider.of<ThemeController>(context, listen: false);
@@ -53,17 +57,37 @@ class _GameOverlayState extends State<GameOverlay> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           loc.overlay_game_over_title,
-          style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
+          style: TextStyle(color: colors.textMain, fontWeight: FontWeight.bold),
         ),
         content: Text(
           loc.overlay_game_over_content,
-          style: TextStyle(color: colors.textPrimary),
+          style: TextStyle(color: colors.textMain),
         ),
         actions: [
+          TextButton.icon(
+            icon: const Icon(Icons.smart_display),
+            label: const Text('이어하기'),
+            style: TextButton.styleFrom(
+              foregroundColor: colors.textMain,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            onPressed: () {
+              if (_rewardUsed) return;
+              _rewardUsed = true;
+              AdRewardService.showRewardedAd(
+                audioController: context.read<AudioController>(),
+                onReward: () {
+                  controller.restoreHearts();
+                  Navigator.of(outerContext, rootNavigator: true).pop();
+                  setState(() => _dialogShown = false);
+                },
+              );
+            },
+          ),
           TextButton(
             // 💡 UI 개선: 액센트 컬러 버튼 스타일
             style: TextButton.styleFrom(
-              foregroundColor: colors.textPrimary,
+              foregroundColor: colors.textMain,
               textStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () {
@@ -101,17 +125,17 @@ class _GameOverlayState extends State<GameOverlay> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           loc.overlay_complete_title,
-          style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.bold),
+          style: TextStyle(color: colors.textMain, fontWeight: FontWeight.bold),
         ),
         content: Text(
           loc.overlay_complete_content_format(controller.formatElapsedTime()),
-          style: TextStyle(color: colors.textPrimary),
+          style: TextStyle(color: colors.textMain),
         ),
         actions: [
           TextButton(
             // 💡 UI 개선: 액센트 컬러 버튼 스타일
             style: TextButton.styleFrom(
-              foregroundColor: colors.textPrimary,
+              foregroundColor: colors.textMain,
               textStyle: const TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () {
@@ -120,7 +144,7 @@ class _GameOverlayState extends State<GameOverlay> {
               // 2. 홈으로 이동: GameScreen 닫기
               Navigator.of(outerContext).pop();
             },
-            child: Text(loc.overlay_dialog_home),
+            child: Text(loc.home),
           ),
           TextButton(
             // 💡 UI 개선: 액센트 컬러 버튼 스타일
@@ -139,7 +163,7 @@ class _GameOverlayState extends State<GameOverlay> {
               // 2. 다이얼로그 닫기
               Navigator.of(outerContext, rootNavigator: true).pop();
             },
-            child: Text(loc.overlay_dialog_new_game),
+            child: Text(loc.new_game),
           ),
         ],
       ),

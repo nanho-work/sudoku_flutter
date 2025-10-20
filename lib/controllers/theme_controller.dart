@@ -10,12 +10,7 @@ class ThemeController extends ChangeNotifier {
   AppColorPalette get colors {
     switch (_currentTheme) {
       case 'dark': return const DarkAppColors();
-      case 'green': return const GreenAppColors();
-      case 'blue': return const BlueAppColors();
       case 'pink': return const PinkAppColors();
-      case 'purple': return const PurpleAppColors();
-      case 'gray': return const GrayAppColors();
-      case 'yellow': return const YellowAppColors();
       default: return const LightAppColors();
     }
   }

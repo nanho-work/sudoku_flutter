@@ -15,11 +15,6 @@ class ThemeSelectorWidget extends StatelessWidget {
       'light': Colors.amber[100],
       'dark': Colors.grey[850],
       'pink': Colors.pink[200],
-      'blue': Colors.lightBlue[200],
-      'green': Colors.lightGreen[200],
-      'yellow': Colors.yellow[200],
-      'purple': Colors.purple[200],
-      'gray': Colors.blueGrey[200],
     };
 
     return AlertDialog(

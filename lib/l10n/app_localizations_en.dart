@@ -24,37 +24,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guide_desc_goal_3 => 'Once all cells are filled correctly, you win!';
 
   @override
-  String get guide_title_rules => '📘 Game Rules';
+  String get guide_title_rules => '📘 Rules';
 
   @override
   String get guide_rule_row_title => '1. Row Rule';
 
   @override
-  String get guide_rule_row_desc => 'Each row must contain the numbers 1–9 without repetition.';
+  String get guide_rule_row_desc => 'Each row must contain numbers 1 through 9 without duplication.';
 
   @override
   String get guide_rule_col_title => '2. Column Rule';
 
   @override
-  String get guide_rule_col_desc => 'Each column must also contain the numbers 1–9 without repetition.';
+  String get guide_rule_col_desc => 'Each column must contain numbers 1 through 9 without duplication.';
 
   @override
   String get guide_rule_box_title => '3. 3x3 Box Rule';
 
   @override
-  String get guide_rule_box_desc => 'Each of the nine 3x3 boxes must include the numbers 1–9 without duplicates.';
+  String get guide_rule_box_desc => 'Each 3x3 box must contain numbers 1 through 9 without duplication.';
 
   @override
   String get guide_title_control => '⚙️ Controls';
 
   @override
-  String get guide_desc_control_1 => 'Tap a blank cell and use the number pad below to enter numbers.';
+  String get guide_desc_control_1 => 'Tap an empty cell and use the number pad to fill it.';
 
   @override
-  String get guide_desc_control_2 => 'Errors are shown automatically, and you can use hints for help.';
+  String get guide_desc_control_2 => 'Errors will be shown automatically, and you can use hints for help.';
 
   @override
-  String get guide_desc_control_3 => 'Long-press to erase a number or swipe to move quickly.';
+  String get guide_desc_control_3 => 'Long press to delete a number or swipe to move quickly.';
 
   @override
   String get guide_title_error => '🚫 Error Display';
@@ -63,73 +63,79 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guide_desc_error_1 => 'Wrong numbers are highlighted in red immediately.';
 
   @override
-  String get guide_desc_error_2 => 'You can toggle error display on or off in the settings.';
+  String get guide_desc_error_2 => 'You can enable or disable error display in settings.';
 
   @override
-  String get guide_desc_error_3 => 'Be careful—too many errors may limit hint usage.';
+  String get guide_desc_error_3 => 'Too many errors may limit hint usage.';
 
   @override
   String get guide_title_stats => '📊 Statistics';
 
   @override
-  String get guide_desc_stats_1 => 'After completing a puzzle, view your play time, accuracy, and hint usage.';
+  String get guide_desc_stats_1 => 'After completion, view play time, accuracy, and hint usage.';
 
   @override
-  String get guide_desc_stats_2 => 'Statistics are categorized by difficulty so you can track your progress.';
+  String get guide_desc_stats_2 => 'Statistics are categorized by difficulty.';
 
   @override
   String get guide_title_difficulty => 'Difficulty Levels';
 
   @override
-  String get guide_desc_difficulty_1 => 'You can choose among Easy, Normal, and Hard levels.';
+  String get guide_desc_difficulty_1 => 'You can choose among Easy, Normal, and Hard.';
 
   @override
-  String get guide_desc_difficulty_2 => 'Higher levels have fewer pre-filled numbers.';
+  String get guide_desc_difficulty_2 => 'Fewer numbers are pre-filled at higher difficulties.';
 
   @override
-  String get guide_desc_difficulty_3 => '💡 Hint limits and time constraints may vary by difficulty.';
+  String get guide_desc_difficulty_3 => '💡 Hint limits or time limits may differ by difficulty.';
 
   @override
-  String get guide_title_mission => '🗓️ Daily Mission';
+  String get guide_title_mission => '🗓️ Mission Guide';
 
   @override
-  String get guide_desc_mission_1 => 'Challenge yourself with a new puzzle every day on the mission calendar.';
+  String get guide_desc_mission_1 => 'Challenge new daily puzzles on the mission calendar.';
 
   @override
-  String get guide_desc_mission_2 => 'Complete missions to earn special rewards!';
+  String get guide_desc_mission_2 => 'Complete missions to earn rewards!';
 
   @override
-  String get guide_desc_mission_3 => '🎁 Rewards: Unlock exclusive themes or profile icons by completing missions.';
+  String get guide_desc_mission_3 => '🎁 Rewards: Unlock special themes or profile icons.';
 
   @override
-  String get home_header_instruction => 'settings ☞';
+  String get home_header_instruction => 'Click the icon to open settings ☞';
 
   @override
   String get home_difficulty_title => 'Select Difficulty';
 
   @override
-  String get difficulty_easy_title => 'Easy';
+  String get difficulty_easy => 'Easy';
 
   @override
   String get difficulty_easy_subtitle => 'Recommended for beginners!';
 
   @override
-  String get difficulty_normal_title => 'Normal';
+  String get difficulty_normal => 'Normal';
 
   @override
   String get difficulty_normal_subtitle => 'Train your brain at a balanced level';
 
   @override
-  String get difficulty_hard_title => 'Hard';
+  String get difficulty_hard => 'Hard';
 
   @override
   String get difficulty_hard_subtitle => 'Challenge yourself like a puzzle master!';
 
   @override
+  String get difficulty_extreme => 'Extreme';
+
+  @override
+  String get difficulty_extreme_subtitle => 'No hints or auto-fill, only 3 hearts!';
+
+  @override
   String get info_app_bar_title => 'App Info';
 
   @override
-  String get info_app_name => 'Everyone’s Fun! Koofy';
+  String get info_app_name => 'Everyone\'s Fun! Koofy';
 
   @override
   String get info_section_legal => 'Legal Notice';
@@ -147,7 +153,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get info_link_privacy => 'Privacy Policy';
 
   @override
-  String get info_link_terms => 'Terms of Service';
+  String get info_link_terms => 'Terms of Use';
 
   @override
   String mission_app_bar_month_format(Object month, Object year) {
@@ -196,10 +202,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mission_dialog_difficulty_random => 'Difficulty: Random';
 
   @override
-  String get mission_dialog_challenge_question => 'Do you want to start the challenge?';
+  String get mission_dialog_challenge_question => 'Do you want to start?';
 
   @override
-  String get mission_dialog_cancel => 'Cancel';
+  String get cancel => 'Cancel';
 
   @override
   String get mission_dialog_start => 'Start';
@@ -208,7 +214,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get overlay_game_over_title => 'Game Over';
 
   @override
-  String get overlay_game_over_content => 'You’ve run out of hearts.';
+  String get overlay_game_over_content => 'You\'ve run out of hearts.';
 
   @override
   String get overlay_dialog_confirm => 'OK';
@@ -222,13 +228,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get overlay_dialog_home => 'Home';
+  String get new_game => 'New Game';
 
   @override
-  String get overlay_dialog_new_game => 'New Game';
-
-  @override
-  String get footer_label_home => 'Home';
+  String get home => 'Home';
 
   @override
   String get footer_label_mission => 'Mission';
@@ -252,9 +255,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get game_header_time => 'Time';
 
   @override
-  String get game_button_new_game => 'New Game';
-
-  @override
   String get game_button_hint => 'Hint';
 
   @override
@@ -270,10 +270,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sound_button_close_tooltip => 'Close';
 
   @override
-  String get sound_section_bgm_title => 'Background Music';
+  String get sound_section_bgm_title => 'BGM';
 
   @override
-  String get sound_section_sfx_title => 'Sound Effects';
+  String get sound_section_sfx_title => 'SFX';
 
   @override
   String get sound_label_volume => 'Volume';
@@ -290,15 +290,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sound_switch_off => 'Off';
 
   @override
-  String get difficulty_easy => 'Easy';
-
-  @override
-  String get difficulty_normal => 'Normal';
-
-  @override
-  String get difficulty_hard => 'Hard';
-
-  @override
   String get game_error_invalid_number => 'Invalid number!';
 
   @override
@@ -306,4 +297,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get game_autofill_none => 'No cells available for auto-fill.';
+
+  @override
+  String get dialog_confirm_exit_title => 'Return to Home?';
+
+  @override
+  String get dialog_confirm_exit_content => 'The current game will end.';
+
+  @override
+  String get exit => 'Exit';
 }

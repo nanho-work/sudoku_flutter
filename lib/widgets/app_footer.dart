@@ -29,7 +29,7 @@ class AppFooter extends StatelessWidget {
           items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
-              label: AppLocalizations.of(context)!.footer_label_home,
+              label: AppLocalizations.of(context)!.home,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),

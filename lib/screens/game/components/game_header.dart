@@ -2,6 +2,7 @@ import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../controllers/game_controller.dart';
+import '../../../controllers/theme_controller.dart';
 
 // GameBoard에서 사용되는 명시적인 패딩 값 (40.0은 좌우 20.0씩을 의미)
 const double kBoardHorizontalPadding = 20.0;
@@ -31,6 +32,7 @@ class GameHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<GameController>();
+    final colors = context.watch<ThemeController>().colors;
     final loc = AppLocalizations.of(context)!;
     
     // 💡 동적으로 계산된 패딩 값을 사용합니다.
@@ -48,16 +50,20 @@ class GameHeader extends StatelessWidget {
             children: [
               // 💡 뒤로가기 버튼: 클릭 시 이전 화면으로 돌아갑니다. (AppBar 역할 대체)
               IconButton(
-                icon: const Icon(Icons.arrow_back_ios, size: 20),
-                onPressed: () => Navigator.of(context).pop(),
+                icon: Icon(Icons.home, size: 24, color: colors.textMain),
+                onPressed: () => _showExitDialog(context),
                 // IconButton의 기본 패딩이 Row의 높이를 키우지 않도록 줄입니다.
                 padding: EdgeInsets.zero, 
                 constraints: const BoxConstraints(),
               ),
               const SizedBox(width: 8), // 아이콘과 텍스트 사이 간격
               Text(
-                "${loc.game_header_level}: ${controller.difficultyLabels[controller.difficulty] ?? controller.difficulty}",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                "${loc.game_header_level}: ${controller.getDifficultyLabel(context, controller.difficulty)}",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: colors.textMain,
+                ),
               ),
             ],
           ),
@@ -67,15 +73,28 @@ class GameHeader extends StatelessWidget {
             children: [
               Text(
                 "${loc.game_header_time}: ${controller.formatElapsedTime()}",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: colors.textMain,
+                ),
               ),
               Row(
-                children: List.generate(5, (index) {
-                  return Icon(
-                    index < controller.hearts ? Icons.favorite : Icons.favorite_border,
-                    color: Colors.red,
-                  );
-                }),
+                children: controller.difficulty == 'easy'
+                    ? [
+                        const Icon(Icons.favorite, color: Colors.red),
+                        const SizedBox(width: 4),
+                        const Text(
+                          "∞",
+                          style: TextStyle(fontSize: 16, color: Colors.red),
+                        ),
+                      ]
+                    : List.generate(5, (index) {
+                        return Icon(
+                          index < controller.hearts ? Icons.favorite : Icons.favorite_border,
+                          color: Colors.red,
+                        );
+                      }),
               ),
             ],
           ),
@@ -84,3 +103,30 @@ class GameHeader extends StatelessWidget {
     );
   }
 }
+
+  // Show exit confirmation dialog before popping
+  void _showExitDialog(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(loc.dialog_confirm_exit_title),
+          content: Text(loc.dialog_confirm_exit_content),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(loc.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop();
+              },
+              child: Text(loc.exit),
+            ),
+          ],
+        );
+      },
+    );
+  }

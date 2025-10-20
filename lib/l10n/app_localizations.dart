@@ -132,7 +132,7 @@ abstract class AppLocalizations {
   /// No description provided for @guide_title_rules.
   ///
   /// In en, this message translates to:
-  /// **'📘 Game Rules'**
+  /// **'📘 Rules'**
   String get guide_title_rules;
 
   /// No description provided for @guide_rule_row_title.
@@ -144,7 +144,7 @@ abstract class AppLocalizations {
   /// No description provided for @guide_rule_row_desc.
   ///
   /// In en, this message translates to:
-  /// **'Each row must contain the numbers 1–9 without repetition.'**
+  /// **'Each row must contain numbers 1 through 9 without duplication.'**
   String get guide_rule_row_desc;
 
   /// No description provided for @guide_rule_col_title.
@@ -156,7 +156,7 @@ abstract class AppLocalizations {
   /// No description provided for @guide_rule_col_desc.
   ///
   /// In en, this message translates to:
-  /// **'Each column must also contain the numbers 1–9 without repetition.'**
+  /// **'Each column must contain numbers 1 through 9 without duplication.'**
   String get guide_rule_col_desc;
 
   /// No description provided for @guide_rule_box_title.
@@ -168,7 +168,7 @@ abstract class AppLocalizations {
   /// No description provided for @guide_rule_box_desc.
   ///
   /// In en, this message translates to:
-  /// **'Each of the nine 3x3 boxes must include the numbers 1–9 without duplicates.'**
+  /// **'Each 3x3 box must contain numbers 1 through 9 without duplication.'**
   String get guide_rule_box_desc;
 
   /// No description provided for @guide_title_control.
@@ -180,19 +180,19 @@ abstract class AppLocalizations {
   /// No description provided for @guide_desc_control_1.
   ///
   /// In en, this message translates to:
-  /// **'Tap a blank cell and use the number pad below to enter numbers.'**
+  /// **'Tap an empty cell and use the number pad to fill it.'**
   String get guide_desc_control_1;
 
   /// No description provided for @guide_desc_control_2.
   ///
   /// In en, this message translates to:
-  /// **'Errors are shown automatically, and you can use hints for help.'**
+  /// **'Errors will be shown automatically, and you can use hints for help.'**
   String get guide_desc_control_2;
 
   /// No description provided for @guide_desc_control_3.
   ///
   /// In en, this message translates to:
-  /// **'Long-press to erase a number or swipe to move quickly.'**
+  /// **'Long press to delete a number or swipe to move quickly.'**
   String get guide_desc_control_3;
 
   /// No description provided for @guide_title_error.
@@ -210,13 +210,13 @@ abstract class AppLocalizations {
   /// No description provided for @guide_desc_error_2.
   ///
   /// In en, this message translates to:
-  /// **'You can toggle error display on or off in the settings.'**
+  /// **'You can enable or disable error display in settings.'**
   String get guide_desc_error_2;
 
   /// No description provided for @guide_desc_error_3.
   ///
   /// In en, this message translates to:
-  /// **'Be careful—too many errors may limit hint usage.'**
+  /// **'Too many errors may limit hint usage.'**
   String get guide_desc_error_3;
 
   /// No description provided for @guide_title_stats.
@@ -228,13 +228,13 @@ abstract class AppLocalizations {
   /// No description provided for @guide_desc_stats_1.
   ///
   /// In en, this message translates to:
-  /// **'After completing a puzzle, view your play time, accuracy, and hint usage.'**
+  /// **'After completion, view play time, accuracy, and hint usage.'**
   String get guide_desc_stats_1;
 
   /// No description provided for @guide_desc_stats_2.
   ///
   /// In en, this message translates to:
-  /// **'Statistics are categorized by difficulty so you can track your progress.'**
+  /// **'Statistics are categorized by difficulty.'**
   String get guide_desc_stats_2;
 
   /// No description provided for @guide_title_difficulty.
@@ -246,49 +246,49 @@ abstract class AppLocalizations {
   /// No description provided for @guide_desc_difficulty_1.
   ///
   /// In en, this message translates to:
-  /// **'You can choose among Easy, Normal, and Hard levels.'**
+  /// **'You can choose among Easy, Normal, and Hard.'**
   String get guide_desc_difficulty_1;
 
   /// No description provided for @guide_desc_difficulty_2.
   ///
   /// In en, this message translates to:
-  /// **'Higher levels have fewer pre-filled numbers.'**
+  /// **'Fewer numbers are pre-filled at higher difficulties.'**
   String get guide_desc_difficulty_2;
 
   /// No description provided for @guide_desc_difficulty_3.
   ///
   /// In en, this message translates to:
-  /// **'💡 Hint limits and time constraints may vary by difficulty.'**
+  /// **'💡 Hint limits or time limits may differ by difficulty.'**
   String get guide_desc_difficulty_3;
 
   /// No description provided for @guide_title_mission.
   ///
   /// In en, this message translates to:
-  /// **'🗓️ Daily Mission'**
+  /// **'🗓️ Mission Guide'**
   String get guide_title_mission;
 
   /// No description provided for @guide_desc_mission_1.
   ///
   /// In en, this message translates to:
-  /// **'Challenge yourself with a new puzzle every day on the mission calendar.'**
+  /// **'Challenge new daily puzzles on the mission calendar.'**
   String get guide_desc_mission_1;
 
   /// No description provided for @guide_desc_mission_2.
   ///
   /// In en, this message translates to:
-  /// **'Complete missions to earn special rewards!'**
+  /// **'Complete missions to earn rewards!'**
   String get guide_desc_mission_2;
 
   /// No description provided for @guide_desc_mission_3.
   ///
   /// In en, this message translates to:
-  /// **'🎁 Rewards: Unlock exclusive themes or profile icons by completing missions.'**
+  /// **'🎁 Rewards: Unlock special themes or profile icons.'**
   String get guide_desc_mission_3;
 
   /// No description provided for @home_header_instruction.
   ///
   /// In en, this message translates to:
-  /// **'settings ☞'**
+  /// **'Click the icon to open settings ☞'**
   String get home_header_instruction;
 
   /// No description provided for @home_difficulty_title.
@@ -297,11 +297,11 @@ abstract class AppLocalizations {
   /// **'Select Difficulty'**
   String get home_difficulty_title;
 
-  /// No description provided for @difficulty_easy_title.
+  /// No description provided for @difficulty_easy.
   ///
   /// In en, this message translates to:
   /// **'Easy'**
-  String get difficulty_easy_title;
+  String get difficulty_easy;
 
   /// No description provided for @difficulty_easy_subtitle.
   ///
@@ -309,11 +309,11 @@ abstract class AppLocalizations {
   /// **'Recommended for beginners!'**
   String get difficulty_easy_subtitle;
 
-  /// No description provided for @difficulty_normal_title.
+  /// No description provided for @difficulty_normal.
   ///
   /// In en, this message translates to:
   /// **'Normal'**
-  String get difficulty_normal_title;
+  String get difficulty_normal;
 
   /// No description provided for @difficulty_normal_subtitle.
   ///
@@ -321,17 +321,29 @@ abstract class AppLocalizations {
   /// **'Train your brain at a balanced level'**
   String get difficulty_normal_subtitle;
 
-  /// No description provided for @difficulty_hard_title.
+  /// No description provided for @difficulty_hard.
   ///
   /// In en, this message translates to:
   /// **'Hard'**
-  String get difficulty_hard_title;
+  String get difficulty_hard;
 
   /// No description provided for @difficulty_hard_subtitle.
   ///
   /// In en, this message translates to:
   /// **'Challenge yourself like a puzzle master!'**
   String get difficulty_hard_subtitle;
+
+  /// No description provided for @difficulty_extreme.
+  ///
+  /// In en, this message translates to:
+  /// **'Extreme'**
+  String get difficulty_extreme;
+
+  /// No description provided for @difficulty_extreme_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No hints or auto-fill, only 3 hearts!'**
+  String get difficulty_extreme_subtitle;
 
   /// No description provided for @info_app_bar_title.
   ///
@@ -342,7 +354,7 @@ abstract class AppLocalizations {
   /// No description provided for @info_app_name.
   ///
   /// In en, this message translates to:
-  /// **'Everyone’s Fun! Koofy'**
+  /// **'Everyone\'s Fun! Koofy'**
   String get info_app_name;
 
   /// No description provided for @info_section_legal.
@@ -378,7 +390,7 @@ abstract class AppLocalizations {
   /// No description provided for @info_link_terms.
   ///
   /// In en, this message translates to:
-  /// **'Terms of Service'**
+  /// **'Terms of Use'**
   String get info_link_terms;
 
   /// No description provided for @mission_app_bar_month_format.
@@ -468,14 +480,14 @@ abstract class AppLocalizations {
   /// No description provided for @mission_dialog_challenge_question.
   ///
   /// In en, this message translates to:
-  /// **'Do you want to start the challenge?'**
+  /// **'Do you want to start?'**
   String get mission_dialog_challenge_question;
 
-  /// No description provided for @mission_dialog_cancel.
+  /// No description provided for @cancel.
   ///
   /// In en, this message translates to:
   /// **'Cancel'**
-  String get mission_dialog_cancel;
+  String get cancel;
 
   /// No description provided for @mission_dialog_start.
   ///
@@ -492,7 +504,7 @@ abstract class AppLocalizations {
   /// No description provided for @overlay_game_over_content.
   ///
   /// In en, this message translates to:
-  /// **'You’ve run out of hearts.'**
+  /// **'You\'ve run out of hearts.'**
   String get overlay_game_over_content;
 
   /// No description provided for @overlay_dialog_confirm.
@@ -513,23 +525,17 @@ abstract class AppLocalizations {
   /// **'Puzzle completed 🎉\nTime: {time}'**
   String overlay_complete_content_format(Object time);
 
-  /// No description provided for @overlay_dialog_home.
-  ///
-  /// In en, this message translates to:
-  /// **'Home'**
-  String get overlay_dialog_home;
-
-  /// No description provided for @overlay_dialog_new_game.
+  /// No description provided for @new_game.
   ///
   /// In en, this message translates to:
   /// **'New Game'**
-  String get overlay_dialog_new_game;
+  String get new_game;
 
-  /// No description provided for @footer_label_home.
+  /// No description provided for @home.
   ///
   /// In en, this message translates to:
   /// **'Home'**
-  String get footer_label_home;
+  String get home;
 
   /// No description provided for @footer_label_mission.
   ///
@@ -573,12 +579,6 @@ abstract class AppLocalizations {
   /// **'Time'**
   String get game_header_time;
 
-  /// No description provided for @game_button_new_game.
-  ///
-  /// In en, this message translates to:
-  /// **'New Game'**
-  String get game_button_new_game;
-
   /// No description provided for @game_button_hint.
   ///
   /// In en, this message translates to:
@@ -612,13 +612,13 @@ abstract class AppLocalizations {
   /// No description provided for @sound_section_bgm_title.
   ///
   /// In en, this message translates to:
-  /// **'Background Music'**
+  /// **'BGM'**
   String get sound_section_bgm_title;
 
   /// No description provided for @sound_section_sfx_title.
   ///
   /// In en, this message translates to:
-  /// **'Sound Effects'**
+  /// **'SFX'**
   String get sound_section_sfx_title;
 
   /// No description provided for @sound_label_volume.
@@ -645,24 +645,6 @@ abstract class AppLocalizations {
   /// **'Off'**
   String get sound_switch_off;
 
-  /// No description provided for @difficulty_easy.
-  ///
-  /// In en, this message translates to:
-  /// **'Easy'**
-  String get difficulty_easy;
-
-  /// No description provided for @difficulty_normal.
-  ///
-  /// In en, this message translates to:
-  /// **'Normal'**
-  String get difficulty_normal;
-
-  /// No description provided for @difficulty_hard.
-  ///
-  /// In en, this message translates to:
-  /// **'Hard'**
-  String get difficulty_hard;
-
   /// No description provided for @game_error_invalid_number.
   ///
   /// In en, this message translates to:
@@ -680,6 +662,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No cells available for auto-fill.'**
   String get game_autofill_none;
+
+  /// No description provided for @dialog_confirm_exit_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to Home?'**
+  String get dialog_confirm_exit_title;
+
+  /// No description provided for @dialog_confirm_exit_content.
+  ///
+  /// In en, this message translates to:
+  /// **'The current game will end.'**
+  String get dialog_confirm_exit_content;
+
+  /// No description provided for @exit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exit;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

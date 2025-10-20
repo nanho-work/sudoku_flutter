@@ -19,6 +19,8 @@ class GameController extends ChangeNotifier {
         return loc.difficulty_normal;
       case 'hard':
         return loc.difficulty_hard;
+      case 'extreme':
+        return loc.difficulty_extreme;
       default:
         return key;
     }
@@ -37,6 +39,7 @@ class GameController extends ChangeNotifier {
   late List<List<Set<int>>> notes;
   bool noteMode = false;
   int hearts = 5;
+  bool autoFillEnabled = true;
 
   late Stopwatch stopwatch;
   Timer? _timer;
@@ -84,6 +87,53 @@ class GameController extends ChangeNotifier {
     hearts = 5;
     hintsRemaining = 3;
 
+    _applyDifficultySettings();
+
+    _safeNotify();
+  }
+
+  void _applyDifficultySettings() {
+    switch (difficulty) {
+      case 'easy':
+        hearts = 9999;
+        hintsRemaining = 10;
+        autoFillEnabled = true;
+        break;
+      case 'normal':
+        hearts = 5;
+        hintsRemaining = 3;
+        autoFillEnabled = true;
+        break;
+      case 'hard':
+        hearts = 5;
+        hintsRemaining = 1;
+        autoFillEnabled = false;
+        break;
+      case 'extreme':
+        hearts = 3;
+        hintsRemaining = 0;
+        autoFillEnabled = false;
+        break;
+      default:
+        hearts = 5;
+        hintsRemaining = 3;
+        autoFillEnabled = true;
+    }
+  }
+
+  void restoreHearts() {
+    switch (difficulty) {
+      case 'normal':
+      case 'hard':
+        hearts = 5;
+        break;
+      case 'extreme':
+        hearts = 3;
+        break;
+      default:
+        hearts = 5;
+        break;
+    }
     _safeNotify();
   }
 
@@ -225,6 +275,13 @@ class GameController extends ChangeNotifier {
     _safeNotify();
   }
 
+  // 메모 모드 토글
+  void toggleNoteMode() {
+    if (_disposed) return;
+    noteMode = !noteMode;
+    _safeNotify();
+  }
+
   // 힌트 (✅ 완성되면 저장 호출)
   void showHint(void Function() playSfx, void Function(String) showToast, BuildContext context) async {
     if (_disposed) return;
@@ -255,6 +312,11 @@ class GameController extends ChangeNotifier {
   // 자동 채우기 (✅ 완성되면 저장 호출)
   void autoFill(void Function() playSfx, void Function(String) showToast, BuildContext context) async {
     if (_disposed) return;
+    if (!autoFillEnabled) {
+      final loc = AppLocalizations.of(context)!;
+      showToast(loc.game_autofill_none);
+      return;
+    }
     playSfx();
 
     bool filledAny = false;

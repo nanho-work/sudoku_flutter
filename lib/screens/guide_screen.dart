@@ -11,21 +11,8 @@ class GuideScreen extends StatelessWidget {
     final colors = context.watch<ThemeController>().colors;
     final loc = AppLocalizations.of(context)!; // 🌐 다국어 객체
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
-        title: Text(loc.guide_title_main),
-        centerTitle: true,
-        backgroundColor: colors.background,
-        elevation: 0,
-        foregroundColor: colors.textPrimary,
-        titleTextStyle: TextStyle(
-          color: colors.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      body: SingleChildScrollView(
+    return SafeArea(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -44,7 +31,7 @@ class GuideScreen extends StatelessWidget {
                   icon: Icons.horizontal_rule_rounded,
                   title: loc.guide_rule_row_title,
                   description: loc.guide_rule_row_desc,
-                  color: colors.textPrimary,
+                  color: colors.textMain,
                   tooltip: loc.guide_rule_row_title,
                 ),
                 _buildRuleItem(
@@ -52,7 +39,7 @@ class GuideScreen extends StatelessWidget {
                   icon: Icons.vertical_align_center_rounded,
                   title: loc.guide_rule_col_title,
                   description: loc.guide_rule_col_desc,
-                  color: colors.textPrimary,
+                  color: colors.textMain,
                   tooltip: loc.guide_rule_col_title,
                 ),
                 _buildRuleItem(
@@ -60,7 +47,7 @@ class GuideScreen extends StatelessWidget {
                   icon: Icons.grid_on,
                   title: loc.guide_rule_box_title,
                   description: loc.guide_rule_box_desc,
-                  color: colors.textPrimary,
+                  color: colors.textMain,
                   tooltip: loc.guide_rule_box_title,
                 ),
                 const SizedBox(height: 16),
@@ -142,7 +129,7 @@ class GuideScreen extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 15,
-                    color: colors.textSecondary,
+                    color: colors.textSub,
                   ),
                 ),
               ],
@@ -185,7 +172,7 @@ class _GuideCard extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: colors.textPrimary,
+                color: colors.textMain,
               ),
             ),
             const SizedBox(height: 8),
@@ -194,7 +181,7 @@ class _GuideCard extends StatelessWidget {
                 body!,
                 style: TextStyle(
                   fontSize: 16,
-                  color: colors.textSecondary,
+                  color: colors.textSub,
                 ),
               ),
             if (children != null) ...children!,

@@ -2,7 +2,7 @@ import 'package:provider/provider.dart';
 import '../controllers/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../main_layout.dart'; // 정확한 경로로 수정 (폴더명 확인)
+import 'main_layout.dart'; // 정확한 경로로 수정 (폴더명 확인)
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final colors = context.watch<ThemeController>().colors;
     return Scaffold(
-      backgroundColor: colors.splashBackground,
+      backgroundColor: colors.background,
       body: Center(
         child: FadeTransition(
           opacity: _animation,
@@ -61,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
               const SizedBox(height: 24),
               ShaderMask(
                 shaderCallback: (bounds) => LinearGradient(
-                  colors: [colors.primary, colors.secondary],
+                  colors: [colors.background, colors.background],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
@@ -70,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen>
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: colors.textPrimary,
+                    color: colors.textMain,
                   ),
                 ),
               ),

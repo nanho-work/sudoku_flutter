@@ -20,8 +20,15 @@ class AudioController extends ChangeNotifier {
   String? _currentBgm;
   bool _isInGame = false;
 
-  AudioController() {
-    _loadSettings();
+  /// 생성 후 반드시 [init]을 await 하여 설정을 비동기적으로 초기화해야 합니다.
+  AudioController();
+
+  /// 비동기 설정 초기화 함수.
+  ///
+  /// provider 등록 후 반드시 `await audioController.init();`을 호출하여
+  /// 설정이 로드된 후에 사용하세요.
+  Future<void> init() async {
+    await _loadSettings();
   }
 
   bool get bgmEnabled => _bgmEnabled;

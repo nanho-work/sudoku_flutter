@@ -108,22 +108,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get home_difficulty_title => '난이도를 선택하세요';
 
   @override
-  String get difficulty_easy_title => '쉬움 (Easy)';
+  String get difficulty_easy => '쉬움';
 
   @override
   String get difficulty_easy_subtitle => '처음 도전하는 분께 추천!';
 
   @override
-  String get difficulty_normal_title => '보통 (Normal)';
+  String get difficulty_normal => '보통';
 
   @override
   String get difficulty_normal_subtitle => '적당한 난이도로 두뇌 훈련';
 
   @override
-  String get difficulty_hard_title => '어려움 (Hard)';
+  String get difficulty_hard => '어려움';
 
   @override
   String get difficulty_hard_subtitle => '퍼즐 마스터에 도전하세요!';
+
+  @override
+  String get difficulty_extreme => '지옥';
+
+  @override
+  String get difficulty_extreme_subtitle => '힌트와 채우기 금지, 단 3개의 하트만!';
 
   @override
   String get info_app_bar_title => '앱 정보';
@@ -199,7 +205,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get mission_dialog_challenge_question => '도전하시겠습니까?';
 
   @override
-  String get mission_dialog_cancel => '취소';
+  String get cancel => '취소';
 
   @override
   String get mission_dialog_start => '시작';
@@ -222,13 +228,10 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get overlay_dialog_home => '홈으로';
+  String get new_game => '새 게임';
 
   @override
-  String get overlay_dialog_new_game => '새 게임';
-
-  @override
-  String get footer_label_home => '홈';
+  String get home => '홈';
 
   @override
   String get footer_label_mission => '미션';
@@ -250,9 +253,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get game_header_time => '시간';
-
-  @override
-  String get game_button_new_game => '새 게임';
 
   @override
   String get game_button_hint => '힌트';
@@ -290,15 +290,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get sound_switch_off => '꺼짐';
 
   @override
-  String get difficulty_easy => '쉬움';
-
-  @override
-  String get difficulty_normal => '보통';
-
-  @override
-  String get difficulty_hard => '어려움';
-
-  @override
   String get game_error_invalid_number => '잘못된 숫자입니다!';
 
   @override
@@ -306,4 +297,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get game_autofill_none => '자동 채우기할 수 있는 칸이 없습니다.';
+
+  @override
+  String get dialog_confirm_exit_title => '홈으로 돌아가시겠습니까?';
+
+  @override
+  String get dialog_confirm_exit_content => '현재 게임이 종료됩니다.';
+
+  @override
+  String get exit => '종료';
 }

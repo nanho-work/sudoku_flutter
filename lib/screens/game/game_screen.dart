@@ -8,10 +8,10 @@ import '../../controllers/audio_controller.dart';
 import '../../services/audio_service.dart';
 import '../../controllers/theme_controller.dart';
 import 'components/game_header.dart';
-import 'components/game_board.dart';
 import 'components/game_buttons.dart';
 import 'components/game_overlay.dart';
 import 'components/number_pad.dart';
+import '../../widgets/sudoku_board.dart';
 
 class GameScreen extends StatefulWidget {
   final String difficulty;
@@ -36,11 +36,10 @@ class _GameScreenState extends State<GameScreen> {
     super.initState();
     _audio = context.read<AudioController>();
 
-    // 첫 프레임 이후에 BGM 시작 + 배너 로드
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _audio.playGameBgm();
 
-      AdBannerService.loadBannerAd(
+      AdBannerService.loadGameBanner(
         onLoaded: () {
           if (!mounted) return;
           setState(() => _isBannerReady = true);
@@ -55,16 +54,13 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
-    // ⚠️ 프레임 락 시간에 notifyListeners가 발생하면 예외가 나므로,
-    // 다음 프레임으로 넘겨 안전하게 정지한다.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         _audio.stopGameBgm();
-      } catch (e, st) {
-      }
+      } catch (_) {}
     });
 
-    AdBannerService.dispose();
+    AdBannerService.disposeGameBanner();
     super.dispose();
   }
 
@@ -78,52 +74,70 @@ class _GameScreenState extends State<GameScreen> {
         builder: (context) {
           return Scaffold(
             backgroundColor: colors.background,
-            appBar: null,
             body: SafeArea(
               child: Container(
                 color: colors.background,
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 600),
-                    child: Column(
-                      children: [
-                        if (_isBannerReady) AdBannerService.bannerWidget(),
-
-                        const GameHeader(),
-                        const GameBoard(),
-
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Consumer<GameController>(
-                                builder: (context, controller, _) => NumberPad(
-                                  onNumberInput: (number) {
-                                    controller.onNumberInput(
-                                      number,
-                                      (correct) => _audio.playSfx(
-                                        correct ? SoundFiles.success : SoundFiles.fail,
-                                      ),
-                                      (msg) => ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(msg),
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      ),
-                                      context,
-                                    );
-                                  },
-                                  numberCounts: controller.numberCounts,
-                                ),
-                              ),
-                              const GameButtonBar(),
-                            ],
-                          ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    if (_isBannerReady)
+                      AdBannerService.gameBannerWidget()
+                    else
+                      Container(
+                        height: AdSize.banner.height.toDouble(),
+                        color: Colors.black12,
+                        alignment: Alignment.center,
+                        child: const Text(
+                          "광고 로딩 중...",
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
-                        const GameOverlay(),
-                      ],
+                      ),
+
+                    const GameHeader(),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Consumer<GameController>(
+                        builder: (context, controller, _) => SudokuBoard(
+                          board: controller.board,
+                          notes: controller.notes,
+                          onCellTap: controller.onCellTap,
+                          selectedRow: controller.selectedRow,
+                          selectedCol: controller.selectedCol,
+                          invalidRow: controller.invalidRow,
+                          invalidCol: controller.invalidCol,
+                        ),
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(height: 14),
+
+                    Consumer<GameController>(
+                      builder: (context, controller, _) => NumberPad(
+                        onNumberInput: (number) {
+                          controller.onNumberInput(
+                            number,
+                            (correct) => _audio.playSfx(
+                              correct ? SoundFiles.success : SoundFiles.fail,
+                            ),
+                            (msg) => ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(msg),
+                                behavior: SnackBarBehavior.floating,
+                                duration: const Duration(milliseconds: 500),
+                              ),
+                            ),
+                            context,
+                          );
+                        },
+                        numberCounts: controller.numberCounts,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+                    const GameButtonBar(),
+                    const GameOverlay(),
+                  ],
                 ),
               ),
             ),

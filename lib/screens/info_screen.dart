@@ -20,98 +20,100 @@ class InfoScreen extends StatelessWidget {
     final themeController = Provider.of<ThemeController>(context);
     final colors = themeController.colors;
 
-    return Scaffold(
-      backgroundColor: colors.background, // 💡 다크 배경 적용
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.info_app_bar_title),
-        centerTitle: true,
-        backgroundColor: colors.appBar,
-        elevation: 0,
-        foregroundColor: colors.textPrimary, // 뒤로가기 버튼 색상
-        titleTextStyle: TextStyle(
-          color: colors.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card( // 💡 정보를 Card로 감싸 GuideScreen과 통일감 부여
-          color: colors.appBar,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: ListView(
-              shrinkWrap: true, // Card 내 ListView 크기 제한
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.info_app_name,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: colors.textPrimary, // 💡 앱 이름 강조
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Card( // 💡 정보를 Card로 감싸 GuideScreen과 통일감 부여
+            color: colors.background,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppBar(
+                    title: Text(AppLocalizations.of(context)!.info_app_bar_title),
+                    centerTitle: true,
+                    foregroundColor: colors.textMain, // 뒤로가기 버튼 색상
+                    titleTextStyle: TextStyle(
+                      color: colors.textMain,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
                   ),
-                ),
-                const SizedBox(height: 16),
-                Divider(color: colors.placeholder),
-                const SizedBox(height: 8),
-
-                // 1. 앱 버전
-                _buildInfoRow(
-                  title: AppLocalizations.of(context)!.info_row_version_title,
-                  value: "1.0.0",
-                  icon: Icons.info_outline,
-                  colors: colors,
-                ),
-                // 2. 개발자
-                _buildInfoRow(
-                  title: AppLocalizations.of(context)!.info_row_developer_title,
-                  value: "LaonCode",
-                  icon: Icons.code,
-                  colors: colors,
-                ),
-                // 3. 문의
-                _buildInfoRow(
-                  title: AppLocalizations.of(context)!.info_row_email_title,
-                  value: "koofylab@gmail.com",
-                  icon: Icons.email_outlined,
-                  colors: colors,
-                ),
-
-                const SizedBox(height: 20),
-                Text(
-                  AppLocalizations.of(context)!.info_section_legal,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colors.textPrimary,
+                  const SizedBox(height: 16),
+                  Text(
+                    AppLocalizations.of(context)!.info_app_name,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: colors.textMain, // 💡 앱 이름 강조
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
+                  const SizedBox(height: 16),
+                  Divider(color: colors.placeholder),
+                  const SizedBox(height: 8),
 
-                // 4. 개인정보 처리방침
-                _buildLegalLink(
-                  context,
-                  title: AppLocalizations.of(context)!.info_link_privacy,
-                  url: "https://www.koofy.co.kr/privacy",
-                  icon: Icons.privacy_tip_outlined,
-                  onTap: () => _launchUrl("https://www.koofy.co.kr/privacy"),
-                  colors: colors,
-                ),
+                  // 1. 앱 버전
+                  _buildInfoRow(
+                    title: AppLocalizations.of(context)!.info_row_version_title,
+                    value: "1.0.0",
+                    icon: Icons.info_outline,
+                    colors: colors,
+                  ),
+                  // 2. 개발자
+                  _buildInfoRow(
+                    title: AppLocalizations.of(context)!.info_row_developer_title,
+                    value: "LaonCode",
+                    icon: Icons.code,
+                    colors: colors,
+                  ),
+                  // 3. 문의
+                  _buildInfoRow(
+                    title: AppLocalizations.of(context)!.info_row_email_title,
+                    value: "koofylab@gmail.com",
+                    icon: Icons.email_outlined,
+                    colors: colors,
+                  ),
 
-                // 5. 이용 약관
-                _buildLegalLink(
-                  context,
-                  title: AppLocalizations.of(context)!.info_link_terms,
-                  url: "https://www.koofy.co.kr/terms",
-                  icon: Icons.description_outlined,
-                  onTap: () => _launchUrl("https://www.koofy.co.kr/terms"),
-                  colors: colors,
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context)!.info_section_legal,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colors.textMain,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // 4. 개인정보 처리방침
+                  _buildLegalLink(
+                    context,
+                    title: AppLocalizations.of(context)!.info_link_privacy,
+                    url: "https://www.koofy.co.kr/privacy",
+                    icon: Icons.privacy_tip_outlined,
+                    onTap: () => _launchUrl("https://www.koofy.co.kr/privacy"),
+                    colors: colors,
+                  ),
+
+                  // 5. 이용 약관
+                  _buildLegalLink(
+                    context,
+                    title: AppLocalizations.of(context)!.info_link_terms,
+                    url: "https://www.koofy.co.kr/terms",
+                    icon: Icons.description_outlined,
+                    onTap: () => _launchUrl("https://www.koofy.co.kr/terms"),
+                    colors: colors,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -131,7 +133,7 @@ class InfoScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: colors.textPrimary, size: 24),
+          Icon(icon, color: colors.textMain, size: 24),
           const SizedBox(width: 12),
           Expanded( // 텍스트가 공간을 모두 차지하도록 하여 오버플로우 방지
             child: Column(
@@ -141,7 +143,7 @@ class InfoScreen extends StatelessWidget {
                   '$title:',
                   style: TextStyle(
                     fontSize: 16,
-                    color: colors.textPrimary,
+                    color: colors.textMain,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -153,7 +155,7 @@ class InfoScreen extends StatelessWidget {
                     '- $value', // 하이픈 추가
                     style: TextStyle(
                       fontSize: 16,
-                      color: colors.textSecondary,
+                      color: colors.textSub,
                     ),
                   ),
                 ),
@@ -174,16 +176,16 @@ class InfoScreen extends StatelessWidget {
         required dynamic colors,
       }) {
     return ListTile(
-      leading: Icon(icon, color: colors.textPrimary),
+      leading: Icon(icon, color: colors.textMain),
       title: Text(
         title,
-        style: TextStyle(color: colors.textPrimary, fontWeight: FontWeight.w500),
+        style: TextStyle(color: colors.textMain, fontWeight: FontWeight.w500),
       ),
       subtitle: Text(
         url,
-        style: TextStyle(color: colors.textPrimary, fontSize: 13), // 💡 링크 색상 강조
+        style: TextStyle(color: colors.textMain, fontSize: 13), // 💡 링크 색상 강조
       ),
-      trailing: Icon(Icons.chevron_right, color: colors.textSecondary),
+      trailing: Icon(Icons.chevron_right, color: colors.textSub),
       contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
       onTap: onTap,
     );

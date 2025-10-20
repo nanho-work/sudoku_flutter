@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
 import 'providers/app_providers.dart';
+import 'controllers/audio_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'screens/splash_screen.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:sudoku_flutter/l10n/app_localizations.dart';
-import 'package:intl/intl.dart';
+import 'l10n/app_localizations.dart';
+import 'services/ad_reward_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,9 +21,23 @@ void main() async {
     } catch (e) {
       debugPrint("❌ Google Mobile Ads 초기화 실패: $e");
     }
+    await AdRewardService.loadRewardedAd(); // ✅ 보상형 광고 사전 로드
   }
 
-  runApp(AppProviders.register(child: const MyApp()));
+  // ✅ Controller 인스턴스 직접 생성 및 초기화
+  final audioController = AudioController();
+  await audioController.init();
+
+  final themeController = ThemeController();
+  await themeController.loadTheme();
+
+  runApp(
+    AppProviders.register(
+      audioController: audioController,
+      themeController: themeController,
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,7 +46,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeController>(
-      builder: (context, themeController, child) {
+      builder: (context, themeController, _) {
         final colors = themeController.colors;
         final brightness = themeController.brightness;
 
@@ -48,25 +65,6 @@ class MyApp extends StatelessWidget {
             Locale('ja'),
             Locale('zh'),
           ],
-          // locale: const Locale('ko'), // Uncomment to force Korean
-          theme: ThemeData(
-            brightness: brightness,
-            primaryColor: colors.primary,
-            scaffoldBackgroundColor: colors.background,
-            colorScheme: ColorScheme(
-              brightness: brightness,
-              primary: colors.primary,
-              onPrimary: colors.textPrimary,
-              secondary: colors.accent,
-              onSecondary: colors.textSecondary,
-              error: colors.error,
-              onError: Colors.white,
-              background: colors.background,
-              onBackground: colors.textPrimary,
-              surface: colors.surface,
-              onSurface: colors.textPrimary,
-            ),
-          ),
           home: const SplashScreen(),
         );
       },

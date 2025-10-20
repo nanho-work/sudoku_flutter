@@ -4,7 +4,7 @@ import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import '../../../controllers/game_controller.dart';
 import '../../../controllers/audio_controller.dart';
 import '../../../controllers/theme_controller.dart';
-// import '../../../widgets/button_styles.dart'; // 외부 스타일 대신 내부에서 정의
+import '../../../widgets/button_styles.dart'; // 외부 스타일 대신 내부에서 정의
 import '../../../services/audio_service.dart';
 
 /// 게임 하단 버튼바 (새 게임 / 힌트 / 메모 / 채우기)
@@ -25,38 +25,23 @@ class GameButtonBar extends StatelessWidget {
     final audio = context.read<AudioController>();
     final colors = context.watch<ThemeController>().colors;
 
-    // 💡 다크 테마에 맞는 기본 버튼 스타일 정의
-    final ButtonStyle baseActionButtonStyle = ElevatedButton.styleFrom(
-      foregroundColor: colors.textPrimary,
-      backgroundColor: colors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-      elevation: 8,
-    );
-
-    // 💡 힌트 버튼 (비활성화 상태) 스타일 정의
-    final ButtonStyle disabledActionButtonStyle = baseActionButtonStyle.copyWith(
-      backgroundColor: MaterialStatePropertyAll(colors.card),
-      foregroundColor: MaterialStatePropertyAll(colors.textSecondary),
-      elevation: const MaterialStatePropertyAll(0),
-    );
-
     void playSfx([bool success = true]) =>
         audio.playSfx(success ? SoundFiles.success : SoundFiles.fail);
 
     // 💡 스낵바 디자인을 다크 테마에 맞게 개선
     void showToast(String msg) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg, style: TextStyle(color: colors.textPrimary)),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: colors.accent.withOpacity(0.9),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(msg, style: TextStyle(color: colors.textMain)),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: colors.accent.withOpacity(0.9),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            duration: const Duration(seconds: 2),
+          ),
+        );
     }
 
     return Padding(
@@ -71,13 +56,13 @@ class GameButtonBar extends StatelessWidget {
               onPressed: () => controller.restartGame(() {
                 audio.playSfx(SoundFiles.click);
               }),
-              style: baseActionButtonStyle,
+              style: buttonStyle(context),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.refresh, size: 20, color: colors.textPrimary),
+                  const Icon(Icons.refresh, size: 20),
                   const SizedBox(height: 4),
-                  Text(loc.game_button_new_game, textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
+                  Text(loc.new_game, textAlign: TextAlign.center),
                 ],
               ),
             ),
@@ -95,13 +80,19 @@ class GameButtonBar extends StatelessWidget {
                       )
                   : null,
               // 💡 힌트 비활성화 시 스타일 적용
-              style: controller.hintsRemaining > 0 ? baseActionButtonStyle : disabledActionButtonStyle,
+              style: controller.hintsRemaining > 0
+                  ? buttonStyle(context)
+                  : buttonStyle(context).copyWith(
+                      backgroundColor: MaterialStatePropertyAll(colors.card),
+                      foregroundColor: MaterialStatePropertyAll(colors.textSub),
+                      elevation: const MaterialStatePropertyAll(0),
+                    ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.lightbulb, size: 20, color: colors.textPrimary),
+                  const Icon(Icons.lightbulb, size: 20),
                   const SizedBox(height: 4),
-                  Text('${loc.game_button_hint} (${controller.hintsRemaining})', textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
+                  Text('${loc.game_button_hint} (${controller.hintsRemaining})', textAlign: TextAlign.center),
                 ],
               ),
             ),
@@ -112,22 +103,21 @@ class GameButtonBar extends StatelessWidget {
           Expanded(
             child: ElevatedButton(
               onPressed: () {
-                controller.noteMode = !controller.noteMode;
+                controller.toggleNoteMode();
                 audio.playSfx(SoundFiles.click);
               },
               // 💡 메모 모드 활성화 시 액센트 색상 적용
-              style: baseActionButtonStyle.copyWith(
+              style: buttonStyle(context).copyWith(
                 backgroundColor: MaterialStatePropertyAll(
-                  controller.noteMode ? colors.accent : baseActionButtonStyle.backgroundColor!.resolve({}),
+                  controller.noteMode ? colors.accent : colors.easyCard,
                 ),
-                foregroundColor: MaterialStatePropertyAll(colors.textPrimary),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.edit_note, size: 20, color: colors.textPrimary),
+                  const Icon(Icons.edit_note, size: 20),
                   const SizedBox(height: 4),
-                  Text(loc.game_button_note, textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
+                  Text(loc.game_button_note, textAlign: TextAlign.center),
                 ],
               ),
             ),
@@ -142,13 +132,13 @@ class GameButtonBar extends StatelessWidget {
                 showToast,
                 context,
               ),
-              style: baseActionButtonStyle,
+              style: buttonStyle(context),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.auto_fix_high, size: 20, color: colors.textPrimary),
+                  const Icon(Icons.auto_fix_high, size: 20),
                   const SizedBox(height: 4),
-                  Text(loc.game_button_auto_fill, textAlign: TextAlign.center, style: TextStyle(color: colors.textPrimary)),
+                  Text(loc.game_button_auto_fill, textAlign: TextAlign.center),
                 ],
               ),
             ),
