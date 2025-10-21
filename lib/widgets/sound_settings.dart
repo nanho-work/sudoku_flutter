@@ -176,7 +176,7 @@ class SoundSettingsWidget extends StatelessWidget {
               value: isEnabled,
               onChanged: onToggle,
               activeColor: activeColor,
-              inactiveTrackColor: colors.card,
+              inactiveTrackColor: colors.textSub,
             ),
           ],
         ),

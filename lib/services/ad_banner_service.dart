@@ -37,7 +37,7 @@ class AdBannerService {
   }) {
     _gameBannerAd?.dispose();
     _gameBannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-5773331970563455/7114095570', // ✅ 게임 화면용 ID
+      adUnitId: 'ca-app-pub-5773331970563455/8722125095', // ✅ 게임 화면용 ID
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(

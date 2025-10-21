@@ -50,7 +50,11 @@ class GameHeader extends StatelessWidget {
             children: [
               // 💡 뒤로가기 버튼: 클릭 시 이전 화면으로 돌아갑니다. (AppBar 역할 대체)
               IconButton(
-                icon: Icon(Icons.home, size: 24, color: colors.textMain),
+                icon: Image.asset(
+                  'assets/icons/log-out.png',
+                  width: 24,
+                  height: 24,
+                ),
                 onPressed: () => _showExitDialog(context),
                 // IconButton의 기본 패딩이 Row의 높이를 키우지 않도록 줄입니다.
                 padding: EdgeInsets.zero, 

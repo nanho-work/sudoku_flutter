@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import 'providers/app_providers.dart';
 import 'controllers/audio_controller.dart';
@@ -15,22 +16,11 @@ import 'services/ad_reward_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (!kIsWeb) {
-    try {
-      await MobileAds.instance.initialize();
-    } catch (e) {
-      debugPrint("❌ Google Mobile Ads 초기화 실패: $e");
-    }
-    await AdRewardService.loadRewardedAd(); // ✅ 보상형 광고 사전 로드
-  }
-
-  // ✅ Controller 인스턴스 직접 생성 및 초기화
+  // 컨트롤러 생성
   final audioController = AudioController();
-  await audioController.init();
-
   final themeController = ThemeController();
-  await themeController.loadTheme();
 
+  // 앱을 즉시 실행 (SplashScreen까지 바로 진입)
   runApp(
     AppProviders.register(
       audioController: audioController,
@@ -38,6 +28,31 @@ void main() async {
       child: const MyApp(),
     ),
   );
+
+  // 백그라운드 초기화 (광고 승인 대기 중이라도 앱 실행됨)
+  unawaited(_initializeAsync(audioController, themeController));
+}
+
+Future<void> _initializeAsync(
+  AudioController audioController,
+  ThemeController themeController,
+) async {
+  try {
+    if (!kIsWeb) {
+      try {
+        await MobileAds.instance.initialize();
+        await AdRewardService.loadRewardedAd();
+      } catch (e) {
+        debugPrint("⚠️ 광고 초기화 실패 (무시됨): $e");
+      }
+    }
+
+    await audioController.init();
+    await themeController.loadTheme();
+    debugPrint("✅ 비동기 초기화 완료");
+  } catch (e, st) {
+    debugPrint("❌ 초기화 중 오류 발생: $e\n$st");
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -65,7 +80,7 @@ class MyApp extends StatelessWidget {
             Locale('ja'),
             Locale('zh'),
           ],
-          home: const SplashScreen(), // BGM starts in MainLayout after splash screen transition
+          home: const SplashScreen(),
         );
       },
     );

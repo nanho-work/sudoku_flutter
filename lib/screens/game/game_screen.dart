@@ -72,72 +72,94 @@ class _GameScreenState extends State<GameScreen> {
       create: (_) => GameController(widget.difficulty, widget.missionDate),
       child: Builder(
         builder: (context) {
-          return Scaffold(
-            backgroundColor: colors.background,
-            body: SafeArea(
-              child: Container(
-                color: colors.background,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    if (_isBannerReady)
-                      AdBannerService.gameBannerWidget()
-                    else
-                      Container(
-                        height: AdSize.banner.height.toDouble(),
-                        color: Colors.black12,
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "광고 로딩 중...",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ),
-
-                    const GameHeader(),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Consumer<GameController>(
-                        builder: (context, controller, _) => SudokuBoard(
-                          board: controller.board,
-                          notes: controller.notes,
-                          onCellTap: controller.onCellTap,
-                          selectedRow: controller.selectedRow,
-                          selectedCol: controller.selectedCol,
-                          invalidRow: controller.invalidRow,
-                          invalidCol: controller.invalidCol,
-                        ),
-                      ),
+          return WillPopScope(
+            onWillPop: () async {
+              final shouldExit = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text("게임 종료"),
+                  content: const Text("게임을 종료하고 홈으로 돌아가시겠습니까?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: const Text("취소"),
                     ),
-
-                    const SizedBox(height: 14),
-
-                    Consumer<GameController>(
-                      builder: (context, controller, _) => NumberPad(
-                        onNumberInput: (number) {
-                          controller.onNumberInput(
-                            number,
-                            (correct) => _audio.playSfx(
-                              correct ? SoundFiles.success : SoundFiles.fail,
-                            ),
-                            (msg) => ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(msg),
-                                behavior: SnackBarBehavior.floating,
-                                duration: const Duration(milliseconds: 500),
-                              ),
-                            ),
-                            context,
-                          );
-                        },
-                        numberCounts: controller.numberCounts,
-                      ),
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: const Text("확인"),
                     ),
-
-                    const SizedBox(height: 18),
-                    const GameButtonBar(),
-                    const GameOverlay(),
                   ],
+                ),
+              );
+              return shouldExit ?? false;
+            },
+            child: Scaffold(
+              backgroundColor: colors.background,
+              body: SafeArea(
+                child: Container(
+                  color: colors.background,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      if (_isBannerReady)
+                        AdBannerService.gameBannerWidget()
+                      else
+                        Container(
+                          height: AdSize.banner.height.toDouble(),
+                          color: Colors.black12,
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "광고 로딩 중...",
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ),
+
+                      const GameHeader(),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Consumer<GameController>(
+                          builder: (context, controller, _) => SudokuBoard(
+                            board: controller.board,
+                            notes: controller.notes,
+                            onCellTap: controller.onCellTap,
+                            selectedRow: controller.selectedRow,
+                            selectedCol: controller.selectedCol,
+                            invalidRow: controller.invalidRow,
+                            invalidCol: controller.invalidCol,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      Consumer<GameController>(
+                        builder: (context, controller, _) => NumberPad(
+                          onNumberInput: (number) {
+                            controller.onNumberInput(
+                              number,
+                              (correct) => _audio.playSfx(
+                                correct ? SoundFiles.success : SoundFiles.fail,
+                              ),
+                              (msg) => ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(msg),
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: const Duration(milliseconds: 500),
+                                ),
+                              ),
+                              context,
+                            );
+                          },
+                          numberCounts: controller.numberCounts,
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+                      const GameButtonBar(),
+                      const GameOverlay(),
+                    ],
+                  ),
                 ),
               ),
             ),
