@@ -40,6 +40,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/sounds/
+    - assets/images/
 
 flutter_gen:
   l10n:

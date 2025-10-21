@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
             Locale('ja'),
             Locale('zh'),
           ],
-          home: const SplashScreen(),
+          home: const SplashScreen(), // BGM starts in MainLayout after splash screen transition
         );
       },
     );

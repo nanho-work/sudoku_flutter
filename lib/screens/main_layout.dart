@@ -36,7 +36,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // read는 initState에서 안전하게 사용할 수 있습니다.
     audio = context.read<AudioController>(); 
-    audio.stopGameBgm(); // 홈화면에서는 항상 메인 BGM으로 전환
+    audio.startMainBgm();
   }
 
   @override

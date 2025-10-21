@@ -49,12 +49,9 @@ class AudioController extends ChangeNotifier {
     _audioService
       ..setBgmVolume(_bgmVolume)
       ..setSfxVolume(_sfxVolume);
-
-    if (_bgmEnabled) {
-      _updateBgmState();
-    } else {
-      _audioService.pauseBgm();
-    }
+    // 앱 시작 시 자동 재생 금지. 스플래시에선 SFX만 재생.
+    await _audioService.stopBgm();
+    _currentBgm = null;
   }
 
   /// -------------------------------
@@ -168,5 +165,12 @@ class AudioController extends ChangeNotifier {
     _currentBgm = null;
     _isInGame = false;
     _audioService.stopBgm();
+  }
+
+  void startMainBgm() {
+    if (!_bgmEnabled) return;
+    _isInGame = false;
+    _updateBgmState();
+    notifyListeners();
   }
 }
