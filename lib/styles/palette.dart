@@ -22,6 +22,10 @@ abstract class AppColorPalette {
   Color get highlight; // 강조 또는 하이라이트 색상
   Color get gradientStart; // 그라디언트 시작 색상
   Color get gradientEnd; // 그라디언트 끝 색상
+
+  // 버튼 스타일 
+  Color get buttonBackground; // 버튼 배경색
+  Color get buttonText; // 버튼 텍스트색
   
   // 하단바
   Color get bottomItemSelected; // 하단바 선택된 아이템 색상
@@ -62,6 +66,8 @@ class LightAppColors implements AppColorPalette {
   @override final Color cleared = const Color(0xFFE8F5E9);
   @override final Color gradientStart = const Color(0xFFFAFAFA);
   @override final Color gradientEnd = const Color(0xFFFFFFFF);
+  @override final Color buttonBackground = const Color(0xFFB3E5FC);
+  @override final Color buttonText = const Color(0xFF212121);
   @override final Color bottomItemSelected = const Color(0xFFB3E5FC);
   @override final Color bottomItemUnselected = const Color(0xFFCFD8DC);
   @override final Color cellSelected = const Color(0xFFB3E5FC);
@@ -93,6 +99,8 @@ class DarkAppColors implements AppColorPalette {
   @override final Color cleared = const Color(0xFF1F2A24);
   @override final Color gradientStart = const Color(0xFF181818);
   @override final Color gradientEnd = const Color(0xFF121212);
+  @override final Color buttonBackground = const Color(0xFF3C4F70);
+  @override final Color buttonText = const Color(0xFFE0E0E0);
   @override final Color bottomItemSelected = const Color(0xFF8AB4F8);
   @override final Color bottomItemUnselected = const Color(0xFF3C4043);
 
@@ -124,6 +132,8 @@ class PinkAppColors implements AppColorPalette {
   @override final Color cleared = const Color(0xFFFFF0F3);
   @override final Color gradientStart = const Color(0xFFFFF7F9);
   @override final Color gradientEnd = const Color(0xFFFFEBEE);
+  @override final Color buttonBackground = const Color(0xFFF8BBD0);
+  @override final Color buttonText = const Color(0xFF5D4037);
   @override final Color bottomItemSelected = const Color(0xFFF8BBD0);
   @override final Color bottomItemUnselected = const Color(0xFFE1BEE7);
   @override final Color cellSelected = const Color(0xFFF8BBD0);

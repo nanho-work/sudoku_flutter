@@ -77,7 +77,7 @@ class InfoScreen extends StatelessWidget {
                   // 3. 문의
                   _buildInfoRow(
                     title: AppLocalizations.of(context)!.info_row_email_title,
-                    value: "koofylab@gmail.com",
+                    value: "webmaster@koofy.co.kr",
                     icon: Icons.email_outlined,
                     colors: colors,
                   ),

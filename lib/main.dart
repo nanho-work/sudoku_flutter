@@ -6,15 +6,27 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'providers/app_providers.dart';
 import 'controllers/audio_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/main_layout.dart';
 import 'l10n/app_localizations.dart';
 import 'services/ad_reward_service.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // 자동 생성 파일
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
 
   // 컨트롤러 생성
   final audioController = AudioController();
@@ -25,7 +37,7 @@ void main() async {
     AppProviders.register(
       audioController: audioController,
       themeController: themeController,
-      child: const MyApp(),
+      child: const MyAppWrapper(),
     ),
   );
 
@@ -55,8 +67,24 @@ Future<void> _initializeAsync(
   }
 }
 
+class MyAppWrapper extends StatelessWidget {
+  const MyAppWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        final isLoggedIn = snapshot.data != null;
+        return MyApp(isLoggedIn: isLoggedIn);
+      },
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -80,9 +108,49 @@ class MyApp extends StatelessWidget {
             Locale('ja'),
             Locale('zh'),
           ],
-          home: const SplashScreen(),
+          home: SplashScreenWrapper(isLoggedIn: isLoggedIn),
         );
       },
     );
+  }
+}
+
+class SplashScreenWrapper extends StatefulWidget {
+  final bool isLoggedIn;
+  const SplashScreenWrapper({super.key, required this.isLoggedIn});
+
+  @override
+  State<SplashScreenWrapper> createState() => _SplashScreenWrapperState();
+}
+
+class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
+  bool _isSplashFinished = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startSplashTimer();
+  }
+
+  void _startSplashTimer() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      setState(() {
+        _isSplashFinished = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isSplashFinished) {
+      return const SplashScreen();
+    } else {
+      if (widget.isLoggedIn) {
+        return const MainLayout();
+      } else {
+        return const LoginScreen();
+      }
+    }
   }
 }

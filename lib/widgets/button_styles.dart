@@ -7,8 +7,8 @@ ButtonStyle buttonStyle(BuildContext context) {
   final colors = context.watch<ThemeController>().colors;
   return ElevatedButton.styleFrom(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    padding: const EdgeInsets.all(4),
-    backgroundColor: colors.easyCard,
-    foregroundColor: colors.extremeCard,
+    padding: const EdgeInsets.all(2),
+    backgroundColor: colors.buttonBackground,
+    foregroundColor: colors.buttonText,
   );
 }
