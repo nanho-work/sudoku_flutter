@@ -56,9 +56,32 @@ app.*.symbols
 .vercel
 
 # ---------------------------
+# Firebase 관련 (보안 중요)
+# ---------------------------
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+firebase_app_id_file.json
+firebase-debug.log
+.firebase/
+.firebaserc
+
+# ---------------------------
 # 플랫폼 관련 전체 무시 (로컬 전용 빌드)
 # ---------------------------
 /android/
 /ios/
 /build/
 /android/app/build/
+
+# ---------------------------
+# Windows / macOS / Web 관련 (로컬 빌드 전용)
+# ---------------------------
+/windows/
+/macos/
+/web/
+
+# ---------------------------
+# Linux 관련 (로컬 빌드 전용)
+# ---------------------------
+/linux/
