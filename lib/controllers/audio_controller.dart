@@ -50,7 +50,6 @@ class AudioController extends ChangeNotifier {
       ..setBgmVolume(_bgmVolume)
       ..setSfxVolume(_sfxVolume);
     // 앱 시작 시 자동 재생 금지. 스플래시에선 SFX만 재생.
-    await _audioService.stopBgm();
     _currentBgm = null;
   }
 
@@ -113,9 +112,23 @@ class AudioController extends ChangeNotifier {
   /// -------------------------------
   /// 재생 관련
   /// -------------------------------
-  void playSfx(String assetName) {
-    if (_sfxEnabled) {
-      _audioService.playSfx(assetName, volume: _sfxVolume);
+  void playSfx(String assetName) async {
+    if (!_sfxEnabled) return;
+
+    // 🔊 BGM 잠시 줄이기
+    if (_bgmEnabled) {
+      await _audioService.setBgmVolume(_bgmVolume * 0.5);
+      debugPrint("🎚️ BGM 볼륨 50%로 감소");
+    }
+
+    await _audioService.playSfx(assetName, volume: _sfxVolume);
+    debugPrint("✅ 효과음 재생 완료: $assetName");
+
+    // 🎚️ 효과음 끝나면 복원
+    if (_bgmEnabled) {
+      await Future.delayed(const Duration(milliseconds: 500));
+      await _audioService.setBgmVolume(_bgmVolume);
+      debugPrint("🔄 BGM 볼륨 복원 완료: $_bgmVolume");
     }
   }
 

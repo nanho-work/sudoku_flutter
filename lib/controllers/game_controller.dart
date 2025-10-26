@@ -6,6 +6,10 @@ import 'package:sudoku_flutter/l10n/app_localizations.dart';
 import '../services/sudoku_solver.dart';
 import '../services/sudoku_generator.dart';
 import '../services/mission_service.dart';
+import '../services/ranking_service.dart';
+import '../models/ranking_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/user_service.dart';
 
 class GameController extends ChangeNotifier {
   final Map<String, String> difficultyLabels = {};
@@ -169,12 +173,40 @@ class GameController extends ChangeNotifier {
     if (missionDate != null) {
       try {
         await MissionService.setCleared(missionDate!);
-
         // (선택) 즉시 검증해서 로그로 남김
         final ok = await MissionService.isCleared(missionDate!);
       } catch (e, st) {
       }
     }
+
+    // Get current authenticated user and their UserModel
+    String userId = 'guest';
+    String nickname = 'Guest';
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userModel = await UserService().getUserModel(user.uid);
+        userId = user.uid;
+        if (userModel != null && userModel.nickname != null && userModel.nickname!.isNotEmpty) {
+          nickname = userModel.nickname!;
+        }
+      }
+    } catch (e) {
+      // fallback to guest
+    }
+
+    final record = RankingRecord(
+      userId: userId,
+      nickname: nickname,
+      difficulty: difficulty,
+      clearTime: stopwatch.elapsed.inMilliseconds / 1000,
+      gameMode: 'classic',
+      device: 'android',
+      recordedAt: DateTime.now(),
+      weekKey: await RankingService.currentWeekKey(),
+    );
+
+    await RankingService.saveOrUpdateBestRecord(record);
 
     // 저장이 끝난 뒤 알림 (여기서 UI가 pop될 수 있음)
     _safeNotify();

@@ -27,9 +27,9 @@
 # ---------------------------
 /android/.gradle/
 /android/local.properties
-/android/app/release
-/android/app/debug
-/android/app/profile
+/android/app/release/
+/android/app/debug/
+/android/app/profile/
 /android/key.properties
 *.jks
 *.keystore
@@ -67,21 +67,16 @@ firebase-debug.log
 .firebaserc
 
 # ---------------------------
-# 플랫폼 관련 전체 무시 (로컬 전용 빌드)
+# Android / iOS / Desktop 빌드 산출물만 무시
 # ---------------------------
-/android/
-/ios/
-/build/
-/android/app/build/
-
-# ---------------------------
-# Windows / macOS / Web 관련 (로컬 빌드 전용)
-# ---------------------------
-/windows/
-/macos/
-/web/
-
-# ---------------------------
-# Linux 관련 (로컬 빌드 전용)
-# ---------------------------
-/linux/
+/android/.gradle/
+/android/local.properties
+/android/app/release/
+/android/app/debug/
+/android/app/profile/
+/ios/Pods/
+/ios/build/
+/web/.dart_tool/
+/windows/runner/*.exe
+/macos/Runner.xcworkspace/
+/linux/flutter/build/

@@ -109,7 +109,7 @@ class GameButtonBar extends StatelessWidget {
               // 💡 메모 모드 활성화 시 액센트 색상 적용
               style: buttonStyle(context).copyWith(
                 backgroundColor: MaterialStatePropertyAll(
-                  controller.noteMode ? colors.accent : colors.easyCard,
+                  controller.noteMode ? colors.easyCard : colors.accent,
                 ),
               ),
               child: Column(

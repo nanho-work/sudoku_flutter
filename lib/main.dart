@@ -12,7 +12,7 @@ import 'providers/app_providers.dart';
 import 'controllers/audio_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'screens/splash_screen.dart';
-import 'screens/login_screen.dart';
+import 'screens/login/login_screen.dart';
 import 'screens/main_layout.dart';
 import 'l10n/app_localizations.dart';
 import 'services/ad_reward_service.dart';

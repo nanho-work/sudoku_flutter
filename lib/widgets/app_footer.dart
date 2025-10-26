@@ -40,8 +40,8 @@ class AppFooter extends StatelessWidget {
               label: AppLocalizations.of(context)!.footer_label_guide,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.info),
-              label: AppLocalizations.of(context)!.footer_label_info,
+              icon: Icon(Icons.emoji_events),
+              label: "랭킹",
             ),
           ],
         );

@@ -33,104 +33,49 @@ class SoundSettingsWidget extends StatelessWidget {
     final double sfxVolume = audioController.sfxVolume;
 
     // 다크 테마를 적용하고 액센트 색상을 지정하여 디자인을 개선합니다.
-    return Theme(
-      data: ThemeData.dark().copyWith(
-        // 활성화된 요소(스위치, 슬라이더)에 사용할 주 색상(액센트) 지정
-        colorScheme: ColorScheme.dark(
-          primary: colors.accent,
-          surface: colors.background,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // --- 1. BGM 설정 ---
+        _buildSoundSettingRow(
+          context,
+          title: loc.sound_section_bgm_title,
+          icon: Icons.music_note, // 아이콘 추가
+          isEnabled: bgmEnabled,
+          volume: bgmVolume,
+          onToggle: (enabled) {
+            audioController.setBgmEnabled(enabled);
+          },
+          onVolumeChanged: (volume) {
+            audioController.setBgmVolume(volume);
+          },
+          colors: colors,
         ),
-      ),
-      child: Material(
-        // Dialog처럼 사용하기 위해 배경을 투명하게 설정합니다.
-        color: colors.background.withOpacity(0.2),
-        child: Center(
-          child: Container(
-            width: 340, // 너비를 약간 넓게 조정
-            padding: const EdgeInsets.fromLTRB(28, 28, 28, 16),
-            // 다크 모드 및 고급스러운 컨테이너 스타일 적용
-            decoration: BoxDecoration(
-              color: colors.surface, // 짙은 배경색
-              borderRadius: BorderRadius.circular(20), // 둥근 모서리
-              border: Border.all(color: colors.accent.withOpacity(0.3), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.6),
-                  blurRadius: 25,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // --- 헤더 (제목 및 닫기 버튼) ---
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      loc.sound_title_main,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900, // 더 두꺼운 글씨체
-                        color: colors.textMain,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close, color: colors.textMain, size: 28),
-                      onPressed: () => _handleClose(context),
-                      tooltip: loc.sound_button_close_tooltip,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
+        
+        // --- 구분선 추가 ---
+        Divider(color: Colors.grey, height: 12, thickness: 0.5),
 
-                // --- 1. BGM 설정 ---
-                _buildSoundSettingRow(
-                  context,
-                  title: loc.sound_section_bgm_title,
-                  icon: Icons.music_note, // 아이콘 추가
-                  isEnabled: bgmEnabled,
-                  volume: bgmVolume,
-                  onToggle: (enabled) {
-                    audioController.setBgmEnabled(enabled);
-                  },
-                  onVolumeChanged: (volume) {
-                    audioController.setBgmVolume(volume);
-                  },
-                  colors: colors,
-                ),
-                
-                // --- 구분선 추가 ---
-                Divider(color: colors.background, height: 28, thickness: 0.5),
-
-                // --- 2. SFX 설정 ---
-                _buildSoundSettingRow(
-                  context,
-                  title: loc.sound_section_sfx_title,
-                  icon: Icons.volume_up, // 아이콘 추가
-                  isEnabled: sfxEnabled,
-                  volume: sfxVolume,
-                  onToggle: (enabled) {
-                    audioController.setSfxEnabled(enabled);
-                  },
-                  onVolumeChanged: (volume) {
-                    // SFX 볼륨 조절 시 효과음을 재생하여 즉시 피드백을 제공합니다.
-                    audioController.setSfxVolume(volume);
-                    // SoundFiles를 사용할 수 있도록 가정
-                    // TODO: `SoundFiles.click`이 정의된 파일을 import 해야 합니다.
-                    // audioController.playSfx(SoundFiles.click); 
-                  },
-                  colors: colors,
-                ),
-                const SizedBox(height: 12),
-              ],
-            ),
-          ),
+        // --- 2. SFX 설정 ---
+        _buildSoundSettingRow(
+          context,
+          title: loc.sound_section_sfx_title,
+          icon: Icons.volume_up, // 아이콘 추가
+          isEnabled: sfxEnabled,
+          volume: sfxVolume,
+          onToggle: (enabled) {
+            audioController.setSfxEnabled(enabled);
+          },
+          onVolumeChanged: (volume) {
+            // SFX 볼륨 조절 시 효과음을 재생하여 즉시 피드백을 제공합니다.
+            audioController.setSfxVolume(volume);
+            // SoundFiles를 사용할 수 있도록 가정
+            // TODO: `SoundFiles.click`이 정의된 파일을 import 해야 합니다.
+            // audioController.playSfx(SoundFiles.click); 
+          },
+          colors: colors,
         ),
-      ),
+      ],
     );
   }
 
@@ -160,27 +105,30 @@ class SoundSettingsWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: contentColor, size: 24), // 아이콘 크기 조정
+                Icon(icon, color: contentColor, size: 16), // 아이콘 크기 조정
                 const SizedBox(width: 12),
                 Text(
                   title,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 17,
+                    fontSize: 14,
                     color: contentColor,
                   ),
                 ),
               ],
             ),
-            Switch.adaptive(
-              value: isEnabled,
-              onChanged: onToggle,
-              activeColor: activeColor,
-              inactiveTrackColor: colors.textSub,
+            // 토글 사이즈 조절 
+            Transform.scale(
+              scale: 0.6,
+              child: Switch.adaptive(
+                value: isEnabled,
+                onChanged: onToggle,
+                activeColor: activeColor,
+                inactiveTrackColor: colors.textSub,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
 
         // --- 볼륨 슬라이더 및 퍼센트 표시 Row ---
         Row(
@@ -212,7 +160,7 @@ class SoundSettingsWidget extends StatelessWidget {
                 style: TextStyle(
                   color: contentColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 15,
+                  fontSize: 12,
                   // 숫자의 폭을 일정하게 유지하여 레이아웃이 흔들리는 것을 방지
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
