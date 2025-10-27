@@ -14,7 +14,7 @@ class GoldDisplay extends StatelessWidget {
           SizedBox(width: 4),
           Text(
             'Gold: 9999',
-            style: TextStyle(fontSize: 12, color: Colors.white),
+            style: TextStyle(fontSize: 12, color: Colors.black),
           ),
         ],
       ),
