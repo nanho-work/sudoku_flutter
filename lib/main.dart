@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'providers/app_providers.dart';
 import 'controllers/audio_controller.dart';
 import 'controllers/theme_controller.dart';
+import 'controllers/skin_controller.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login/login_screen.dart';
 import 'screens/main_layout.dart';
@@ -34,9 +35,12 @@ void main() async {
 
   // 앱을 즉시 실행 (SplashScreen까지 바로 진입)
   runApp(
-    AppProviders.register(
-      audioController: audioController,
-      themeController: themeController,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => audioController),
+        ChangeNotifierProvider(create: (_) => themeController),
+        ChangeNotifierProvider(create: (_) => SkinController()), // ✅ added
+      ],
       child: const MyAppWrapper(),
     ),
   );

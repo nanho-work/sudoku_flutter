@@ -1,28 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../controllers/skin_controller.dart';
 
 class ProfileSection extends StatelessWidget {
   const ProfileSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final skinController = context.watch<SkinController>();
+    final selectedChar = skinController.selectedChar;
+
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/profile_bg.png'),
-          fit: BoxFit.fill,
-        ),
-      ),
-      child: Center(
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.center, // 가로 가운데 정렬
-            children: const [
-            CircleAvatar(
-                radius: 12,
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person, size: 14, color: Colors.white),
-            ),
-          ],
-        ),
+      alignment: Alignment.center,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            radius: MediaQuery.of(context).size.height * 0.028, // 화면 높이의 3%
+            backgroundColor: Colors.grey.shade300,
+            child: selectedChar != null
+                ? ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: selectedChar.imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }

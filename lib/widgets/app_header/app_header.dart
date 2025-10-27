@@ -19,12 +19,7 @@ class _AppHeaderState extends State<AppHeader> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/header_line.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
+      
       child: Container(
         height: 60,
         padding: const EdgeInsets.only(top: 6),

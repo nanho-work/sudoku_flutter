@@ -41,7 +41,7 @@ class _RankingScreenState extends State<RankingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF7E4),
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('랭킹'),
         backgroundColor: const Color(0xFFE2C89F),
