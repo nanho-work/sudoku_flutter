@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../services/auth_service.dart';
+import '../../../screens/login/components/login_dialog.dart';
 
 /// 프로필 하단부 - 로그아웃 / 회원탈퇴 버튼
 class ProfileFooter extends StatelessWidget {
@@ -34,9 +35,18 @@ class ProfileFooter extends StatelessWidget {
       );
       if (confirmed == true) {
         await onConfirm();
-        if (context.mounted) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
+        if (!context.mounted) return;
+        Future.microtask(() {
+          if (context.mounted) {
+            Navigator.of(context, rootNavigator: true).popUntil((route) => route.isFirst);
+            // ✅ 로그인 다이얼로그 호출 추가
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => LoginDialog(),
+            );
+          }
+        });
       }
     }
 

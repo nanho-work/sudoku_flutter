@@ -22,6 +22,7 @@ class ProfileSection extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: () {
+              final user = context.read<UserModel>();
               showDialog(
                 context: context,
                 builder: (_) => Dialog(
@@ -45,7 +46,7 @@ class ProfileSection extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            ProfileHeader(user: context.read<UserModel>()),
+                            ProfileHeader(),
                             const SizedBox(height: 16),
                             const ProfileSkinDialog(),
                             const SizedBox(height: 16),

@@ -6,13 +6,17 @@ import '../../../controllers/skin_controller.dart';
 import '../../../screens/login/components/nickname_dialog.dart';
 
 class ProfileHeader extends StatelessWidget {
-  final UserModel user;
-  const ProfileHeader({super.key, required this.user});
+  const ProfileHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<UserModel?>();
     final skin = context.watch<SkinController>().selectedChar;
     final auth = AuthService();
+
+    if (user == null || user.uid.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Row(
       children: [
@@ -22,7 +26,9 @@ class ProfileHeader extends StatelessWidget {
             child: skin != null
                 ? CircleAvatar(
                     radius: 40,
-                    backgroundImage: NetworkImage(skin.imageUrl),
+                    backgroundImage: skin.imageUrl.startsWith('http')
+                        ? NetworkImage(skin.imageUrl)
+                        : AssetImage(skin.imageUrl) as ImageProvider,
                     backgroundColor: Colors.transparent,
                   )
                 : const SizedBox.shrink(),
@@ -45,7 +51,7 @@ class ProfileHeader extends StatelessWidget {
                     icon: const Icon(Icons.edit, size: 20),
                     onPressed: () => showDialog(
                       context: context,
-                      useRootNavigator: false, // ✅ 추가
+                      useRootNavigator: false,
                       builder: (_) => NicknameDialog(user: user),
                     ),
                   ),

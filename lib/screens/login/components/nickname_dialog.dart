@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../models/user_model.dart';
 import '../../../services/user_service.dart';
 import '../../main_layout.dart';
@@ -43,6 +44,7 @@ class _NicknameDialogState extends State<NicknameDialog> {
                   setState(() => _isSaving = true);
                   try {
                     await UserService().updateNickname(widget.user.uid, nickname);
+                    context.read<UserModel>().updateNickname(nickname);
                     if (!mounted) return;
                     Navigator.of(context, rootNavigator: false).pop();
 

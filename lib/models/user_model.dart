@@ -1,10 +1,12 @@
 // lib/models/user_model.dart
-class UserModel {
-  final String uid;
-  final String nickname;
-  final String loginType;
-  final String? email;
-  final int gold;
+import 'package:flutter/foundation.dart';
+
+class UserModel extends ChangeNotifier {
+  String uid;
+  String nickname;
+  String loginType;
+  String? email;
+  int gold;
 
   UserModel({
     required this.uid,
@@ -29,4 +31,20 @@ class UserModel {
         email: data['email'],
         gold: data['gold'] ?? 0,
       );
+
+  // ✅ 닉네임 변경 시 UI 즉시 갱신
+  void updateNickname(String newNickname) {
+    nickname = newNickname;
+    notifyListeners();
+  }
+
+  // ✅ 전체 갱신용
+  void updateFrom(UserModel updated) {
+    uid = updated.uid;
+    nickname = updated.nickname;
+    loginType = updated.loginType;
+    email = updated.email;
+    gold = updated.gold;
+    notifyListeners();
+  }
 }
