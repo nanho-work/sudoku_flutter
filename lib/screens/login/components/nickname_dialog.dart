@@ -5,7 +5,8 @@ import '../../main_layout.dart';
 
 class NicknameDialog extends StatefulWidget {
   final UserModel user;
-  const NicknameDialog({super.key, required this.user});
+  final bool isInitialSetup;
+  const NicknameDialog({super.key, required this.user, this.isInitialSetup = false});
 
   @override
   State<NicknameDialog> createState() => _NicknameDialogState();
@@ -43,14 +44,17 @@ class _NicknameDialogState extends State<NicknameDialog> {
                   try {
                     await UserService().updateNickname(widget.user.uid, nickname);
                     if (!mounted) return;
-                    Navigator.of(context).pop();
+                    Navigator.of(context, rootNavigator: false).pop();
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('닉네임 등록이 완료되었습니다')),
                     );
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MainLayout()),
-                    );
+                    if (widget.isInitialSetup) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MainLayout()),
+                      );
+                    }
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('닉네임 등록 실패: $e')),

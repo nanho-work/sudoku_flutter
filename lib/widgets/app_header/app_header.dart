@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sudoku_flutter/l10n/app_localizations.dart';
-import 'profile_section.dart';
+import 'profile/profile_section.dart';
 import 'gold_display.dart';
 import 'setting_dialog.dart';
 
@@ -35,9 +35,23 @@ class _AppHeaderState extends State<AppHeader> {
                 child: IconButton(
                   icon: const Icon(Icons.settings, color: Colors.black54, size: 32),
                   onPressed: () {
-                    showDialog(
+                    showGeneralDialog(
                       context: context,
-                      builder: (_) => const SettingsDialog(),
+                      barrierDismissible: true,
+                      barrierLabel: "Settings",
+                      barrierColor: Colors.black54,
+                      transitionDuration: const Duration(milliseconds: 300),
+                      pageBuilder: (_, __, ___) => const SettingsDialog(),
+                      transitionBuilder: (context, animation, secondaryAnimation, child) {
+                        final offsetAnimation = Tween<Offset>(
+                          begin: const Offset(1.0, 0.0), // 오른쪽에서 슬라이드 인
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ));
+                        return SlideTransition(position: offsetAnimation, child: child);
+                      },
                     );
                   },
                 ),

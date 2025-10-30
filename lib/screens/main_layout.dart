@@ -12,7 +12,7 @@ import 'info_screen.dart';
 import 'ranking/ranking_screen.dart';
 import 'guide_screen.dart';
 import '../widgets/app_footer.dart';
-import '../widgets/app_header/app_header.dart'; // AppHeader
+import '../widgets/app_header/app_header.dart';
 import '../services/ad_banner_service.dart';
 
 class MainLayout extends StatefulWidget {
@@ -37,12 +37,15 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final skinController = context.read<SkinController>();
-      skinController.loadAll(user.uid);
-    }
     WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+      await context.read<SkinController>().initSkins(userId); // ✅ 캐시 즉시 로드
+      audio = context.read<AudioController>();
+      audio.startMainBgm();
+    });
+
     AdBannerService.loadMainBanner(
       onLoaded: () => setState(() => _isBannerReady = true),
       onFailed: (error) {
@@ -50,11 +53,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
         setState(() => _isBannerReady = false);
       },
     );
-    audio = context.read<AudioController>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      audio.startMainBgm();
-      debugPrint("🎵 MainLayout initState: startMainBgm() called (delayed)");
-    });
   }
 
   @override
@@ -64,15 +62,10 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  void _onTap(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
+  void _onTap(int index) => setState(() => _currentIndex = index);
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    debugPrint("📱 Lifecycle changed: $state");
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       audio.pauseAll();
     } else if (state == AppLifecycleState.resumed) {
@@ -86,8 +79,11 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
     final skinController = context.watch<SkinController>();
     final selectedBg = skinController.selectedBg?.imageUrl;
 
+    if (selectedBg != null) {
+      precacheImage(CachedNetworkImageProvider(selectedBg), context);
+    }
+
     return Scaffold(
-      // backgroundColor: colors.background,
       extendBody: true,
       body: Stack(
         children: [
@@ -96,8 +92,8 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
               child: CachedNetworkImage(
                 imageUrl: selectedBg,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.black12),
-                errorWidget: (context, url, error) => Container(color: Colors.black12),
+                placeholder: (_, __) => Container(color: Colors.black12),
+                errorWidget: (_, __, ___) => Container(color: Colors.black12),
               ),
             ),
           SafeArea(
@@ -112,7 +108,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                         height: AdSize.banner.height.toDouble(),
                         color: const Color(0xFF1E272E),
                       ),
-                SizedBox(height : 6),
+                const SizedBox(height: 6),
                 const AppHeader(),
                 Expanded(child: _screens[_currentIndex]),
               ],

@@ -10,6 +10,7 @@ class SoundFiles {
   static const String hint = 'hint.mp3';
   static const String playBgm = 'play_bgm.mp3';
   static const String success = 'success.mp3';
+  static const String menuTab = 'menu_tab.mp3';
 }
 
 /// 배경음악(BGM)과 효과음(SFX)을 중앙에서 관리하는 서비스
@@ -110,6 +111,7 @@ class AudioService {
 
   /// SFX(효과음) 재생 - 저지연 + BGM 덕킹(옵션)
   Future<void> playSfx(String fileName, {double? volume, bool duckBgm = true}) async {
+    if (_sfxPlayer.state == PlayerState.playing) return; // 🔒 Prevent overlapping SFX
     if (volume != null) {
       _sfxVolume = volume.clamp(0.0, 1.0);
     }

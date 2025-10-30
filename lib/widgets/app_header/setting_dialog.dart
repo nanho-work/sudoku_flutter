@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sudoku_flutter/widgets/sound_settings.dart';
 import 'package:sudoku_flutter/widgets/theme_selector.dart';
+import 'package:sudoku_flutter/widgets/app_header/info_dialog.dart';
 
 class SettingsDialog extends StatelessWidget {
   const SettingsDialog({super.key});
@@ -29,7 +30,7 @@ class SettingsDialog extends StatelessWidget {
               const SizedBox(height: 16),
 
               // --- 테마 변경 ---
-              const Text('• 테마 변경', style: TextStyle(color: Colors.black54)),
+              const Text('• 게임 테마 변경', style: TextStyle(color: Colors.black54)),
               const SizedBox(height: 8),
               const ThemeSelectorWidget(),
               const SizedBox(height: 20),
@@ -40,24 +41,11 @@ class SettingsDialog extends StatelessWidget {
               const SoundSettingsWidget(),
               const SizedBox(height: 20),
 
-              // --- 계정 관련 ---
-              const Text('• 계정', style: TextStyle(color: Colors.black54)),
-              const SizedBox(height: 8),
               TextButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('로그아웃 기능 준비 중')),
-                  );
+                  showDialog(context: context, builder: (_) => const InfoDialog());
                 },
-                child: const Text('로그아웃', style: TextStyle(color: Colors.redAccent)),
-              ),
-              TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('탈퇴 기능 준비 중')),
-                  );
-                },
-                child: const Text('탈퇴', style: TextStyle(color: Colors.redAccent)),
+                child: const Text('앱 정보', style: TextStyle(color: Colors.black87)),
               ),
 
               Align(
