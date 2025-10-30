@@ -14,7 +14,7 @@ class RankingScreen extends StatefulWidget {
 }
 
 class _RankingScreenState extends State<RankingScreen> {
-  String _difficulty = 'normal';
+  String _difficulty = 'easy';
   String _weekKey = RankingService.currentWeekKey();
   late Stream<List<RankingRecord>> _rankingStream;
 
@@ -38,22 +38,49 @@ class _RankingScreenState extends State<RankingScreen> {
     });
   }
 
+  Future<void> _previousWeek() async {
+    final weeks = await RankingService.getAvailableWeeks(difficulty: _difficulty);
+    final idx = weeks.indexOf(_weekKey);
+    if (idx < weeks.length - 1) {
+      _updateWeek(weeks[idx + 1]);
+    }
+  }
+
+  Future<void> _nextWeek() async {
+    final weeks = await RankingService.getAvailableWeeks(difficulty: _difficulty);
+    final idx = weeks.indexOf(_weekKey);
+    if (idx > 0) {
+      _updateWeek(weeks[idx - 1]);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('랭킹'),
-        backgroundColor: const Color(0xFFE2C89F),
+        backgroundColor: Colors.transparent,
         centerTitle: true,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left),
+              onPressed: _previousWeek,
+            ),
+            Text(RankingService.formatWeekLabel(_weekKey)),
+            IconButton(
+              icon: const Icon(Icons.chevron_right),
+              onPressed: _nextWeek,
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
           RankingHeader(
             currentDifficulty: _difficulty,
-            currentWeek: _weekKey,
             onDifficultyChanged: _updateDifficulty,
-            onWeekChanged: _updateWeek,
           ),
           Expanded(
             child: StreamBuilder<List<RankingRecord>>(

@@ -9,6 +9,7 @@ class RankingRecord {
   final String device;
   final DateTime recordedAt;
   final String weekKey;
+  final String characterImageUrl;
 
   RankingRecord({
     required this.userId,
@@ -19,6 +20,7 @@ class RankingRecord {
     required this.device,
     required this.recordedAt,
     required this.weekKey,
+    this.characterImageUrl = '',
   });
 
   factory RankingRecord.fromMap(Map<String, dynamic> data) {
@@ -31,6 +33,7 @@ class RankingRecord {
       device: data['device'] ?? 'android',
       recordedAt: (data['recordedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       weekKey: data['weekKey'] ?? '',
+      characterImageUrl: data['characterImageUrl'] ?? '',
     );
   }
 
@@ -44,6 +47,7 @@ class RankingRecord {
       'device': device,
       'recordedAt': Timestamp.fromDate(recordedAt),
       'weekKey': weekKey,
+      'characterImageUrl': characterImageUrl,
     };
   }
 }

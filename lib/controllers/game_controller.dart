@@ -7,9 +7,12 @@ import '../services/sudoku_solver.dart';
 import '../services/sudoku_generator.dart';
 import '../services/mission_service.dart';
 import '../services/ranking_service.dart';
+import '../services/gold_service.dart';
 import '../models/ranking_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/user_service.dart';
+import 'package:provider/provider.dart';
+import 'skin_controller.dart';
 
 class GameController extends ChangeNotifier {
   final Map<String, String> difficultyLabels = {};
@@ -169,7 +172,7 @@ class GameController extends ChangeNotifier {
   }
 
   // ✅ 퍼즐 완성 공통 처리: "저장 → 검증 → 알림" (순서 중요)
-  Future<void> _onSolved() async {
+  Future<void> _onSolved(BuildContext context) async {
     if (missionDate != null) {
       try {
         await MissionService.setCleared(missionDate!);
@@ -195,6 +198,15 @@ class GameController extends ChangeNotifier {
       // fallback to guest
     }
 
+    // Attempt to get characterImageUrl from SkinController
+    String characterImageUrl = '';
+    try {
+      final skinController = Provider.of<SkinController>(context, listen: false);
+      characterImageUrl = skinController.selectedChar?.imageUrl ?? '';
+    } catch (_) {
+      characterImageUrl = '';
+    }
+
     final record = RankingRecord(
       userId: userId,
       nickname: nickname,
@@ -204,9 +216,38 @@ class GameController extends ChangeNotifier {
       device: 'android',
       recordedAt: DateTime.now(),
       weekKey: await RankingService.currentWeekKey(),
+      characterImageUrl: characterImageUrl,
     );
 
     await RankingService.saveOrUpdateBestRecord(record);
+
+    // ✅ 난이도별 골드 지급
+    int reward = 0;
+    switch (difficulty) {
+      case 'easy':
+        reward = 5;
+        break;
+      case 'normal':
+        reward = 10;
+        break;
+      case 'hard':
+        reward = 20;
+        break;
+      case 'extreme':
+        reward = 30;
+        break;
+      default:
+        reward = 0;
+    }
+
+    try {
+      if (userId != 'guest' && reward > 0) {
+        await GoldService.addGold(userId, reward, reason: 'game_clear');
+        print('✅ 골드 지급 완료: +$reward');
+      }
+    } catch (e) {
+      print('❌ 골드 지급 실패: $e');
+    }
 
     // 저장이 끝난 뒤 알림 (여기서 UI가 pop될 수 있음)
     _safeNotify();
@@ -252,7 +293,7 @@ class GameController extends ChangeNotifier {
 
       if (_isSolved()) {
         // ✅ 저장 먼저
-        await _onSolved();
+        await _onSolved(context);
       } else {
         _safeNotify();
       }
@@ -335,7 +376,7 @@ class GameController extends ChangeNotifier {
     hintsRemaining--;
 
     if (_isSolved()) {
-      await _onSolved(); // ✅ 저장 먼저
+      await _onSolved(context); // ✅ 저장 먼저
     } else {
       _safeNotify();
     }
@@ -405,7 +446,7 @@ class GameController extends ChangeNotifier {
     }
 
     if (_isSolved()) {
-      await _onSolved(); // ✅ 저장 먼저
+      await _onSolved(context); // ✅ 저장 먼저
     } else {
       _safeNotify();
     }

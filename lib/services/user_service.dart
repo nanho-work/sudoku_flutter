@@ -21,11 +21,18 @@ class UserService {
         email: user.email ?? '',
         loginType: loginType,
       );
-      await docRef.set(newUser.toMap());
+      await docRef.set({
+        ...newUser.toMap(),
+        'gold': 300,
+      });
       return newUser;
+    } else {
+      final data = snapshot.data()!;
+      if (!data.containsKey('gold') || data['gold'] == null) {
+        await docRef.update({'gold': 300});
+      }
+      return UserModel.fromMap(data);
     }
-
-    return UserModel.fromMap(snapshot.data()!);
   }
 
   // 🔹 [2] 유저 정보 수정 및 삭제
@@ -107,5 +114,16 @@ class UserService {
         .limit(1)
         .get();
     return query.docs.isNotEmpty;
+  }
+
+  // 🔹 [6] 실시간 유저 데이터 구독 (예: 골드 등 변화 감지)
+  Stream<UserModel?> streamUserModel() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const Stream.empty();
+    return _db
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.exists ? UserModel.fromMap(doc.data()!) : null);
   }
 }

@@ -4,12 +4,14 @@ class UserModel {
   final String nickname;
   final String loginType;
   final String? email;
+  final int gold;
 
   UserModel({
     required this.uid,
     required this.nickname,
     required this.loginType,
     this.email,
+    this.gold = 0,
   });
 
   Map<String, dynamic> toMap() => {
@@ -17,6 +19,7 @@ class UserModel {
         'nickname': nickname,
         'login_type': loginType,
         'email': email,
+        'gold': gold,
       };
 
   factory UserModel.fromMap(Map<String, dynamic> data) => UserModel(
@@ -24,5 +27,6 @@ class UserModel {
         nickname: data['nickname'],
         loginType: data['login_type'],
         email: data['email'],
+        gold: data['gold'] ?? 0,
       );
 }

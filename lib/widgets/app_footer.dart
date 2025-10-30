@@ -22,7 +22,7 @@ class AppFooter extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           currentIndex: currentIndex,
           onTap: onTap,
-          backgroundColor: colors.background,
+          backgroundColor: colors.background.withOpacity(0.5),
           selectedItemColor: colors.bottomItemUnselected,
           unselectedItemColor: colors.cellSelected,
           elevation: 12,

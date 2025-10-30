@@ -88,6 +88,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
 
     return Scaffold(
       // backgroundColor: colors.background,
+      extendBody: true,
       body: Stack(
         children: [
           if (selectedBg != null)

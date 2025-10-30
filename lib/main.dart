@@ -5,8 +5,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'models/user_model.dart';
+import 'services/user_service.dart';
 
 import 'providers/app_providers.dart';
 import 'controllers/audio_controller.dart';
@@ -17,9 +20,7 @@ import 'screens/login/login_screen.dart';
 import 'screens/main_layout.dart';
 import 'l10n/app_localizations.dart';
 import 'services/ad_reward_service.dart';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // 자동 생성 파일
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => audioController),
         ChangeNotifierProvider(create: (_) => themeController),
         ChangeNotifierProvider(create: (_) => SkinController()), // ✅ added
+        StreamProvider<UserModel?>.value( // ✅ 추가
+          value: UserService().streamUserModel(), // 실시간 gold 반영
+          initialData: null,
+        ),
       ],
       child: const MyAppWrapper(),
     ),

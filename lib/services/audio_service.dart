@@ -139,6 +139,19 @@ class AudioService {
     });
   }
 
+  /// SFX 중지 (현재 재생 중인 효과음 강제 정지)
+  Future<void> stopSfx() async {
+    try {
+      await _sfxPlayer.stop();
+      // 필요 시 덕킹 상태 복원
+      if (_isDucking && _currentBgm != null) {
+        await _endDuck();
+      }
+    } catch (e) {
+      print('❌ stopSfx error: $e');
+    }
+  }
+
   /// SFX 볼륨 설정 (0.0 ~ 1.0)
   Future<void> setSfxVolume(double volume) async {
     _sfxVolume = volume.clamp(0.0, 1.0);

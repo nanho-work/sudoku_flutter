@@ -178,4 +178,14 @@ class RankingService {
         .snapshots()
         .map((snap) => snap.docs.map((d) => RankingRecord.fromMap(d.data())).toList());
   }
+  /// 🔹 주차 키를 사람이 보기 좋은 형식으로 변환 ("2025-W44" → "2025년 44주차")
+  static String formatWeekLabel(String weekKey) {
+    final parts = weekKey.split('-W');
+    if (parts.length == 2) {
+      final year = parts[0];
+      final week = parts[1];
+      return '${year}년 ${week}주차';
+    }
+    return weekKey;
+  }
 }

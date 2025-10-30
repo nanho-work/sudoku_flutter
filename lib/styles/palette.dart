@@ -68,8 +68,8 @@ class LightAppColors implements AppColorPalette {
   @override final Color gradientEnd = const Color(0xFFFFFFFF);
   @override final Color buttonBackground = const Color(0xFFB3E5FC);
   @override final Color buttonText = const Color(0xFF212121);
-  @override final Color bottomItemSelected = const Color(0xFFB3E5FC);
-  @override final Color bottomItemUnselected = const Color(0xFFCFD8DC);
+  @override final Color bottomItemSelected = const Color(0xFF3A3A3A);
+  @override final Color bottomItemUnselected = const Color(0xFF9E9E9E);
   @override final Color cellSelected = const Color(0xFFB3E5FC);
   @override final Color cellInvalid = const Color(0xFFFFCDD2);
   @override final Color cellHighlighted = const Color(0xFFF5F5F5);
@@ -101,8 +101,8 @@ class DarkAppColors implements AppColorPalette {
   @override final Color gradientEnd = const Color(0xFF121212);
   @override final Color buttonBackground = const Color(0xFF3C4F70);
   @override final Color buttonText = const Color(0xFFE0E0E0);
-  @override final Color bottomItemSelected = const Color(0xFF8AB4F8);
-  @override final Color bottomItemUnselected = const Color(0xFF3C4043);
+  @override final Color bottomItemSelected = const Color(0xFFFFC107);
+  @override final Color bottomItemUnselected = const Color(0xFF757575);
 
   @override final Color cellSelected = const Color(0xFF3C4F70);
   @override final Color cellInvalid = const Color(0xFFB85C5C);
@@ -134,8 +134,8 @@ class PinkAppColors implements AppColorPalette {
   @override final Color gradientEnd = const Color(0xFFFFEBEE);
   @override final Color buttonBackground = const Color(0xFFF8BBD0);
   @override final Color buttonText = const Color(0xFF5D4037);
-  @override final Color bottomItemSelected = const Color(0xFFF8BBD0);
-  @override final Color bottomItemUnselected = const Color(0xFFE1BEE7);
+  @override final Color bottomItemSelected = const Color(0xFFD81B60);
+  @override final Color bottomItemUnselected = const Color(0xFFF48FB1);
   @override final Color cellSelected = const Color(0xFFF8BBD0);
   @override final Color cellInvalid = const Color(0xFFFFCDD2);
   @override final Color cellHighlighted = const Color(0xFFFFE4EC);

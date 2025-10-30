@@ -112,23 +112,32 @@ class AudioController extends ChangeNotifier {
   /// -------------------------------
   /// 재생 관련
   /// -------------------------------
-  void playSfx(String assetName) async {
+  Future<void> playSfx(String assetName) async {
     if (!_sfxEnabled) return;
 
-    // 🔊 BGM 잠시 줄이기
-    if (_bgmEnabled) {
-      await _audioService.setBgmVolume(_bgmVolume * 0.5);
-      debugPrint("🎚️ BGM 볼륨 50%로 감소");
-    }
+    try {
+      if (_bgmEnabled) {
+        await _audioService.setBgmVolume(_bgmVolume * 0.5);
+        debugPrint("🎚️ BGM 볼륨 50%로 감소");
+      }
 
-    await _audioService.playSfx(assetName, volume: _sfxVolume);
-    debugPrint("✅ 효과음 재생 완료: $assetName");
-
-    // 🎚️ 효과음 끝나면 복원
-    if (_bgmEnabled) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      await _audioService.setBgmVolume(_bgmVolume);
-      debugPrint("🔄 BGM 볼륨 복원 완료: $_bgmVolume");
+      await _audioService.stopSfx(); // ✅ 중복 재생 방지
+      await _audioService.playSfx(assetName, volume: _sfxVolume).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint("⚠️ SFX Timeout: $assetName");
+          return;
+        },
+      );
+      debugPrint("✅ 효과음 재생 완료: $assetName");
+    } catch (e) {
+      debugPrint("❌ playSfx error: $e");
+    } finally {
+      if (_bgmEnabled) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        await _audioService.setBgmVolume(_bgmVolume);
+        debugPrint("🔄 BGM 볼륨 복원 완료: $_bgmVolume");
+      }
     }
   }
 
