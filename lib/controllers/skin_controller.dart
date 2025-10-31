@@ -120,4 +120,29 @@ class SkinController extends ChangeNotifier {
       await SkinService.syncFromLocal(userId, _state!);
     } catch (_) {}
   }
+  /// ✅ 앱 시작 시 캐릭터 목록 프리로드용
+  Future<void> loadSkins() async {
+    try {
+      final cachedCatalog = await SkinLocalCache.loadCatalog();
+      _catalog = cachedCatalog ?? SkinService.fallbackCatalog();
+      _state ??= SkinState(
+        selectedCharId: 'char_koofy_lv1',
+        selectedBgId: 'bg_koofy_lv1',
+        unlockedIds: {'char_koofy_lv1', 'bg_koofy_lv1'},
+        updatedAt: DateTime.now(),
+      );
+      notifyListeners();
+      debugPrint('✅ SkinController.loadSkins() 캐시 기반 프리로드 완료');
+    } catch (e) {
+      _catalog = SkinService.fallbackCatalog();
+      _state = SkinState(
+        selectedCharId: 'char_koofy_lv1',
+        selectedBgId: 'bg_koofy_lv1',
+        unlockedIds: {'char_koofy_lv1', 'bg_koofy_lv1'},
+        updatedAt: DateTime.now(),
+      );
+      notifyListeners();
+      debugPrint('⚠️ SkinController.loadSkins() 실패: $e');
+    }
+  }
 }

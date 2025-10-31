@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -10,7 +11,6 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'models/user_model.dart';
 import 'services/user_service.dart';
-
 import 'providers/app_providers.dart';
 import 'controllers/audio_controller.dart';
 import 'controllers/theme_controller.dart';
@@ -28,11 +28,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
 
   // 컨트롤러 생성
   final audioController = AudioController();
   final themeController = ThemeController();
+  final skinController = SkinController();
+
+  // ✅ 캐릭터 데이터 미리 로드 (지연 방지)
+  await skinController.loadSkins();
 
   // 앱을 즉시 실행 (SplashScreen까지 바로 진입)
   runApp(
@@ -40,11 +43,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => audioController),
         ChangeNotifierProvider(create: (_) => themeController),
-        ChangeNotifierProvider(create: (_) => SkinController()), // ✅ added
-        StreamProvider<UserModel?>.value( // ✅ 추가
-          value: UserService().streamUserModel(), // 실시간 gold 반영
-          initialData: null,
-        ),
+        ChangeNotifierProvider(create: (_) => skinController),
       ],
       child: const MyAppWrapper(),
     ),
@@ -84,8 +83,20 @@ class MyAppWrapper extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        final isLoggedIn = snapshot.data != null;
-        return MyApp(isLoggedIn: isLoggedIn);
+        final user = snapshot.data;
+        final isLoggedIn = user != null;
+
+        return MultiProvider(
+          providers: [
+            StreamProvider<UserModel?>.value(
+              value: isLoggedIn
+                  ? UserService().streamUserModel()
+                  : const Stream.empty(),
+              initialData: null,
+            ),
+          ],
+          child: MyApp(isLoggedIn: isLoggedIn),
+        );
       },
     );
   }
@@ -99,9 +110,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeController>(
       builder: (context, themeController, _) {
-        final colors = themeController.colors;
-        final brightness = themeController.brightness;
-
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Koofy Sudoku',
@@ -155,11 +163,9 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
     if (!_isSplashFinished) {
       return const SplashScreen();
     } else {
-      if (widget.isLoggedIn) {
-        return const MainLayout();
-      } else {
-        return const LoginScreen();
-      }
+      return widget.isLoggedIn
+          ? const MainLayout()
+          : const LoginScreen();
     }
   }
 }

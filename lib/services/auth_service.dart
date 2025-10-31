@@ -1,3 +1,4 @@
+// lib/services/auth_service.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
@@ -7,18 +8,11 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final UserService _userService = UserService();
 
-  // =======================================================
-  // 🔹 로그인 상태 스트림
-  // =======================================================
   Stream<User?> get authStateChanges => _auth.authStateChanges();
-
-  // =======================================================
-  // 🔹 현재 UID
-  // =======================================================
   String? get currentUid => _auth.currentUser?.uid;
 
   // =======================================================
-  // 🔹 Google 로그인
+  // 🔹 Google 로그인 (일반 로그인 시 빠르게 처리)
   // =======================================================
   Future<UserModel?> signInWithGoogle() async {
     try {
@@ -35,7 +29,6 @@ class AuthService {
       final user = userCredential.user;
       if (user == null) return null;
 
-      // ✅ Firestore 초기화
       return await _userService.initializeUserData(user, loginType: 'google');
     } catch (e) {
       print('❌ Google 로그인 오류: $e');
@@ -60,14 +53,24 @@ class AuthService {
   }
 
   // =======================================================
-  // 🔹 게스트 → 구글 계정 연동
+  // 🔹 게스트 → 구글 계정 전환 (disconnect 포함)
   // =======================================================
   Future<UserModel?> linkGuestToGoogle() async {
     final user = _auth.currentUser;
     if (user == null || !user.isAnonymous) return null;
 
     try {
-      final googleUser = await GoogleSignIn(scopes: ['email', 'profile']).signIn();
+      // 1. Get guest UID and its user data
+      final guestUid = user.uid;
+      final guestUserData = await _userService.getUserModel(guestUid);
+
+      // 2. Disconnect and sign out GoogleSignIn
+      final gsi = GoogleSignIn(scopes: ['email', 'profile']);
+      try { await gsi.disconnect(); } catch (_) {}
+      await gsi.signOut();
+
+      // 3. Sign in with Google
+      final googleUser = await gsi.signIn();
       if (googleUser == null) return null;
 
       final googleAuth = await googleUser.authentication;
@@ -76,19 +79,28 @@ class AuthService {
         accessToken: googleAuth.accessToken,
       );
 
-      final linkedUserCredential = await user.linkWithCredential(credential);
-      final linkedUser = linkedUserCredential.user;
-      if (linkedUser == null) return null;
+      final userCredential = await _auth.signInWithCredential(credential);
+      final newUser = userCredential.user;
+      if (newUser == null) return null;
 
-      // 🔹 기존 유저 데이터 갱신
-      await _userService.updateUserData(linkedUser.uid, {
-        'login_type': 'google',
-        'nickname': linkedUser.displayName ?? '사용자',
-        'email': linkedUser.email ?? 'unknown@koofy.games',
-        'last_login': DateTime.now(),
-      });
+      // 5. Initialize user data for new user
+      await _userService.initializeUserData(newUser, loginType: 'google');
 
-      return await _userService.getUserModel(linkedUser.uid);
+      // 6. Merge key data fields from guest user to new user
+      if (guestUserData != null) {
+        await _userService.updateUserData(newUser.uid, {
+          'gold': guestUserData.gold,
+          'nickname': newUser.displayName ?? '사용자',
+          'email': newUser.email ?? 'unknown@koofy.games',
+          'last_login': DateTime.now(),
+        });
+      }
+
+      // 7. Optionally delete old guest Firestore data
+      await _userService.deleteUserData(guestUid);
+
+      // 8. Return migrated UserModel for new user
+      return await _userService.getUserModel(newUser.uid);
     } catch (e) {
       print('❌ 게스트 → 구글 연동 오류: $e');
       return null;
@@ -116,8 +128,8 @@ class AuthService {
       final user = _auth.currentUser;
       if (user == null) return;
 
-      await _userService.deleteUserData(user.uid); // 🔹 Firestore 데이터 삭제
-      await user.delete(); // 🔹 Auth 계정 삭제
+      await _userService.deleteUserData(user.uid);
+      await user.delete();
       print('✅ 회원 탈퇴 완료');
     } catch (e) {
       print('❌ 회원 탈퇴 실패: $e');

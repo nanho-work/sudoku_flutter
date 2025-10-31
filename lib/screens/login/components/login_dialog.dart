@@ -1,4 +1,6 @@
+// lib/screens/login/components/login_dialog.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../controllers/audio_controller.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/user_service.dart';
@@ -6,7 +8,6 @@ import '../../../models/user_model.dart';
 import '../../main_layout.dart';
 import 'nickname_dialog.dart';
 import 'login_buttons.dart';
-import 'package:provider/provider.dart';
 
 class LoginDialog extends StatefulWidget {
   const LoginDialog({super.key});
@@ -17,54 +18,82 @@ class LoginDialog extends StatefulWidget {
 
 class _LoginDialogState extends State<LoginDialog> {
   final AuthService _authService = AuthService();
+  bool _isBusy = false;
 
-  Future<void> _handleGoogleLogin(BuildContext context) async {
-    final audio = Provider.of<AudioController>(context, listen: false);
-    audio.playSfx('login_touch.mp3');
-
+  Future<void> _showLoading() async {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.white)),
     );
+  }
 
-    final user = await _authService.signInWithGoogle();
-    Navigator.of(context, rootNavigator: true).pop(); // close loading
+  Future<void> _hideLoading() async {
+    if (mounted && Navigator.canPop(context)) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
 
-    if (user != null) {
-      Navigator.of(context, rootNavigator: true).pop(); // close login dialog
+  Future<void> _handleGoogleLogin() async {
+    if (_isBusy) return;
+    _isBusy = true;
 
+    final audio = context.read<AudioController>();
+    audio.playSfx('login_touch.mp3');
+    await _showLoading();
+
+    try {
+      final user = await _authService.signInWithGoogle();
+      await _hideLoading();
+
+      if (user == null) return;
+
+      // 로그인 다이얼로그 닫기
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+
+      // 닉네임 체크
       final hasNickname = await UserService().isNicknameRegistered(user.uid);
-      if (!hasNickname) {
-        await showDialog(
+      if (!hasNickname && mounted) {
+        final ok = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
-          builder: (_) => NicknameDialog(user: user),
+          builder: (_) => NicknameDialog(user: user, isInitialSetup: true),
         );
+        if (ok != true) return;
       }
 
       if (!mounted) return;
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainLayout()));
+    } catch (e) {
+      await _hideLoading();
+      print('❌ Google 로그인 오류: $e');
+    } finally {
+      _isBusy = false;
     }
   }
 
-  Future<void> _handleGuestLogin(BuildContext context) async {
-    final audio = Provider.of<AudioController>(context, listen: false);
+  Future<void> _handleGuestLogin() async {
+    if (_isBusy) return;
+    _isBusy = true;
+
+    final audio = context.read<AudioController>();
     audio.playSfx('login_touch.mp3');
+    await _showLoading();
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.white)),
-    );
+    try {
+      final user = await _authService.signInAsGuest();
+      await _hideLoading();
 
-    final user = await _authService.signInAsGuest();
-    Navigator.of(context, rootNavigator: true).pop(); // close loading
-
-    if (user != null) {
-      Navigator.of(context, rootNavigator: true).pop(); // close login dialog
+      if (user == null) return;
       if (!mounted) return;
+
+      Navigator.of(context, rootNavigator: true).pop();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainLayout()));
+    } catch (e) {
+      await _hideLoading();
+      print('❌ 게스트 로그인 오류: $e');
+    } finally {
+      _isBusy = false;
     }
   }
 
@@ -88,18 +117,16 @@ class _LoginDialogState extends State<LoginDialog> {
               ),
             ],
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/images/koofy_logo.png', height: 100),
-                const SizedBox(height: 20),
-                LoginButtons(
-                  onGooglePressed: () => _handleGoogleLogin(context),
-                  onGuestPressed: () => _handleGuestLogin(context),
-                ),
-              ],
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/images/koofy_logo.png', height: 100),
+              const SizedBox(height: 20),
+              LoginButtons(
+                onGooglePressed: _handleGoogleLogin,
+                onGuestPressed: _handleGuestLogin,
+              ),
+            ],
           ),
         ),
       ),
