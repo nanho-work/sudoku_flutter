@@ -1,11 +1,10 @@
-// lib/services/user_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 
 /// UserService
-/// - Firestore의 'users' 컬렉션을 관리.
-/// - 유저 생성, 수정, 삭제, 닉네임 중복검사 및 변경 처리 담당.
+/// Firestore의 'users' 컬렉션을 관리.
+/// - 유저 생성, 수정, 삭제, 닉네임 관리 포함.
 class UserService {
   final _db = FirebaseFirestore.instance;
 
@@ -17,19 +16,27 @@ class UserService {
     if (!snapshot.exists) {
       final newUser = UserModel(
         uid: user.uid,
-        nickname: '', // 구글 displayName 무시 → 강제로 닉네임 등록 유도
+        nickname: '',
         email: user.email ?? '',
         loginType: loginType,
+        gold: 300,
+        gems: 10,
+        exp: 0,
       );
-      await docRef.set({
-        ...newUser.toMap(),
-        'gold': 300,
-      });
+      await docRef.set(newUser.toMap());
       return newUser;
     } else {
       final data = snapshot.data()!;
-      if (!data.containsKey('gold') || data['gold'] == null) {
-        await docRef.update({'gold': 300});
+      final updateData = <String, dynamic>{};
+
+      if (!data.containsKey('gold')) updateData['gold'] = 300;
+      if (!data.containsKey('gems')) updateData['gems'] = 10;
+      if (!data.containsKey('exp')) updateData['exp'] = 0;
+
+      if (updateData.isNotEmpty) {
+        await docRef.update(updateData);
+        final latest = await docRef.get(); // ✅ 최신 스냅샷 반영
+        return UserModel.fromMap(latest.data()!);
       }
       return UserModel.fromMap(data);
     }
@@ -46,21 +53,13 @@ class UserService {
 
   // 🔹 [3] 닉네임 등록 및 변경
   Future<void> updateNickname(String uid, String newNickname) async {
-    // 1️⃣ 입력 검증
     final cleanNickname = newNickname.trim();
-    if (cleanNickname.isEmpty) {
-      throw Exception('닉네임을 입력해주세요.');
-    }
-
-    // 닉네임 형식 제한 (한글, 영문, 숫자만, 2~12자)
+    if (cleanNickname.isEmpty) throw Exception('닉네임을 입력해주세요.');
     if (!RegExp(r'^[a-zA-Z0-9가-힣]{2,12}$').hasMatch(cleanNickname)) {
       throw Exception('닉네임은 2~12자의 한글, 영문, 숫자만 가능합니다.');
     }
 
-    // 대소문자 통일
     final lowerNick = cleanNickname.toLowerCase();
-
-    // 2️⃣ 유저 정보 조회
     final userRef = _db.collection('users').doc(uid);
     final userSnap = await userRef.get();
 
@@ -71,27 +70,14 @@ class UserService {
       throw Exception('게스트 계정은 닉네임 변경이 불가능합니다.');
     }
 
-    // 3️⃣ Firestore 트랜잭션 (중복 검사 + 등록 + 기존 닉네임 삭제)
     final nickRef = _db.collection('nicknames').doc(lowerNick);
     final oldNickname = (userData['nickname'] ?? '').toString().toLowerCase();
 
     await _db.runTransaction((txn) async {
-      // 3-1. 중복 닉네임 확인
       final nickDoc = await txn.get(nickRef);
-      if (nickDoc.exists) {
-        throw Exception('이미 사용 중인 닉네임입니다.');
-      }
-
-      // 3-2. 기존 닉네임이 있으면 제거
-      if (oldNickname.isNotEmpty) {
-        final oldRef = _db.collection('nicknames').doc(oldNickname);
-        txn.delete(oldRef);
-      }
-
-      // 3-3. 새 닉네임 등록 (uid 매핑)
+      if (nickDoc.exists) throw Exception('이미 사용 중인 닉네임입니다.');
+      if (oldNickname.isNotEmpty) txn.delete(_db.collection('nicknames').doc(oldNickname));
       txn.set(nickRef, {'uid': uid});
-
-      // 3-4. 유저 문서 업데이트
       txn.update(userRef, {
         'nickname': cleanNickname,
         'nicknameLower': lowerNick,
@@ -106,24 +92,18 @@ class UserService {
     if (!snapshot.exists) return null;
     return UserModel.fromMap(snapshot.data()!);
   }
+
   // 🔹 [5] 닉네임 등록 여부 확인
   Future<bool> isNicknameRegistered(String uid) async {
-    final query = await _db
-        .collection('nicknames')
-        .where('uid', isEqualTo: uid)
-        .limit(1)
-        .get();
+    final query = await _db.collection('nicknames').where('uid', isEqualTo: uid).limit(1).get();
     return query.docs.isNotEmpty;
   }
 
-  // 🔹 [6] 실시간 유저 데이터 구독 (예: 골드 등 변화 감지)
+  // 🔹 [6] 실시간 유저 데이터 구독
   Stream<UserModel?> streamUserModel() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return const Stream.empty();
-    return _db
-        .collection('users')
-        .doc(uid)
-        .snapshots()
-        .map((doc) => doc.exists ? UserModel.fromMap(doc.data()!) : null);
+    return _db.collection('users').doc(uid).snapshots().map(
+        (doc) => doc.exists ? UserModel.fromMap(doc.data()!) : null);
   }
 }

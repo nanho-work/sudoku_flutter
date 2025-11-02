@@ -65,6 +65,8 @@ firebase_app_id_file.json
 firebase-debug.log
 .firebase/
 .firebaserc
+# Admin SDK key (private, must never be committed)
+firebase_service_account.json
 
 # ---------------------------
 # Android / iOS / Desktop 빌드 산출물만 무시

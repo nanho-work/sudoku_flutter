@@ -8,12 +8,13 @@ import '../controllers/theme_controller.dart';
 import '../controllers/skin_controller.dart';
 import 'home/home_screen.dart';
 import 'mission_screen.dart';
-import 'info_screen.dart';
-import 'ranking/ranking_screen.dart';
 import 'guide_screen.dart';
+import 'ranking/ranking_screen.dart';
+import 'stage/stage_select_screen.dart';
 import '../widgets/app_footer.dart';
 import '../widgets/app_header/app_header.dart';
 import '../services/ad_banner_service.dart';
+import '../providers/stage_progress_provider.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -30,6 +31,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   final List<Widget> _screens = const [
     HomeScreen(),
     MissionScreen(),
+    StageSelectScreen(),  // ✅ 추가됨
     GuideScreen(),
     RankingScreen(),
   ];
@@ -41,9 +43,13 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
-      await context.read<SkinController>().initSkins(userId); // ✅ 캐시 즉시 로드
+      await context.read<SkinController>().initSkins(userId);
       audio = context.read<AudioController>();
       audio.startMainBgm();
+
+      // ✅ Stage 진행도 초기화 (선택)
+      final stageProvider = context.read<StageProgressProvider?>();
+      stageProvider?.loadProgress([]);
     });
 
     AdBannerService.loadMainBanner(

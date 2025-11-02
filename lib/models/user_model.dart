@@ -1,4 +1,3 @@
-// lib/models/user_model.dart
 import 'package:flutter/foundation.dart';
 
 class UserModel extends ChangeNotifier {
@@ -7,6 +6,8 @@ class UserModel extends ChangeNotifier {
   String loginType;
   String? email;
   int gold;
+  int gems;   // ✅ 신규
+  int exp;    // ✅ 신규
 
   UserModel({
     required this.uid,
@@ -14,6 +15,8 @@ class UserModel extends ChangeNotifier {
     required this.loginType,
     this.email,
     this.gold = 0,
+    this.gems = 0,   // ✅ 기본값
+    this.exp = 0,    // ✅ 기본값
   });
 
   Map<String, dynamic> toMap() => {
@@ -22,6 +25,8 @@ class UserModel extends ChangeNotifier {
         'login_type': loginType,
         'email': email,
         'gold': gold,
+        'gems': gems,   // ✅
+        'exp': exp,     // ✅
       };
 
   factory UserModel.fromMap(Map<String, dynamic> data) => UserModel(
@@ -30,6 +35,8 @@ class UserModel extends ChangeNotifier {
         loginType: data['login_type'],
         email: data['email'],
         gold: data['gold'] ?? 0,
+        gems: data['gems'] ?? 0,   // ✅
+        exp: data['exp'] ?? 0,     // ✅
       );
 
   // ✅ 닉네임 변경 시 UI 즉시 갱신
@@ -45,6 +52,8 @@ class UserModel extends ChangeNotifier {
     loginType = updated.loginType;
     email = updated.email;
     gold = updated.gold;
+    gems = updated.gems;   // ✅
+    exp = updated.exp;     // ✅
     notifyListeners();
   }
 }

@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -10,34 +9,50 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'models/user_model.dart';
+
 import 'services/user_service.dart';
-import 'providers/app_providers.dart';
+import 'services/stage_service.dart';
+import 'services/ad_reward_service.dart';
+
+import 'providers/stage_progress_provider.dart';
+
 import 'controllers/audio_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'controllers/skin_controller.dart';
+
 import 'screens/splash_screen.dart';
 import 'screens/login/login_screen.dart';
 import 'screens/main_layout.dart';
+
 import 'l10n/app_localizations.dart';
-import 'services/ad_reward_service.dart';
+
 import 'firebase_options.dart';
 
-void main() async {
+
+Future<void> main() async {
+  debugPrint("🟢 [MAIN] 앱 실행 시작");
   WidgetsFlutterBinding.ensureInitialized();
+  debugPrint("✅ Flutter 바인딩 초기화 완료");
+  debugPrint("🟣 Firebase 초기화 중...");
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint("✅ Firebase 초기화 완료");
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  debugPrint("🟣 Firestore 스테이지 동기화 시작");
+  try {
+    await StageService().syncStagesFromFirestore();
+    debugPrint("✅ Firestore 스테이지 동기화 성공");
+  } catch (e) {
+    debugPrint("❌ Firestore 스테이지 동기화 실패: $e");
+  }
 
-  // 컨트롤러 생성
+  debugPrint("🟣 컨트롤러 초기화 시작");
   final audioController = AudioController();
   final themeController = ThemeController();
   final skinController = SkinController();
-
-  // ✅ 캐릭터 데이터 미리 로드 (지연 방지)
   await skinController.loadSkins();
+  debugPrint("✅ 컨트롤러 초기화 완료");
 
-  // 앱을 즉시 실행 (SplashScreen까지 바로 진입)
+  debugPrint("🟣 runApp 실행 중...");
   runApp(
     MultiProvider(
       providers: [
@@ -48,8 +63,8 @@ void main() async {
       child: const MyAppWrapper(),
     ),
   );
+  debugPrint("✅ runApp 완료 (빌드 대기 중)");
 
-  // 백그라운드 초기화 (광고 승인 대기 중이라도 앱 실행됨)
   unawaited(_initializeAsync(audioController, themeController));
 }
 
@@ -57,6 +72,7 @@ Future<void> _initializeAsync(
   AudioController audioController,
   ThemeController themeController,
 ) async {
+  debugPrint("🟡 [_initializeAsync] 비동기 초기화 시작");
   try {
     if (!kIsWeb) {
       try {
@@ -66,10 +82,9 @@ Future<void> _initializeAsync(
         debugPrint("⚠️ 광고 초기화 실패 (무시됨): $e");
       }
     }
-
     await audioController.init();
     await themeController.loadTheme();
-    debugPrint("✅ 비동기 초기화 완료");
+    debugPrint("✅ [_initializeAsync] 비동기 초기화 완료");
   } catch (e, st) {
     debugPrint("❌ 초기화 중 오류 발생: $e\n$st");
   }
@@ -85,7 +100,7 @@ class MyAppWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         final user = snapshot.data;
         final isLoggedIn = user != null;
-
+        debugPrint("🟣 [MyAppWrapper] FirebaseAuth 상태 감지됨: ${isLoggedIn ? "로그인됨" : "로그아웃"}");
         return MultiProvider(
           providers: [
             StreamProvider<UserModel?>.value(
@@ -94,6 +109,10 @@ class MyAppWrapper extends StatelessWidget {
                   : const Stream.empty(),
               initialData: null,
             ),
+            if (isLoggedIn)
+              ChangeNotifierProvider(
+                create: (_) => StageProgressProvider(user!.uid),
+              ),
           ],
           child: MyApp(isLoggedIn: isLoggedIn),
         );
@@ -150,11 +169,11 @@ class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
   }
 
   void _startSplashTimer() async {
+    debugPrint("🟡 스플래시 타이머 시작");
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
-      setState(() {
-        _isSplashFinished = true;
-      });
+      setState(() => _isSplashFinished = true);
+      debugPrint("✅ 스플래시 타이머 종료, 메인 진입");
     }
   }
 

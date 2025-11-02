@@ -1,0 +1,10 @@
+{
+  "id": "stage_002",
+  "name": "숲의 입구",
+  "description": "6x6 스테이지. 블록이 가로 3칸, 세로 2칸으로 구성된 표준 규칙.",
+  "grid_size": 6,
+  "shape": [2, 3],
+  "remove_count": 8,
+  "rewards": { "gold": 30, "gem": 2, "exp": 15 },
+  "updated_at": "2025-11-02T00:00:00Z"
+}

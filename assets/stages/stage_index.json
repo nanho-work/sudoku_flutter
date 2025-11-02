@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "total_stages": 4,
+  "stages": [
+    {
+      "id": "stage_001",
+      "name": "기초 입문",
+      "file_path": "assets/game/data/stages/stage_001.json",
+      "thumbnail": "assets/images/stages/thumb_001.png",
+      "difficulty": "easy",
+      "unlocked": true,
+      "unlock_condition": null,
+      "rewards": { "gold": 10, "gem": 1, "exp": 5 },
+      "description": "가장 간단한 2x2 스테이지. 기본 규칙 익히기."
+    },
+    {
+      "id": "stage_002",
+      "name": "숲의 입구",
+      "file_path": "assets/game/data/stages/stage_002.json",
+      "thumbnail": "assets/images/stages/thumb_002.png",
+      "difficulty": "normal",
+      "unlocked": false,
+      "unlock_condition": "stage_001",
+      "rewards": { "gold": 30, "gem": 2, "exp": 15 },
+      "description": "6x6 스테이지. 블록이 가로 3칸, 세로 2칸으로 구성된 표준 규칙."
+    },
+    {
+      "id": "stage_003",
+      "name": "정글의 중심",
+      "file_path": "assets/game/data/stages/stage_003.json",
+      "thumbnail": "assets/images/stages/thumb_003.png",
+      "difficulty": "hard",
+      "unlocked": false,
+      "unlock_condition": "stage_002",
+      "rewards": { "gold": 60, "gem": 3, "exp": 30 },
+      "description": "9x9 정석 스도쿠 스테이지. 완전한 3x3 블록 구조."
+    },
+    {
+      "id": "stage_004",
+      "name": "바람의 평원",
+      "file_path": "assets/game/data/stages/stage_004.json",
+      "thumbnail": "assets/images/stages/thumb_004.png",
+      "difficulty": "expert",
+      "unlocked": false,
+      "unlock_condition": "stage_003",
+      "rewards": { "gold": 80, "gem": 4, "exp": 40 },
+      "description": "8x8 퍼즐. 가로로 긴 4칸, 세로로 2칸짜리 블록으로 구성된 특이한 형태."
+    }
+  ]
+}
