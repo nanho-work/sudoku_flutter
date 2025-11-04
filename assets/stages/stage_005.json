@@ -1,0 +1,15 @@
+{
+  "id": "stage_005",
+  "name": "숲의 출구",
+  "description": "초급 마지막 스테이지. 이제 본격적인 6x6 퍼즐을 준비해 보세요.",
+  "grid_size": 4,
+  "shape": [2, 2],
+  "remove_count": 12,
+  "rewards": { "gold": 30, "gem": 2, "exp": 20 },
+  "conditions": {
+    "max_hints": 1,
+    "max_wrong_attempts": 3,
+    "time_limit": 150
+  },
+  "updated_at": "2025-11-02T00:00:00Z"
+}

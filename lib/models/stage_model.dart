@@ -16,6 +16,7 @@ class StageModel {
   final List<List<int>>? solution;
   final List<int>? shape;                  // [blockRows, blockCols]
   final String? updatedAt;
+  final String? thumbnail;
 
   StageModel({
     required this.id,
@@ -31,6 +32,7 @@ class StageModel {
     this.solution,
     this.shape,
     this.updatedAt,
+    this.thumbnail,
   });
 
   factory StageModel.fromJson(Map<String, dynamic> json) {
@@ -65,6 +67,7 @@ class StageModel {
       solution: _parse2DList(json['solution']),
       shape: json['shape'] != null ? List<int>.from(json['shape']) : null,
       updatedAt: json['updated_at'],
+      thumbnail: json['thumbnail'],
     );
   }
 
@@ -82,5 +85,6 @@ class StageModel {
         'solution': solution,
         'shape': shape,
         'updated_at': updatedAt,
+        'thumbnail': thumbnail,
       };
 }

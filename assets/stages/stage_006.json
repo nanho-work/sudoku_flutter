@@ -1,0 +1,16 @@
+{
+  "id": "stage_006",
+  "name": "바람의 협곡",
+  "description": "숫자 배치가 더 복잡해지며 시야 확장이 필요한 단계입니다.",
+  "grid_size": 4,
+  "shape": [2, 2],
+  "remove_count": 14,
+  "rewards": { "gold": 35, "gem": 2, "exp": 25 },
+  "conditions": {
+    "max_hints": 1,
+    "max_wrong_attempts": 3,
+    "time_limit": 140
+  },
+
+  "updated_at": "2025-11-02T00:00:00Z"
+}

@@ -3,6 +3,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lottie/lottie.dart';
 import '../controllers/audio_controller.dart';
 import '../controllers/theme_controller.dart';
 import '../controllers/skin_controller.dart';
@@ -47,9 +48,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
       audio = context.read<AudioController>();
       audio.startMainBgm();
 
-      // ✅ Stage 진행도 초기화 (선택)
-      final stageProvider = context.read<StageProgressProvider?>();
-      stageProvider?.loadProgress([]);
     });
 
     AdBannerService.loadMainBanner(
@@ -79,14 +77,23 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
     }
   }
 
+  bool _isValidImageUrl(String url) {
+    final lower = url.toLowerCase();
+    return lower.endsWith('.png') ||
+        lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.webp');
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.watch<ThemeController>().colors;
     final skinController = context.watch<SkinController>();
     final selectedBg = skinController.selectedBg?.imageUrl;
 
-    if (selectedBg != null) {
-      precacheImage(CachedNetworkImageProvider(selectedBg), context);
+    if (selectedBg != null && _isValidImageUrl(selectedBg)) {
+      precacheImage(CachedNetworkImageProvider(selectedBg), context)
+          .catchError((_) => debugPrint('⚠️ Background precache failed.'));
     }
 
     return Scaffold(
@@ -95,12 +102,19 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
         children: [
           if (selectedBg != null)
             Positioned.fill(
-              child: CachedNetworkImage(
-                imageUrl: selectedBg,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(color: Colors.black12),
-                errorWidget: (_, __, ___) => Container(color: Colors.black12),
-              ),
+              child: selectedBg.contains('.json')
+                  ? Lottie.network(
+                      selectedBg,
+                      fit: BoxFit.cover,
+                      frameRate: FrameRate.max,
+                      errorBuilder: (_, __, ___) => Container(color: Colors.black12),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: selectedBg,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(color: Colors.black12),
+                      errorWidget: (_, __, ___) => Container(color: Colors.black12),
+                    ),
             ),
           SafeArea(
             top: true,

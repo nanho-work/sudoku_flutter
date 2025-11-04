@@ -1,17 +1,16 @@
 {
   "id": "stage_001",
   "name": "기초 입문",
-  "description": "가장 간단한 2x2 스테이지. 기본 규칙 익히기.",
+  "description": "가장 간단한 2x2 스테이지. 스도쿠 규칙을 익히기 위한 첫 단계.",
   "grid_size": 4,
   "shape": [2, 2],
   "remove_count": 4,
   "rewards": { "gold": 10, "gem": 1, "exp": 5 },
-
   "conditions": {
-    "max_hints": 0,
-    "max_wrong_attempts": 0,
-    "time_limit": 120
+    "max_hints": 3,
+    "max_wrong_attempts": 5,
+    "time_limit": 300
   },
-
+  "thumbnail": "assets/images/stages/thumb_001.png",
   "updated_at": "2025-11-02T00:00:00Z"
 }

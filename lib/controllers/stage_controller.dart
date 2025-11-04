@@ -149,11 +149,16 @@ class StageController extends ChangeNotifier {
   }
 
   Future<void> saveProgress() async {
+    // 기존 진행 데이터 불러오기
+    final existing = await _stageService.getStageProgress(uid, stage.id);
+
     final progress = StageProgressModel(
       stageId: stage.id,
       cleared: cleared,
       stars: evaluateConditions(),
-      rewardsClaimed: const {"1": false, "2": false, "3": false},
+      // 기존 보상 상태 유지
+      rewardsClaimed: existing?.rewardsClaimed ??
+          const {"1": false, "2": false, "3": false},
       hintsUsed: hintsUsed,
       wrongAttempts: wrongAttempts,
       clearTime: elapsed.inSeconds,

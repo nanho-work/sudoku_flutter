@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../controllers/stage_controller.dart';
 
 /// 🎮 StageButtonBar
-/// 힌트 / 저장 / 되돌리기 등 기능 버튼
+/// 힌트 버튼만 포함
 class StageButtonBar extends StatelessWidget {
   final StageController controller;
 
@@ -11,21 +11,11 @@ class StageButtonBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildButton(Icons.lightbulb_outline, "힌트", controller.useHint),
-          _buildButton(Icons.save_alt, "저장", controller.saveProgress),
-          _buildButton(Icons.restart_alt, "초기화", () {
-            controller.stopTimer();
-            controller
-              ..elapsed = Duration.zero
-              ..hintsUsed = 0
-              ..wrongAttempts = 0
-              ..cleared = false;
-            controller.notifyListeners();
-          }),
         ],
       ),
     );

@@ -1,0 +1,16 @@
+{
+  "id": "stage_010",
+  "name": "초원의 끝",
+  "description": "초급 구간의 마지막 도전. 정확도와 속도가 모두 중요합니다.",
+  "grid_size": 4,
+  "shape": [2, 2],
+  "remove_count": 22,
+  "rewards": { "gold": 60, "gem": 3, "exp": 50 },
+  "conditions": {
+    "max_hints": 0,
+    "max_wrong_attempts": 2,
+    "time_limit": 100
+  },
+
+  "updated_at": "2025-11-02T00:00:00Z"
+}

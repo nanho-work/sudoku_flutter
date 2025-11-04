@@ -1,0 +1,16 @@
+{
+  "id": "stage_009",
+  "name": "바람의 고개",
+  "description": "패턴을 미리 예측하고 한 수 앞을 내다봐야 하는 단계입니다.",
+  "grid_size": 4,
+  "shape": [2, 2],
+  "remove_count": 20,
+  "rewards": { "gold": 50, "gem": 3, "exp": 40 },
+  "conditions": {
+    "max_hints": 1,
+    "max_wrong_attempts": 2,
+    "time_limit": 110
+  },
+ 
+  "updated_at": "2025-11-02T00:00:00Z"
+}

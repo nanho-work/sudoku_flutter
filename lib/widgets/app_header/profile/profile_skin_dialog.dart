@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lottie/lottie.dart';
 import '../../../controllers/skin_controller.dart';
 import '../../../models/skin_model.dart';
 import '../../../services/skin_purchase_service.dart';
@@ -145,26 +146,41 @@ class _SkinRow extends StatelessWidget {
                       color: isSelected ? Colors.amber : Colors.transparent,
                       width: 3,
                     ),
-                    image: DecorationImage(
-                      image: CachedNetworkImageProvider(item.bgUrl),
-                      fit: BoxFit.fill,
-                    ),
                   ),
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      height: 80,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(12),
-                          bottomRight: Radius.circular(12),
+                  child: Stack(
+                    children: [
+                      if (item.bgUrl.contains('.json'))
+                        Lottie.network(
+                          item.bgUrl,
+                          fit: BoxFit.fill,
+                          repeat: true,
+                        )
+                      else
+                        Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: CachedNetworkImageProvider(item.bgUrl),
+                              fit: BoxFit.fill,
+                            ),
+                          ),
                         ),
-                        image: DecorationImage(
-                          image: CachedNetworkImageProvider(item.imageUrl),
-                          fit: BoxFit.cover,
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          height: 80,
+                          decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(12),
+                              bottomRight: Radius.circular(12),
+                            ),
+                            image: DecorationImage(
+                              image: CachedNetworkImageProvider(item.imageUrl),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
                 if (!unlocked)

@@ -1,10 +1,15 @@
 {
   "id": "stage_002",
-  "name": "숲의 입구",
-  "description": "6x6 스테이지. 블록이 가로 3칸, 세로 2칸으로 구성된 표준 규칙.",
-  "grid_size": 6,
-  "shape": [2, 3],
-  "remove_count": 8,
-  "rewards": { "gold": 30, "gem": 2, "exp": 15 },
+  "name": "숲속의 연습",
+  "description": "한 칸 더 늘어난 4x4 퍼즐. 규칙은 같지만 집중력이 조금 더 필요합니다.",
+  "grid_size": 4,
+  "shape": [2, 2],
+  "remove_count": 6,
+  "rewards": { "gold": 15, "gem": 1, "exp": 8 },
+  "conditions": {
+    "max_hints": 2,
+    "max_wrong_attempts": 4,
+    "time_limit": 240
+  },
   "updated_at": "2025-11-02T00:00:00Z"
 }

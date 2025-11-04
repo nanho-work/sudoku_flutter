@@ -1,0 +1,16 @@
+{
+  "id": "stage_008",
+  "name": "달빛 계곡",
+  "description": "제한 시간 내에 집중력을 유지해야 합니다. 시각적 판단이 중요합니다.",
+  "grid_size": 4,
+  "shape": [2, 2],
+  "remove_count": 18,
+  "rewards": { "gold": 45, "gem": 2, "exp": 35 },
+  "conditions": {
+    "max_hints": 1,
+    "max_wrong_attempts": 2,
+    "time_limit": 120
+  },
+ 
+  "updated_at": "2025-11-02T00:00:00Z"
+}

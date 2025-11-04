@@ -1,10 +1,15 @@
 {
   "id": "stage_004",
   "name": "바람의 평원",
-  "description": "8x8 퍼즐. 가로로 긴 4칸, 세로로 2칸짜리 블록으로 구성된 특이한 형태.",
-  "grid_size": 8,
-  "shape": [2, 4],
-  "remove_count": 24,
-  "rewards": { "gold": 80, "gem": 4, "exp": 40 },
+  "description": "기본 규칙은 익숙하지만, 숫자 분포가 더 다양해집니다.",
+  "grid_size": 4,
+  "shape": [2, 2],
+  "remove_count": 10,
+  "rewards": { "gold": 25, "gem": 2, "exp": 15 },
+  "conditions": {
+    "max_hints": 1,
+    "max_wrong_attempts": 3,
+    "time_limit": 180
+  },
   "updated_at": "2025-11-02T00:00:00Z"
 }
