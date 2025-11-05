@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../controllers/audio_controller.dart';
 import '../controllers/skin_controller.dart';
+import '../services/stage_service.dart';
 import 'main_layout.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -40,6 +41,8 @@ class _SplashScreenState extends State<SplashScreen>
     final skinController = context.read<SkinController>();
     await _precacheAllSkins(context, skinController);
 
+    await _precacheStageThumbnails(context);
+
     await _checkForUpdate();
     if (_updateRequired) return;
 
@@ -68,6 +71,25 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrint('✅ 모든 캐릭터 이미지 프리캐시 완료');
     } catch (e) {
       debugPrint('⚠️ 캐릭터 프리캐시 중 오류: $e');
+    }
+  }
+
+  Future<void> _precacheStageThumbnails(BuildContext context) async {
+    try {
+      final stages = await StageService().loadStages();
+      for (final stage in stages) {
+        final thumb = stage.thumbnail;
+        if (thumb != null && thumb.isNotEmpty) {
+          if (thumb.startsWith('http')) {
+            await precacheImage(CachedNetworkImageProvider(thumb), context);
+          } else {
+            await precacheImage(AssetImage(thumb), context);
+          }
+        }
+      }
+      debugPrint('✅ 모든 스테이지 썸네일 프리캐시 완료');
+    } catch (e) {
+      debugPrint('⚠️ 스테이지 썸네일 프리캐시 중 오류: $e');
     }
   }
 
@@ -134,7 +156,7 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             Image.asset(
               'assets/images/splash_bg.png',
-              fit: BoxFit.contain,
+              fit: BoxFit.fill,
             ),
           ],
         ),

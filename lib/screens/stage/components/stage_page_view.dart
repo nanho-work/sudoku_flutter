@@ -82,7 +82,7 @@ class _StagePageViewState extends State<StagePageView> {
                       child: Container(color: Colors.black.withOpacity(0.5)),
                     ),
                   Align(
-                    alignment: Alignment.center,
+                    alignment: Alignment.topCenter,
                     child: FractionallySizedBox(
                       widthFactor: 0.85,
                       heightFactor: 0.75,
@@ -112,7 +112,7 @@ class _StagePageViewState extends State<StagePageView> {
                 },
               )
             else
-              const SizedBox(width: 48),
+              const SizedBox(width: 12),
             Text("${_currentIndex + 1} / $total"),
             if (_currentIndex < total - 1)
               IconButton(

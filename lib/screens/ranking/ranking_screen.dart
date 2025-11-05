@@ -39,7 +39,8 @@ class _RankingScreenState extends State<RankingScreen> {
   }
 
   Future<void> _previousWeek() async {
-    final weeks = await RankingService.getAvailableWeeks(difficulty: _difficulty);
+    final weeks = await RankingService.getCachedWeeks(difficulty: _difficulty);
+    if (weeks == null || weeks.isEmpty) return; // safeguard
     final idx = weeks.indexOf(_weekKey);
     if (idx < weeks.length - 1) {
       _updateWeek(weeks[idx + 1]);
@@ -47,7 +48,8 @@ class _RankingScreenState extends State<RankingScreen> {
   }
 
   Future<void> _nextWeek() async {
-    final weeks = await RankingService.getAvailableWeeks(difficulty: _difficulty);
+    final weeks = await RankingService.getCachedWeeks(difficulty: _difficulty);
+    if (weeks == null || weeks.isEmpty) return; // safeguard
     final idx = weeks.indexOf(_weekKey);
     if (idx > 0) {
       _updateWeek(weeks[idx - 1]);

@@ -11,6 +11,8 @@ import '../../../services/audio_service.dart';
 class GameButtonBar extends StatelessWidget {
   const GameButtonBar({Key? key}) : super(key: key);
 
+  static bool _isSnackBarVisible = false;
+
   // 💡 좌우 여백 값 정의 (GameHeader, NumberPad와 동일하게 20.0으로 통일)
   // GameScreen의 Padding 위젯에서 EdgeInsets.symmetric(horizontal: 16.0)을 적용했으므로,
   // 여기서는 Row의 좌우 패딩을 16.0으로 맞추거나, 필요하다면 0으로 처리하고 외부에서 패딩을 제어합니다.
@@ -30,6 +32,10 @@ class GameButtonBar extends StatelessWidget {
 
     // 💡 스낵바 디자인을 다크 테마에 맞게 개선
     void showToast(String msg) {
+      if (_isSnackBarVisible) return; // 이미 떠있으면 무시
+
+      _isSnackBarVisible = true;
+
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
@@ -41,7 +47,7 @@ class GameButtonBar extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             duration: const Duration(seconds: 2),
           ),
-        );
+        ).closed.then((_) => _isSnackBarVisible = false);
     }
 
     return Padding(

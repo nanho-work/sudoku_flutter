@@ -12,13 +12,16 @@ class RankingList extends StatelessWidget {
       itemBuilder: (context, index) {
         final rank = index + 4;
         final record = rankings[index];
-        return ListTile(
-          leading: Text(
-            '$rank',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        return Container(
+          color: Colors.white.withOpacity(0.5),
+          child: ListTile(
+            leading: Text(
+              '$rank',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            title: Text(record.nickname),
+            trailing: Text('${record.clearTime.toStringAsFixed(2)}초'),
           ),
-          title: Text(record.nickname),
-          trailing: Text('${record.clearTime.toStringAsFixed(2)}초'),
         );
       },
     );

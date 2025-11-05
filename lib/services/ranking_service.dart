@@ -160,6 +160,27 @@ class RankingService {
     return keys;
   }
 
+  /// 🔹 주차 목록 캐시 (메모리 캐싱)
+  static final Map<String, List<String>> _cachedWeeks = {};
+
+  /// 🔹 캐시 기반 주차 목록 조회
+  static Future<List<String>> getCachedWeeks({
+    required String difficulty,
+    String gameMode = 'classic',
+  }) async {
+    final key = '$gameMode|$difficulty';
+    if (_cachedWeeks.containsKey(key)) {
+      return _cachedWeeks[key]!;
+    }
+
+    final weeks = await getAvailableWeeks(
+      gameMode: gameMode,
+      difficulty: difficulty,
+    );
+    _cachedWeeks[key] = weeks;
+    return weeks;
+  }
+
   /// 🔹 실시간 랭킹 스트림
   static Stream<List<RankingRecord>> streamTopRankings(
     String difficulty, {

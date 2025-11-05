@@ -106,7 +106,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
               child: selectedBg.contains('.json')
                   ? Lottie.network(
                       selectedBg,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fill,
                       frameRate: FrameRate.max,
                       errorBuilder: (_, __, ___) => Container(color: Colors.black12),
                     )

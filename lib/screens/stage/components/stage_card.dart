@@ -21,6 +21,24 @@ class StageCard extends StatelessWidget {
     this.currentUser,
   });
 
+  Widget _buildThumbnail(String thumbnail) {
+    if (thumbnail.startsWith('http://') || thumbnail.startsWith('https://')) {
+      return Image.network(
+        thumbnail,
+        height: 160,
+        width: double.infinity,
+        fit: BoxFit.contain,
+      );
+    } else {
+      return Image.asset(
+        thumbnail,
+        height: 80,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cleared = progress?.cleared ?? false;
@@ -58,27 +76,24 @@ class StageCard extends StatelessWidget {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          stage.thumbnail!,
-                          height: 80,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
+                        child: _buildThumbnail(stage.thumbnail!),
                       ),
                       if (cleared)
-                        Positioned.fill(
+                        Positioned(
+                          top: 6,
+                          right: 6,
                           child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.green.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            alignment: Alignment.center,
                             child: const Text(
-                              '클리어 완료',
+                              '클리어',
                               style: TextStyle(
-                                color: Colors.green,
+                                color: Colors.white,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
                               ),
                             ),
                           ),
