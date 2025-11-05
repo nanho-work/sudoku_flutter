@@ -22,9 +22,9 @@ class StarRewardWidget extends StatelessWidget {
     final starKeys = stars.keys.toList();
     final conditions = stageModel.conditions ?? {};
     final conditionTexts = [
-      '힌트를 사용하지 않고 클리어 (최대 ${conditions["max_hints"]}회 이하)',
+      '힌트 제한 (최대 ${conditions["max_hints"]}회 이하)',
       '시간 제한 ${conditions["time_limit"]}초 안에 클리어',
-      '오답 없이 클리어 (최대 ${conditions["max_wrong_attempts"]}회 이하)',
+      '오답 제한 (최대 ${conditions["max_wrong_attempts"]}회 이하)',
     ];
 
     final Map<String, String> rewardNameMap = {
@@ -99,20 +99,22 @@ class StarRewardWidget extends StatelessWidget {
                       clipBehavior: Clip.none,
                       children: [
                         Icon(
-                          achieved ? Icons.star : Icons.star_border,
-                          color: Colors.black.withOpacity(0.5),
+                          Icons.star,
+                          color: achieved
+                              ? Colors.black.withOpacity(0.5)
+                              : Colors.grey.withOpacity(0.4),
                           size: 42,
                         ),
                         AnimatedScale(
                           duration: const Duration(milliseconds: 200),
                           scale: claimed ? 1.0 : 1.1,
                           child: Icon(
-                            achieved ? Icons.star : Icons.star_border,
-                            color: !achieved
-                                ? Colors.grey
-                                : claimed
+                            Icons.star, // 항상 채워진 별
+                            color: achieved
+                                ? (claimed
                                     ? Colors.amber.withOpacity(0.8)
-                                    : Colors.amberAccent,
+                                    : Colors.amberAccent)
+                                : Colors.grey.withOpacity(0.7),
                             size: 38,
                           ),
                         ),
@@ -132,16 +134,23 @@ class StarRewardWidget extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          rewardDescription,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: !achieved
-                                ? Colors.black
-                                : claimed
-                                    ? Colors.black
-                                    : Colors.amberAccent,
-                            fontWeight: !achieved ? FontWeight.normal : FontWeight.bold,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          child: Text(
+                            rewardDescription,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: !achieved
+                                  ? Colors.black
+                                  : claimed
+                                      ? Colors.black
+                                      : Colors.amberAccent,
+                              fontWeight: !achieved ? FontWeight.normal : FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -154,16 +163,23 @@ class StarRewardWidget extends StatelessWidget {
                                 height: 20,
                               ),
                             const SizedBox(width: 4),
-                            Text(
-                              '→ $rewardName +$rewardValue',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: !achieved
-                                    ? Colors.black
-                                    : claimed
-                                        ? Colors.black
-                                        : Colors.amberAccent,
-                                fontWeight: !achieved ? FontWeight.normal : FontWeight.bold,
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              child: Text(
+                                '→ $rewardName +$rewardValue',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: !achieved
+                                      ? Colors.black
+                                      : claimed
+                                          ? Colors.black
+                                          : Colors.amberAccent,
+                                  fontWeight: !achieved ? FontWeight.normal : FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],

@@ -122,7 +122,25 @@ class StageController extends ChangeNotifier {
   }
 
   void useHint() {
+    if (cleared || timeOver) return;
+
+    // 선택된 셀만 힌트 제공
+    if (selectedRow == null || selectedCol == null) return;
+    final r = selectedRow!, c = selectedCol!;
+
+    // 이미 채워진 칸이면 무시
+    if (board[r][c] != 0) return;
+
+    // 정답 채워넣기
+    board[r][c] = solution[r][c];
     hintsUsed++;
+
+    if (_isSolved()) {
+      cleared = true;
+      stopTimer();
+      unawaited(saveProgress());
+    }
+
     notifyListeners();
   }
 

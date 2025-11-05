@@ -43,7 +43,9 @@ Future<void> showStageClearDialog({
       },
       onClose: () async {
         await controller.saveProgress();
-        if (context.mounted) Navigator.of(context).pop();
+        if (!context.mounted) return;
+        Navigator.of(context).pop(); // close dialog
+        Navigator.of(context).pop(); // close StagePlayScreen
       },
     ),
   );
