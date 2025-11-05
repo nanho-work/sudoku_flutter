@@ -1,4 +1,3 @@
-// lib/screens/splash_screen.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../controllers/audio_controller.dart';
@@ -39,15 +38,11 @@ class _SplashScreenState extends State<SplashScreen>
     )..forward();
 
     final skinController = context.read<SkinController>();
-    await skinController.loadSkins();
     await _precacheAllSkins(context, skinController);
 
-    // ✅ Remote Config 업데이트 검사
     await _checkForUpdate();
-
     if (_updateRequired) return;
 
-    // ✅ 스플래시 유지 후 메인으로 이동
     await Future.delayed(const Duration(milliseconds: 2000));
     if (!mounted) return;
     _fadeController.reverse();
@@ -101,16 +96,14 @@ class _SplashScreenState extends State<SplashScreen>
           barrierDismissible: false,
           builder: (_) => AlertDialog(
             title: const Text('업데이트 필요'),
-            content:
-                const Text('새로운 버전이 출시되었습니다.\n업데이트 후 이용해주세요.'),
+            content: const Text('새로운 버전이 출시되었습니다.\n업데이트 후 이용해주세요.'),
             actions: [
               TextButton(
                 onPressed: () async {
                   final url = Uri.parse(
                       'https://play.google.com/store/apps/details?id=com.koofy.sudoku');
                   if (await canLaunchUrl(url)) {
-                    await launchUrl(url,
-                        mode: LaunchMode.externalApplication);
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
                   }
                 },
                 child: const Text('업데이트하러 가기'),

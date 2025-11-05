@@ -7,6 +7,7 @@ import 'package:lottie/lottie.dart';
 import '../controllers/audio_controller.dart';
 import '../controllers/theme_controller.dart';
 import '../controllers/skin_controller.dart';
+import '../models/user_model.dart';
 import 'home/home_screen.dart';
 import 'mission_screen.dart';
 import 'guide_screen.dart';
@@ -25,14 +26,14 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
-  late AudioController audio;
+  AudioController? audio;
   int _currentIndex = 0;
   bool _isBannerReady = false;
 
   final List<Widget> _screens = const [
     HomeScreen(),
     MissionScreen(),
-    StageSelectScreen(),  // ✅ 추가됨
+    StageSelectScreen(),
     GuideScreen(),
     RankingScreen(),
   ];
@@ -45,17 +46,16 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
       await context.read<SkinController>().initSkins(userId);
-      audio = context.read<AudioController>();
-      audio.startMainBgm();
 
+      audio = context.read<AudioController>();
+      if (mounted) {
+        audio?.startMainBgm();
+      }
     });
 
     AdBannerService.loadMainBanner(
       onLoaded: () => setState(() => _isBannerReady = true),
-      onFailed: (error) {
-        debugPrint("Main banner failed: $error");
-        setState(() => _isBannerReady = false);
-      },
+      onFailed: (_) => setState(() => _isBannerReady = false),
     );
   }
 
@@ -71,9 +71,9 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      audio.pauseAll();
+      audio?.pauseAll();
     } else if (state == AppLifecycleState.resumed) {
-      audio.resumeAll();
+      audio?.resumeAll();
     }
   }
 
@@ -89,6 +89,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final colors = context.watch<ThemeController>().colors;
     final skinController = context.watch<SkinController>();
+    final userModel = context.watch<UserModel?>();
     final selectedBg = skinController.selectedBg?.imageUrl;
 
     if (selectedBg != null && _isValidImageUrl(selectedBg)) {
@@ -129,7 +130,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                         color: const Color(0xFF1E272E),
                       ),
                 const SizedBox(height: 6),
-                const AppHeader(),
+                if (userModel != null) const AppHeader(),
                 Expanded(child: _screens[_currentIndex]),
               ],
             ),

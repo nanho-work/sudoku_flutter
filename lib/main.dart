@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:async' show unawaited;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,11 +19,13 @@ import 'screens/login/login_screen.dart';
 import 'screens/main_layout.dart';
 import 'l10n/app_localizations.dart';
 import 'firebase_options.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // ✅ 전역 컨트롤러 (UID 의존 X)
   final audioController = AudioController();
   final themeController = ThemeController();
   final skinController = SkinController();
@@ -49,12 +49,10 @@ Future<void> _initializeAsync(
   AudioController audioController,
   ThemeController themeController,
 ) async {
-  debugPrint("🟡 [_initializeAsync] 비동기 초기화 시작");
   try {
     if (!kIsWeb) {
       try {
         await MobileAds.instance.initialize();
-        debugPrint("✅ Google Mobile Ads initialized");
         await AdRewardService.loadRewardedAd();
       } catch (e) {
         debugPrint("⚠️ Google Mobile Ads 초기화 실패 (무시됨): $e");
@@ -62,9 +60,8 @@ Future<void> _initializeAsync(
     }
     await audioController.init();
     await themeController.loadTheme();
-    debugPrint("✅ [_initializeAsync] 비동기 초기화 완료");
   } catch (e, st) {
-    debugPrint("❌ 초기화 중 오류 발생: $e\n$st");
+    debugPrint("❌ 초기화 오류: $e\n$st");
   }
 }
 
@@ -76,7 +73,6 @@ class MyAppWrapper extends StatefulWidget {
 
 class _MyAppWrapperState extends State<MyAppWrapper> {
   bool _initialized = false;
-  User? _user;
   List<String> _stageIds = [];
 
   @override
@@ -88,15 +84,12 @@ class _MyAppWrapperState extends State<MyAppWrapper> {
         final isLoggedIn = user != null;
 
         if (isLoggedIn && !_initialized) {
-          _user = user;
           return FutureBuilder(
             future: _preloadStages(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const MaterialApp(
-                  home: Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  ),
+                  home: Scaffold(body: Center(child: CircularProgressIndicator())),
                 );
               }
 
@@ -108,7 +101,7 @@ class _MyAppWrapperState extends State<MyAppWrapper> {
                     initialData: null,
                   ),
                   ChangeNotifierProvider(
-                    create: (_) => StageProgressProvider(user.uid)..init(_stageIds),
+                    create: (_) => StageProgressProvider(user!.uid)..init(_stageIds),
                   ),
                 ],
                 child: _buildApp(true),
@@ -128,9 +121,7 @@ class _MyAppWrapperState extends State<MyAppWrapper> {
     _stageIds = stages.map((s) => s.id).toList();
   }
 
-  Widget _buildApp(bool isLoggedIn) {
-    return MyApp(isLoggedIn: isLoggedIn);
-  }
+  Widget _buildApp(bool isLoggedIn) => MyApp(isLoggedIn: isLoggedIn);
 }
 
 class MyApp extends StatelessWidget {
