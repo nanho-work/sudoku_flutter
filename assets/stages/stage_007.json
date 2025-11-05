@@ -2,15 +2,15 @@
   "id": "stage_007",
   "name": "은빛 숲길",
   "description": "규칙은 같지만 빈 칸이 늘어나며 패턴 파악 능력을 요구합니다.",
-  "grid_size": 4,
-  "shape": [2, 2],
-  "remove_count": 16,
-  "rewards": { "gold": 40, "gem": 2, "exp": 30 },
+  "grid_size": 6,
+  "shape": [2, 3],
+  "remove_count": 10,
+  "rewards": { "gold": 20, "gem": 2, "exp": 15 },
   "conditions": {
     "max_hints": 1,
     "max_wrong_attempts": 3,
     "time_limit": 130
   },
-
+  "thumbnail": "https://firebasestorage.googleapis.com/v0/b/koofy-sudoku.firebasestorage.app/o/stages%2Fhome.png?alt=media&token=c4b92f2e-2e81-4ec8-a634-f99979125073",
   "updated_at": "2025-11-02T00:00:00Z"
 }

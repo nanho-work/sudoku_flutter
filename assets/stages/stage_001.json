@@ -9,8 +9,8 @@
   "conditions": {
     "max_hints": 3,
     "max_wrong_attempts": 5,
-    "time_limit": 300
+    "time_limit": 60
   },
-  "thumbnail": "assets/images/stages/thumb_001.png",
+  "thumbnail": "https://firebasestorage.googleapis.com/v0/b/koofy-sudoku.firebasestorage.app/o/stages%2Fhome.png?alt=media&token=c4b92f2e-2e81-4ec8-a634-f99979125073",
   "updated_at": "2025-11-02T00:00:00Z"
 }

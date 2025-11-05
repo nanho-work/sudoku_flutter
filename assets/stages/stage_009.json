@@ -2,15 +2,16 @@
   "id": "stage_009",
   "name": "바람의 고개",
   "description": "패턴을 미리 예측하고 한 수 앞을 내다봐야 하는 단계입니다.",
-  "grid_size": 4,
-  "shape": [2, 2],
-  "remove_count": 20,
-  "rewards": { "gold": 50, "gem": 3, "exp": 40 },
+  "grid_size": 6,
+  "shape": [2, 3],
+  "remove_count": 14,
+  "rewards": { "gold": 20, "gem": 2, "exp": 15 },
   "conditions": {
     "max_hints": 1,
     "max_wrong_attempts": 2,
-    "time_limit": 110
+    "time_limit": 150
   },
- 
+
+  "thumbnail": "https://firebasestorage.googleapis.com/v0/b/koofy-sudoku.firebasestorage.app/o/stages%2Fhome.png?alt=media&token=c4b92f2e-2e81-4ec8-a634-f99979125073",
   "updated_at": "2025-11-02T00:00:00Z"
 }

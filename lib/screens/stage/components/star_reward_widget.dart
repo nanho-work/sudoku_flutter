@@ -22,15 +22,21 @@ class StarRewardWidget extends StatelessWidget {
     final starKeys = stars.keys.toList();
     final conditions = stageModel.conditions ?? {};
     final conditionTexts = [
-      '힌트 없이 클리어 (힌트 ≤ ${conditions["max_hints"]})',
-      '시간 제한 내 클리어 (${conditions["time_limit"]}초)',
-      '무오류 클리어 (오답 ≤ ${conditions["max_wrong_attempts"]})',
+      '힌트를 사용하지 않고 클리어 (최대 ${conditions["max_hints"]}회 이하)',
+      '시간 제한 ${conditions["time_limit"]}초 안에 클리어',
+      '오답 없이 클리어 (최대 ${conditions["max_wrong_attempts"]}회 이하)',
     ];
 
     final Map<String, String> rewardNameMap = {
       'gold': '골드',
       'gem': '보석',
       'exp': '포인트',
+    };
+
+    final Map<String, String> rewardIconMap = {
+      'gold': 'assets/images/gold.png',
+      'gem': 'assets/images/gem.png',
+      'exp': 'assets/images/point.png',
     };
 
     return Column(
@@ -42,7 +48,8 @@ class StarRewardWidget extends StatelessWidget {
         final achieved = stars[key] ?? false;
         final claimed = rewardsClaimed[key] ?? false;
         final rewardName = rewardNameMap[rewardKey] ?? rewardKey;
-        final rewardDescription = '${conditionTexts[i]}\n→ $rewardName +$rewardValue';
+        final rewardDescription = conditionTexts[i];
+        final rewardIcon = rewardIconMap[rewardKey];
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
@@ -124,28 +131,44 @@ class StarRewardWidget extends StatelessWidget {
                     const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: rewardDescription
-                          .split('\n')
-                          .map((line) => Container(
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                color: Colors.white.withOpacity(0.7),
-                                child: Text(
-                                  line,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: !achieved
+                      children: [
+                        Text(
+                          rewardDescription,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: !achieved
+                                ? Colors.black
+                                : claimed
+                                    ? Colors.black
+                                    : Colors.amberAccent,
+                            fontWeight: !achieved ? FontWeight.normal : FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (rewardIcon != null)
+                              Image.asset(
+                                rewardIcon,
+                                height: 20,
+                              ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '→ $rewardName +$rewardValue',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: !achieved
+                                    ? Colors.black
+                                    : claimed
                                         ? Colors.black
-                                        : claimed
-                                            ? Colors.black
-                                            : Colors.amberAccent,
-                                    fontWeight: !achieved
-                                        ? FontWeight.normal
-                                        : FontWeight.bold,
-                                  ),
-                                ),
-                              ))
-                          .toList(),
+                                        : Colors.amberAccent,
+                                fontWeight: !achieved ? FontWeight.normal : FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),

@@ -5,11 +5,12 @@
   "grid_size": 4,
   "shape": [2, 2],
   "remove_count": 8,
-  "rewards": { "gold": 20, "gem": 1, "exp": 10 },
+  "rewards": { "gold": 10, "gem": 1, "exp": 5 },
   "conditions": {
     "max_hints": 2,
     "max_wrong_attempts": 4,
-    "time_limit": 210
+    "time_limit": 80
   },
+  "thumbnail": "https://firebasestorage.googleapis.com/v0/b/koofy-sudoku.firebasestorage.app/o/stages%2Fhome.png?alt=media&token=c4b92f2e-2e81-4ec8-a634-f99979125073",
   "updated_at": "2025-11-02T00:00:00Z"
 }
