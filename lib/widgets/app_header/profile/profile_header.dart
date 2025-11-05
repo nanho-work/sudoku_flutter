@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 import '../../../models/user_model.dart';
 import '../../../services/auth_service.dart';
 import '../../../controllers/skin_controller.dart';
@@ -24,12 +25,20 @@ class ProfileHeader extends StatelessWidget {
           flex: 3,
           child: Center(
             child: skin != null
-                ? CircleAvatar(
-                    radius: 40,
-                    backgroundImage: skin.imageUrl.startsWith('http')
-                        ? NetworkImage(skin.imageUrl)
-                        : AssetImage(skin.imageUrl) as ImageProvider,
-                    backgroundColor: Colors.transparent,
+                ? ClipOval(
+                    child: SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: skin.imageUrl.contains('.json')
+                          ? Lottie.network(skin.imageUrl)
+                          : CircleAvatar(
+                              radius: 40,
+                              backgroundImage: skin.imageUrl.startsWith('http')
+                                  ? NetworkImage(skin.imageUrl)
+                                  : AssetImage(skin.imageUrl) as ImageProvider,
+                              backgroundColor: Colors.transparent,
+                            ),
+                    ),
                   )
                 : const SizedBox.shrink(),
           ),

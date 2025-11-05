@@ -57,12 +57,29 @@ class StarRewardWidget extends StatelessWidget {
               onTap: !achieved || claimed
                   ? null
                   : () {
-                      final tooltip = Tooltip(
-                        message: '보상이 수령됩니다!',
-                        child: const SizedBox.shrink(),
+                      final overlay = Overlay.of(context);
+                      final entry = OverlayEntry(
+                        builder: (context) => Positioned(
+                          top: MediaQuery.of(context).size.height * 0.4,
+                          left: MediaQuery.of(context).size.width * 0.3,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                '🎁 보상 수령 완료!',
+                                style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
                       );
-                      final dynamic tooltipState = tooltip.createState();
-                      tooltipState.ensureTooltipVisible();
+                      overlay.insert(entry);
+                      Future.delayed(const Duration(seconds: 1), entry.remove);
                       onClaim?.call(key);
                     },
               child: Container(

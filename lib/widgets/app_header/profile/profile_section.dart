@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lottie/lottie.dart';
 import '../../../controllers/skin_controller.dart';
 import '../../../models/user_model.dart';
 import 'profile_skin_dialog.dart'; // 다이얼로그 import
@@ -72,14 +73,19 @@ class ProfileSection extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 child: selectedChar != null
                     ? ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: selectedChar.imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                        ),
+                        child: selectedChar.imageUrl.contains('.json')
+                            ? Lottie.network(
+                                selectedChar.imageUrl,
+                                fit: BoxFit.cover,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: selectedChar.imageUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    const Center(child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(Icons.error),
+                              ),
                       )
                     : const SizedBox.shrink(),
               ),

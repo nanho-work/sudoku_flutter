@@ -166,17 +166,24 @@ class _SkinRow extends StatelessWidget {
                         ),
                       Align(
                         alignment: Alignment.bottomCenter,
-                        child: Container(
-                          height: 80,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(12),
-                              bottomRight: Radius.circular(12),
-                            ),
-                            image: DecorationImage(
-                              image: CachedNetworkImageProvider(item.imageUrl),
-                              fit: BoxFit.cover,
-                            ),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(12),
+                            bottomRight: Radius.circular(12),
+                          ),
+                          child: SizedBox(
+                            height: 80,
+                            width: double.infinity,
+                            child: item.imageUrl.contains('.json')
+                                ? Lottie.network(
+                                    item.imageUrl,
+                                    fit: BoxFit.cover,
+                                    repeat: true,
+                                  )
+                                : Image(
+                                    image: CachedNetworkImageProvider(item.imageUrl),
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                         ),
                       ),
