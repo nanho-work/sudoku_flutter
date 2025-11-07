@@ -1,16 +1,18 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import '../models/skin_model.dart';
 
 class SkinLocalCache {
   static const _kCatalog = 'skins_catalog_json';
   static const _kState = 'skins_state_json';
 
-  /// 카탈로그 저장/로드
   static Future<void> saveCatalog(List<SkinItem> list) async {
     final prefs = await SharedPreferences.getInstance();
-    final arr = list.map((e) => e.toMap()).toList();
-    await prefs.setString(_kCatalog, jsonEncode(arr));
+    await prefs.setString(_kCatalog, jsonEncode(list.map((e) => e.toMap()).toList()));
   }
 
   static Future<List<SkinItem>?> loadCatalog() async {
@@ -21,7 +23,6 @@ class SkinLocalCache {
     return data.map((e) => SkinItem.fromMap(Map<String, dynamic>.from(e))).toList();
   }
 
-  /// 상태 저장/로드
   static Future<void> saveState(SkinState state) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kState, jsonEncode(_encodeState(state)));
@@ -35,13 +36,63 @@ class SkinLocalCache {
     return _decodeState(map);
   }
 
-  static Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_kCatalog);
-    await prefs.remove(_kState);
+  static Future<void> downloadToDocuments(String url) async {
+    if (url.isEmpty) return;
+
+    // ✅ 1. 로컬 에셋 경로는 다운로드 시도 안 함
+    if (url.startsWith('assets/')) {
+      debugPrint('🟡 로컬 에셋 경로 무시: $url');
+      return;
+    }
+
+    try {
+      final uri = Uri.parse(url);
+      final decodedPath = Uri.decodeComponent(uri.path);
+      final segments = decodedPath.split('/').where((s) => s.isNotEmpty).toList();
+
+      final dir = await getApplicationDocumentsDirectory();
+      final folderPath = '${dir.path}/${segments.length > 1 ? segments[segments.length - 2] : ''}';
+      final folder = Directory(folderPath);
+      if (!await folder.exists()) {
+        await folder.create(recursive: true);
+      }
+
+      final name = segments.last.split('?').first;
+      final file = File('$folderPath/$name');
+      if (await file.exists()) return;
+
+      final res = await http.get(Uri.parse(url));
+      final contentType = res.headers['content-type'] ?? '';
+      final isJson = url.toLowerCase().endsWith('.json') ||
+          contentType.contains('application/json');
+
+      if (isJson) {
+        await file.writeAsString(utf8.decode(res.bodyBytes), flush: true);
+      } else {
+        await file.writeAsBytes(res.bodyBytes, flush: true);
+      }
+      debugPrint('✅ 다운로드 완료: $name');
+    } catch (e) {
+      debugPrint('⚠️ 다운로드 실패 ($url): $e');
+    }
   }
 
-  // JSON 직렬화 보조(SharedPreferences엔 Timestamp 못넣음)
+  static Future<String?> getLocalPath(String url) async {
+    if (url.isEmpty) return null;
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final name = Uri.parse(url).pathSegments.last.split('?').first;
+      final file = File('${dir.path}/$name');
+      if (await file.exists()) {
+        return file.path;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('⚠️ 로컬 경로 조회 실패 ($url): $e');
+      return null;
+    }
+  }
+
   static Map<String, dynamic> _encodeState(SkinState s) => {
         'selectedCharId': s.selectedCharId,
         'selectedBgId': s.selectedBgId,

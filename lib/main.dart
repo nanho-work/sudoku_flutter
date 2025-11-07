@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
-import 'dart:async' show unawaited;
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async' show unawaited;
 
-import 'models/user_model.dart';
-import 'services/user_service.dart';
-import 'services/stage_service.dart';
-import 'services/ad_reward_service.dart';
-import 'providers/stage_progress_provider.dart';
+import 'firebase_options.dart';
 import 'controllers/audio_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'controllers/skin_controller.dart';
+import 'services/ad_reward_service.dart';
+import 'models/user_model.dart';
+import 'services/user_service.dart';
+import 'services/stage_service.dart';
+import 'providers/stage_progress_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login/login_screen.dart';
 import 'screens/main_layout.dart';
 import 'l10n/app_localizations.dart';
-import 'firebase_options.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // ✅ 전역 컨트롤러 (UID 의존 X)
   final audioController = AudioController();
   final themeController = ThemeController();
   final skinController = SkinController();
@@ -51,12 +50,8 @@ Future<void> _initializeAsync(
 ) async {
   try {
     if (!kIsWeb) {
-      try {
-        await MobileAds.instance.initialize();
-        await AdRewardService.loadRewardedAd();
-      } catch (e) {
-        debugPrint("⚠️ Google Mobile Ads 초기화 실패 (무시됨): $e");
-      }
+      await MobileAds.instance.initialize();
+      await AdRewardService.loadRewardedAd();
     }
     await audioController.init();
     await themeController.loadTheme();
@@ -82,7 +77,6 @@ class _MyAppWrapperState extends State<MyAppWrapper> {
       builder: (context, snapshot) {
         final user = snapshot.data;
         final isLoggedIn = user != null;
-
         if (isLoggedIn && !_initialized) {
           return FutureBuilder(
             future: _preloadStages(),
@@ -92,7 +86,6 @@ class _MyAppWrapperState extends State<MyAppWrapper> {
                   home: Scaffold(body: Center(child: CircularProgressIndicator())),
                 );
               }
-
               _initialized = true;
               return MultiProvider(
                 providers: [
@@ -109,7 +102,6 @@ class _MyAppWrapperState extends State<MyAppWrapper> {
             },
           );
         }
-
         return _buildApp(isLoggedIn && _initialized);
       },
     );
@@ -127,7 +119,6 @@ class _MyAppWrapperState extends State<MyAppWrapper> {
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
   const MyApp({super.key, required this.isLoggedIn});
-
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeController>(
@@ -147,38 +138,9 @@ class MyApp extends StatelessWidget {
             Locale('ja'),
             Locale('zh'),
           ],
-          home: SplashScreenWrapper(isLoggedIn: isLoggedIn),
+          home: const SplashScreen(),
         );
       },
     );
-  }
-}
-
-class SplashScreenWrapper extends StatefulWidget {
-  final bool isLoggedIn;
-  const SplashScreenWrapper({super.key, required this.isLoggedIn});
-
-  @override
-  State<SplashScreenWrapper> createState() => _SplashScreenWrapperState();
-}
-
-class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
-  bool _done = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _start();
-  }
-
-  void _start() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _done = true);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_done) return const SplashScreen();
-    return widget.isLoggedIn ? const MainLayout() : const LoginScreen();
   }
 }

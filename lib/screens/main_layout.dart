@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lottie/lottie.dart';
+import 'dart:io';
+import '../services/skin_local_cache.dart';
 import '../controllers/audio_controller.dart';
 import '../controllers/theme_controller.dart';
 import '../controllers/skin_controller.dart';
@@ -103,19 +105,44 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
         children: [
           if (selectedBg != null)
             Positioned.fill(
-              child: selectedBg.contains('.json')
-                  ? Lottie.network(
-                      selectedBg,
-                      fit: BoxFit.fill,
-                      frameRate: FrameRate.max,
-                      errorBuilder: (_, __, ___) => Container(color: Colors.black12),
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: selectedBg,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(color: Colors.black12),
-                      errorWidget: (_, __, ___) => Container(color: Colors.black12),
-                    ),
+              child: FutureBuilder<String?>(
+                future: SkinLocalCache.getLocalPath(selectedBg),
+                builder: (context, snapshot) {
+                  final cachePath = snapshot.data;
+                  if (cachePath != null && File(cachePath).existsSync()) {
+                    if (selectedBg.contains('.json')) {
+                      return Lottie.file(
+                        File(cachePath),
+                        fit: BoxFit.fill,
+                        frameRate: FrameRate.max,
+                        errorBuilder: (_, __, ___) => Container(color: Colors.black12),
+                      );
+                    } else {
+                      return Image.file(
+                        File(cachePath),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(color: Colors.black12),
+                      );
+                    }
+                  } else {
+                    if (selectedBg.contains('.json')) {
+                      return Lottie.network(
+                        selectedBg,
+                        fit: BoxFit.fill,
+                        frameRate: FrameRate.max,
+                        errorBuilder: (_, __, ___) => Container(color: Colors.black12),
+                      );
+                    } else {
+                      return CachedNetworkImage(
+                        imageUrl: selectedBg,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Container(color: Colors.black12),
+                        errorWidget: (_, __, ___) => Container(color: Colors.black12),
+                      );
+                    }
+                  }
+                },
+              ),
             ),
           SafeArea(
             top: true,
