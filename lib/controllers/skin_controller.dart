@@ -10,8 +10,14 @@ class SkinController extends ChangeNotifier {
   List<SkinItem> _catalog = [];
   SkinState? _state;
 
+  final Map<String, String?> _localImagePath = {};
+  final Map<String, String?> _localBgPath = {};
+
   List<SkinItem> get catalog => _catalog;
   SkinState? get state => _state;
+
+  String? localImagePathById(String id) => _localImagePath[id];
+  String? localBgPathById(String id) => _localBgPath[id];
 
   SkinItem? get selectedChar =>
       _catalog.firstWhere((e) => e.id == _state?.selectedCharId, orElse: () => _fallbackChar());
@@ -30,6 +36,21 @@ class SkinController extends ChangeNotifier {
   SkinItem _fallbackChar() =>
       SkinService.fallbackCatalog().firstWhere((e) => e.type == 'char');
 
+  Future<void> _preloadLocalPaths() async {
+    for (final item in _catalog) {
+      final imageLocalPath = await SkinLocalCache.getLocalPath(item.imageUrl);
+      if (imageLocalPath != null) {
+        _localImagePath[item.id] = imageLocalPath;
+      }
+      if (item.bgUrl != null) {
+        final bgLocalPath = await SkinLocalCache.getLocalPath(item.bgUrl!);
+        if (bgLocalPath != null) {
+          _localBgPath[item.id] = bgLocalPath;
+        }
+      }
+    }
+  }
+
   /// ✅ 캐시 우선 → 서버 동기화 비동기
   Future<void> initSkins(String userId) async {
     try {
@@ -44,6 +65,7 @@ class SkinController extends ChangeNotifier {
             unlockedIds: {'char_koofy_lv1', 'bg_koofy_lv1'},
             updatedAt: DateTime.now(),
           );
+      await _preloadLocalPaths();
       notifyListeners(); // 캐시 즉시 반영
 
       // 백그라운드 서버 동기화
@@ -71,6 +93,7 @@ class SkinController extends ChangeNotifier {
 
       _state = await SkinService.fetchOrInitUserState(userId, _catalog);
       await SkinLocalCache.saveState(_state!);
+      await _preloadLocalPaths();
       notifyListeners();
     } catch (_) {
       _catalog = await SkinLocalCache.loadCatalog() ?? SkinService.fallbackCatalog();
@@ -145,4 +168,10 @@ class SkinController extends ChangeNotifier {
       debugPrint('⚠️ SkinController.loadSkins() 실패: $e');
     }
   }
+
+  Future<void> ensureLocalPreload() async {
+    if (_localImagePath.isNotEmpty && _localBgPath.isNotEmpty) return;
+    await _preloadLocalPaths();
+  }
+
 }

@@ -30,14 +30,14 @@ class UserModel extends ChangeNotifier {
       };
 
   factory UserModel.fromMap(Map<String, dynamic> data) => UserModel(
-        uid: data['uid'],
-        nickname: data['nickname'],
-        loginType: data['login_type'],
-        email: data['email'],
-        gold: data['gold'] ?? 0,
-        gems: data['gems'] ?? 0,   // ✅
-        exp: data['exp'] ?? 0,     // ✅
-      );
+    uid: data['uid'] ?? '',
+    nickname: data['nickname'] ?? '',
+    loginType: data['login_type'] ?? data['loginType'] ?? 'guest',
+    email: data['email'],
+    gold: data['gold'] ?? 0,
+    gems: data['gems'] ?? 0,
+    exp: data['exp'] ?? 0,
+  );
 
   // ✅ 닉네임 변경 시 UI 즉시 갱신
   void updateNickname(String newNickname) {

@@ -1,12 +1,13 @@
+import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:lottie/lottie.dart';
 import '../../../controllers/skin_controller.dart';
 import '../../../models/skin_model.dart';
 import '../../../services/skin_purchase_service.dart';
-import 'dart:async';
 
 class ProfileSkinDialog extends StatelessWidget {
   const ProfileSkinDialog({super.key});
@@ -16,11 +17,7 @@ class ProfileSkinDialog extends StatelessWidget {
     final skinCtrl = context.watch<SkinController>();
     final catalog = skinCtrl.catalog;
     final state = skinCtrl.state;
-
-    // 캐시 즉시 로드 구조이므로 로딩 스피너 제거 가능
-    if (state == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (state == null) return const Center(child: CircularProgressIndicator());
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
     final charSkins = catalog.where((e) => e.type == 'char').toList();
@@ -34,8 +31,7 @@ class ProfileSkinDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('캐릭터 선택',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text('캐릭터 선택', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             _SkinRow(
               items: charSkins,
@@ -63,32 +59,10 @@ class _SkinRow extends StatelessWidget {
     required this.isUnlocked,
   });
 
-  void _showToast(BuildContext context, String message) {
-    final overlay = Overlay.of(context);
-    final entry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: MediaQuery.of(context).size.height * 0.35,
-        left: 0,
-        right: 0,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.black87,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(message,
-                style: const TextStyle(color: Colors.white, fontSize: 14)),
-          ),
-        ),
-      ),
-    );
-    overlay.insert(entry);
-    Future.delayed(const Duration(seconds: 1), entry.remove);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final skinCtrl = context.watch<SkinController>();
+
     return SizedBox(
       height: 140,
       child: ListView.separated(
@@ -100,14 +74,35 @@ class _SkinRow extends StatelessWidget {
           final unlocked = isUnlocked(item.id);
           final isSelected = selectedId == item.id;
 
+          final bgPath = skinCtrl.localBgPathById(item.id);
+          final charPath = skinCtrl.localImagePathById(item.id);
+
+          Widget bgWidget;
+          if (bgPath != null && File(bgPath).existsSync()) {
+            bgWidget = item.bgUrl.contains('.json')
+                ? Lottie.file(File(bgPath), fit: BoxFit.fill, repeat: true)
+                : Image.file(File(bgPath), fit: BoxFit.fill);
+          } else {
+            bgWidget = item.bgUrl.contains('.json')
+                ? Lottie.network(item.bgUrl, fit: BoxFit.fill, repeat: true)
+                : CachedNetworkImage(imageUrl: item.bgUrl, fit: BoxFit.fill);
+          }
+
+          Widget charWidget;
+          if (charPath != null && File(charPath).existsSync()) {
+            charWidget = item.imageUrl.contains('.json')
+                ? Lottie.file(File(charPath), fit: BoxFit.cover, repeat: true)
+                : Image.file(File(charPath), fit: BoxFit.cover);
+          } else {
+            charWidget = item.imageUrl.contains('.json')
+                ? Lottie.network(item.imageUrl, fit: BoxFit.cover, repeat: true)
+                : CachedNetworkImage(imageUrl: item.imageUrl, fit: BoxFit.cover);
+          }
+
           return GestureDetector(
             onTap: () async {
               final uid = FirebaseAuth.instance.currentUser?.uid;
-              if (uid == null) {
-                _showToast(context, '로그인 후 이용 가능합니다.');
-                return;
-              }
-
+              if (uid == null) return;
               if (unlocked) {
                 onSelect(item.id);
               } else if (item.unlockCost > 0) {
@@ -116,23 +111,9 @@ class _SkinRow extends StatelessWidget {
                   skinId: item.id,
                   cost: item.unlockCost,
                 );
-
-                switch (result) {
-                  case PurchaseResult.success:
-                    _showToast(context, '스킨이 구매되었습니다.');
-                    await context.read<SkinController>().setUnlocked(uid, item.id, true);
-                    unawaited(context.read<SkinController>().loadAll(uid));
-                    onSelect(item.id);
-                    break;
-                  case PurchaseResult.insufficientFunds:
-                    _showToast(context, '골드가 부족합니다.');
-                    break;
-                  case PurchaseResult.alreadyOwned:
-                    _showToast(context, '이미 소유 중인 스킨입니다.');
-                    break;
-                  case PurchaseResult.error:
-                    _showToast(context, '구매 중 오류가 발생했습니다.');
-                    break;
+                if (result == PurchaseResult.success) {
+                  await context.read<SkinController>().setUnlocked(uid, item.id, true);
+                  onSelect(item.id);
                 }
               }
             },
@@ -149,21 +130,7 @@ class _SkinRow extends StatelessWidget {
                   ),
                   child: Stack(
                     children: [
-                      if (item.bgUrl.contains('.json'))
-                        Lottie.network(
-                          item.bgUrl,
-                          fit: BoxFit.fill,
-                          repeat: true,
-                        )
-                      else
-                        Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: CachedNetworkImageProvider(item.bgUrl),
-                              fit: BoxFit.fill,
-                            ),
-                          ),
-                        ),
+                      bgWidget,
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: ClipRRect(
@@ -171,20 +138,7 @@ class _SkinRow extends StatelessWidget {
                             bottomLeft: Radius.circular(12),
                             bottomRight: Radius.circular(12),
                           ),
-                          child: SizedBox(
-                            height: 80,
-                            width: double.infinity,
-                            child: item.imageUrl.contains('.json')
-                                ? Lottie.network(
-                                    item.imageUrl,
-                                    fit: BoxFit.cover,
-                                    repeat: true,
-                                  )
-                                : Image(
-                                    image: CachedNetworkImageProvider(item.imageUrl),
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
+                          child: SizedBox(height: 80, width: double.infinity, child: charWidget),
                         ),
                       ),
                     ],
@@ -210,33 +164,7 @@ class _SkinRow extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text('착용중',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                if (!unlocked &&
-                    item.unlockCost > 0 &&
-                    item.unlockType != 'default')
-                  Positioned(
-                    bottom: 6,
-                    left: 6,
-                    right: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '${item.unlockCost} 골드',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold),
-                      ),
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                     ),
                   ),
               ],

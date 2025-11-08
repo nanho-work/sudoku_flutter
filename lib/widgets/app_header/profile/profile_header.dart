@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/user_model.dart';
-import '../../../services/auth_service.dart';
 import '../../../controllers/skin_controller.dart';
+import '../../../services/auth_service.dart';
 import '../../../screens/login/components/nickname_dialog.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -12,37 +14,29 @@ class ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserModel?>();
-    final skin = context.watch<SkinController>().selectedChar;
+    final skinCtrl = context.watch<SkinController>();
+    final skin = skinCtrl.selectedChar;
     final auth = AuthService();
 
-    if (user == null || user.uid.isEmpty) {
-      return const SizedBox.shrink();
+    if (user == null || user.uid.isEmpty) return const SizedBox.shrink();
+    if (skin == null) return const SizedBox.shrink();
+
+    final localPath = skinCtrl.localImagePathById(skin.id);
+
+    Widget avatarWidget;
+    if (localPath != null && File(localPath).existsSync()) {
+      avatarWidget = skin.imageUrl.contains('.json')
+          ? Lottie.file(File(localPath), width: 80, height: 80, repeat: true)
+          : Image.file(File(localPath), width: 80, height: 80, fit: BoxFit.cover);
+    } else {
+      avatarWidget = skin.imageUrl.contains('.json')
+          ? Lottie.network(skin.imageUrl, width: 80, height: 80, repeat: true)
+          : CachedNetworkImage(imageUrl: skin.imageUrl, width: 80, height: 80, fit: BoxFit.cover);
     }
 
     return Row(
       children: [
-        Expanded(
-          flex: 3,
-          child: Center(
-            child: skin != null
-                ? ClipOval(
-                    child: SizedBox(
-                      width: 80,
-                      height: 80,
-                      child: skin.imageUrl.contains('.json')
-                          ? Lottie.network(skin.imageUrl)
-                          : CircleAvatar(
-                              radius: 40,
-                              backgroundImage: skin.imageUrl.startsWith('http')
-                                  ? NetworkImage(skin.imageUrl)
-                                  : AssetImage(skin.imageUrl) as ImageProvider,
-                              backgroundColor: Colors.transparent,
-                            ),
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ),
+        Expanded(flex: 3, child: Center(child: avatarWidget)),
         Expanded(
           flex: 7,
           child: Column(
@@ -69,10 +63,8 @@ class ProfileHeader extends StatelessWidget {
               const Divider(),
               Row(
                 children: [
-                  Text(
-                    user.loginType == 'google' ? 'Google 계정' : '게스트 계정',
-                    style: const TextStyle(fontSize: 14),
-                  ),
+                  Text(user.loginType == 'google' ? 'Google 계정' : '게스트 계정',
+                      style: const TextStyle(fontSize: 14)),
                   if (user.loginType == 'guest')
                     IconButton(
                       icon: const Icon(Icons.switch_account),

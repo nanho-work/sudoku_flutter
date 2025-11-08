@@ -1,10 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:lottie/lottie.dart';
 import '../../../controllers/skin_controller.dart';
 import '../../../models/user_model.dart';
-import 'profile_skin_dialog.dart'; // 다이얼로그 import
+import 'profile_skin_dialog.dart';
 import 'profile_header.dart';
 import 'profile_footer.dart';
 
@@ -13,85 +14,62 @@ class ProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final skinController = context.watch<SkinController>();
-    final selectedChar = skinController.selectedChar;
+    final skinCtrl = context.watch<SkinController>();
+    final selectedChar = skinCtrl.selectedChar;
+    if (selectedChar == null) return const SizedBox.shrink();
+
+    final localPath = skinCtrl.localImagePathById(selectedChar.id);
+
+    Widget avatarWidget;
+    if (localPath != null && File(localPath).existsSync()) {
+      avatarWidget = selectedChar.imageUrl.contains('.json')
+          ? Lottie.file(File(localPath), fit: BoxFit.cover, repeat: true)
+          : Image.file(File(localPath), fit: BoxFit.cover);
+    } else {
+      avatarWidget = selectedChar.imageUrl.contains('.json')
+          ? Lottie.network(selectedChar.imageUrl, fit: BoxFit.cover, repeat: true)
+          : CachedNetworkImage(imageUrl: selectedChar.imageUrl, fit: BoxFit.cover);
+    }
 
     return Container(
       alignment: Alignment.center,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: () {
-              final user = context.read<UserModel>();
-              showDialog(
-                context: context,
-                builder: (_) => Dialog(
-                  insetPadding: const EdgeInsets.all(16),
-                  backgroundColor: Colors.transparent, // ✅ 완전 투명으로 설정
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/profile_section_title_bg.png'),
-                        fit: BoxFit.fill,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(                     
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ProfileHeader(),
-                            const SizedBox(height: 16),
-                            const ProfileSkinDialog(),
-                            const SizedBox(height: 16),
-                            const ProfileFooter(),
-                          ],
-                        ),
-                      ),
-                    ),
+      child: GestureDetector(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (_) => Dialog(
+              insetPadding: const EdgeInsets.all(16),
+              backgroundColor: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/profile_section_title_bg.png'),
+                    fit: BoxFit.fill,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ProfileHeader(),
+                      SizedBox(height: 16),
+                      ProfileSkinDialog(),
+                      SizedBox(height: 16),
+                      ProfileFooter(),
+                    ],
                   ),
                 ),
-              );
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFFFD700),
-                  width: 2.0,
-                ),
-              ),
-              child: CircleAvatar(
-                radius: MediaQuery.of(context).size.height * 0.028, // 화면 높이의 3%
-                backgroundColor: Colors.transparent,
-                child: selectedChar != null
-                    ? ClipOval(
-                        child: selectedChar.imageUrl.contains('.json')
-                            ? Lottie.network(
-                                selectedChar.imageUrl,
-                                fit: BoxFit.cover,
-                              )
-                            : CachedNetworkImage(
-                                imageUrl: selectedChar.imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) =>
-                                    const Center(child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    const Icon(Icons.error),
-                              ),
-                      )
-                    : const SizedBox.shrink(),
               ),
             ),
-          ),
-        ],
+          );
+        },
+        child: CircleAvatar(
+          radius: MediaQuery.of(context).size.height * 0.028,
+          backgroundColor: Colors.transparent,
+          child: ClipOval(child: avatarWidget),
+        ),
       ),
     );
   }

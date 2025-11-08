@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -33,56 +34,73 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _initSplash() async {
     _audio = context.read<AudioController>();
     _audio.playSfx('start_bg.mp3');
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..forward();
+
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..forward();
 
     final skinController = context.read<SkinController>();
-    await _downloadAllResources(skinController);
-
+    await _precacheAllSkins(context, skinController);
+    await _precacheStageThumbnails(context);
     await _checkForUpdate();
     if (_updateRequired) return;
+
+    await Future.delayed(const Duration(milliseconds: 2000));
+    if (!mounted) return;
+    _fadeController.reverse();
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
   }
 
-  Future<void> _downloadAllResources(SkinController controller) async {
+  Future<void> _precacheAllSkins(
+      BuildContext context, SkinController controller) async {
     try {
-      debugPrint('🚀 StageService.loadStages() 호출');
-      final stages = await StageService().loadStages();
-      debugPrint('📦 불러온 스테이지 수: ${stages.length}');
-      final urls = <String>{
-        ...controller.catalog.map((e) => e.imageUrl).where((e) => e.isNotEmpty),
-        ...controller.catalog.map((e) => e.bgUrl ?? '').where((e) => e.isNotEmpty),
-        ...stages.map((e) => e.thumbnail ?? '').where((e) => e.isNotEmpty),
-      };
-      debugPrint('🧩 다운로드 대상 URL 개수: ${urls.length}');
-      debugPrint('🔗 다운로드 시작: ${urls.length}개의 리소스');
-      int done = 0;
-      for (final url in urls) {
-        debugPrint('⬇️ [$done/${urls.length}] $url 다운로드 중...');
-        await SkinLocalCache.downloadToDocuments(url);
-        done++;
-        if (!mounted) return;
-        setState(() => _progress = done / urls.length);
+      for (final skin in controller.catalog) {
+        if (skin.imageUrl.isNotEmpty) {
+          await precacheImage(CachedNetworkImageProvider(skin.imageUrl), context);
+          await SkinLocalCache.downloadToDocuments(skin.imageUrl);
+        }
+        if (skin.bgUrl != null && skin.bgUrl!.isNotEmpty) {
+          await precacheImage(CachedNetworkImageProvider(skin.bgUrl!), context);
+          await SkinLocalCache.downloadToDocuments(skin.bgUrl!);
+        }
       }
-      debugPrint('🏁 리소스 다운로드 완료율: $_progress (${done}/${urls.length})');
-      if (done == urls.length) {
-        debugPrint('✅ 모든 리소스 다운로드 완료');
-        if (!mounted) return;
-        _fadeController.reverse();
-        await Future.delayed(const Duration(milliseconds: 1200));
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const MainLayout()),
-        );
-      }
+      debugPrint('✅ 모든 캐릭터 이미지 프리캐시 + 로컬 캐시 완료');
     } catch (e) {
-      debugPrint('⚠️ 리소스 다운로드 오류: $e');
+      debugPrint('⚠️ 캐릭터 프리캐시 중 오류: $e');
+    }
+  }
+
+  Future<void> _precacheStageThumbnails(BuildContext context) async {
+    try {
+      final stages = await StageService().loadStages();
+      for (final stage in stages) {
+        final thumb = stage.thumbnail;
+        if (thumb != null && thumb.isNotEmpty) {
+          if (thumb.startsWith('http')) {
+            await precacheImage(CachedNetworkImageProvider(thumb), context);
+            await SkinLocalCache.downloadToDocuments(thumb);
+          } else {
+            await precacheImage(AssetImage(thumb), context);
+          }
+        }
+      }
+      debugPrint('✅ 모든 스테이지 썸네일 프리캐시 + 캐시 완료');
+    } catch (e) {
+      debugPrint('⚠️ 스테이지 썸네일 프리캐시 중 오류: $e');
     }
   }
 
   Future<void> _checkForUpdate() async {
     try {
       final remoteConfig = FirebaseRemoteConfig.instance;
-      await remoteConfig.setConfigSettings(RemoteConfigSettings(fetchTimeout: const Duration(seconds: 5), minimumFetchInterval: Duration.zero));
+      await remoteConfig.setConfigSettings(
+        RemoteConfigSettings(
+          fetchTimeout: const Duration(seconds: 5),
+          minimumFetchInterval: Duration.zero,
+        ),
+      );
       await remoteConfig.fetchAndActivate();
 
       final latestVersion = remoteConfig.getString('latest_version');
@@ -93,6 +111,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (currentBuild < latestBuild) {
         _updateRequired = true;
         if (!mounted) return;
+
         await showDialog(
           context: context,
           barrierDismissible: false,
@@ -102,7 +121,8 @@ class _SplashScreenState extends State<SplashScreen>
             actions: [
               TextButton(
                 onPressed: () async {
-                  final url = Uri.parse('https://play.google.com/store/apps/details?id=com.koofy.sudoku');
+                  final url = Uri.parse(
+                      'https://play.google.com/store/apps/details?id=com.koofy.sudoku');
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url, mode: LaunchMode.externalApplication);
                   }
@@ -119,48 +139,48 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          FadeTransition(
-            opacity: _fadeController,
-            child: Image.asset('assets/images/splash_bg.png', fit: BoxFit.contain),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 80),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('리소스 다운로드 중...', style: TextStyle(color: Colors.white)),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: 240,
-                    child: LinearProgressIndicator(
-                      value: _progress,
-                      color: Colors.white,
-                      backgroundColor: Colors.white24,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text('${(_progress * 100).toStringAsFixed(0)}%',
-                      style: const TextStyle(color: Colors.white70)),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
   void dispose() {
     _fadeController.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: FadeTransition(
+        opacity: _fadeController,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/images/splash_bg.png',
+              fit: BoxFit.fill,
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 80),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('리소스 준비 중...', style: TextStyle(color: Colors.white)),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: 240,
+                      child: LinearProgressIndicator(
+                        value: _progress,
+                        color: Colors.white,
+                        backgroundColor: Colors.white24,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
