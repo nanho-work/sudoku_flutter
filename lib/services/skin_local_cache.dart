@@ -51,7 +51,7 @@ class SkinLocalCache {
       final segments = decodedPath.split('/').where((s) => s.isNotEmpty).toList();
 
       final dir = await getApplicationDocumentsDirectory();
-      final folderPath = '${dir.path}/${segments.length > 1 ? segments[segments.length - 2] : ''}';
+      final folderPath = '${dir.path}/skins';
       final folder = Directory(folderPath);
       if (!await folder.exists()) {
         await folder.create(recursive: true);
@@ -82,7 +82,7 @@ class SkinLocalCache {
     try {
       final dir = await getApplicationDocumentsDirectory();
       final name = Uri.parse(url).pathSegments.last.split('?').first;
-      final file = File('${dir.path}/$name');
+      final file = File('${dir.path}/skins/$name');
       if (await file.exists()) {
         return file.path;
       }
