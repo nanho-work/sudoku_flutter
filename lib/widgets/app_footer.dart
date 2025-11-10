@@ -19,6 +19,7 @@ class AppFooter extends StatelessWidget {
     BuildContext context, {
     required String assetPath,
     required String labelKey,
+    required bool isSelected,
   }) {
     final colors = context.read<ThemeController>().colors;
     final loc = AppLocalizations.of(context)!;
@@ -26,7 +27,7 @@ class AppFooter extends StatelessWidget {
       'home': loc.home,
       'mission': loc.footer_label_mission,
       'stage': '스테이지',
-      'guide': loc.footer_label_guide,
+      'skin': '스킨',
       'ranking': '랭킹',
     }[labelKey] ?? labelKey;
 
@@ -34,19 +35,29 @@ class AppFooter extends StatelessWidget {
       icon: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(assetPath, width: 60, height: 60),
-          const SizedBox(height: 2),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: colors.background.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              localizedLabel,
-              style: TextStyle(fontSize: 12, color: colors.textMain),
+          Transform.translate(
+            offset: isSelected ? const Offset(0, -10) : Offset.zero,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: isSelected ? 80 : 48,
+              height: isSelected ? 80 : 48,
+              child: Image.asset(assetPath),
             ),
           ),
+          const SizedBox(height: 2),
+          // Removed label display
+          // if (!isSelected)
+          //   Container(
+          //     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          //     decoration: BoxDecoration(
+          //       color: colors.background.withOpacity(0.6),
+          //       borderRadius: BorderRadius.circular(4),
+          //     ),
+          //     child: Text(
+          //       localizedLabel,
+          //       style: TextStyle(fontSize: 12, color: colors.textMain),
+          //     ),
+          //   ),
         ],
       ),
       label: '',
@@ -73,30 +84,36 @@ class AppFooter extends StatelessWidget {
             onTap(index);
           },
           items: [
-            _buildNavItem(
-              context,
-              assetPath: 'assets/images/home.png',
-              labelKey: 'home',
-            ),
+            
             _buildNavItem(
               context,
               assetPath: 'assets/images/mission.png',
               labelKey: 'mission',
+              isSelected: currentIndex == 0,
             ),
             _buildNavItem(
               context,
               assetPath: 'assets/images/stage.png', // ✅ 신규 스테이지 아이콘
               labelKey: 'stage',
+              isSelected: currentIndex == 1,
             ),
             _buildNavItem(
               context,
-              assetPath: 'assets/images/guide.png',
-              labelKey: 'guide',
+              assetPath: 'assets/images/home.png',
+              labelKey: 'home',
+              isSelected: currentIndex == 2,
+            ),
+            _buildNavItem(
+              context,
+              assetPath: 'assets/images/skin.png',
+              labelKey: 'skin',
+              isSelected: currentIndex == 3,
             ),
             _buildNavItem(
               context,
               assetPath: 'assets/images/ranking.png',
               labelKey: 'ranking',
+              isSelected: currentIndex == 4,
             ),
           ],
         );

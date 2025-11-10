@@ -23,6 +23,7 @@ class _AppHeaderState extends State<AppHeader> {
     return Container(
       height: 60,
       padding: const EdgeInsets.only(top: 6),
+      color: Colors.white.withOpacity(0.7),
       child: Row(
         children: [
           const Expanded(flex: 2, child: ProfileSection()),

@@ -82,3 +82,9 @@ firebase_service_account.json
 /windows/runner/*.exe
 /macos/Runner.xcworkspace/
 /linux/flutter/build/
+
+# ---------------------------
+# Signing keys & certificates
+# ---------------------------
+*.pem
+key.properties

@@ -13,6 +13,7 @@ import '../models/user_model.dart';
 import 'home/home_screen.dart';
 import 'mission_screen.dart';
 import 'guide_screen.dart';
+import 'skin/skin_screen.dart';
 import 'ranking/ranking_screen.dart';
 import 'stage/stage_select_screen.dart';
 import '../widgets/app_footer.dart';
@@ -29,14 +30,14 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   AudioController? audio;
-  int _currentIndex = 0;
+  int _currentIndex = 2;
   bool _isBannerReady = false;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
+  final List<Widget> _screens = [
     MissionScreen(),
     StageSelectScreen(),
-    GuideScreen(),
+    HomeScreen(),
+    SkinScreen(),
     RankingScreen(),
   ];
 
@@ -45,19 +46,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
     super.initState();
     debugPrint('MainLayout initState started');
     WidgetsBinding.instance.addObserver(this);
-
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
-    debugPrint('MainLayout initState userId: $userId');
-
-    context.read<SkinController>().initSkins(userId).then((_) {
-      final skinController = context.read<SkinController>();
-      debugPrint('SkinController initSkins completed');
-      debugPrint('SkinController catalog length: ${skinController.catalog.length}');
-      if (skinController.catalog.isNotEmpty) {
-        debugPrint('First catalog item id: ${skinController.catalog.first.id}');
-      }
-      debugPrint('SkinController state: ${skinController.state}');
-    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       audio = context.read<AudioController>();
@@ -127,103 +115,140 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
             .catchError((_) => debugPrint('⚠️ Background precache failed.'));
       }
 
-      return Scaffold(
-        extendBody: true,
-        body: Stack(
-          children: [
-            if (selectedBg != null)
-              Positioned.fill(
-                child: FutureBuilder<String?>(
-                  future: SkinLocalCache.getLocalPath(selectedBg),
-                  builder: (context, snapshot) {
-                    debugPrint('FutureBuilder connectionState: ${snapshot.connectionState}');
-                    final cachePath = snapshot.data;
-                    final fileExists = cachePath != null && File(cachePath).existsSync();
-                    debugPrint('FutureBuilder: selectedBg: $selectedBg, cachePath: $cachePath, file exists: $fileExists');
-                    if (cachePath != null && fileExists) {
-                      if (selectedBg.contains('.json')) {
-                        debugPrint('Rendering Lottie.file from cachePath');
-                        return Lottie.file(
-                          File(cachePath),
-                          fit: BoxFit.fill,
-                          frameRate: FrameRate.max,
-                          errorBuilder: (_, __, ___) => Container(color: Colors.black12),
-                        );
-                      } else {
-                        debugPrint('Rendering Image.file from cachePath');
-                        return Image.file(
-                          File(cachePath),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(color: Colors.black12),
-                        );
-                      }
-                    } else {
-                      if (selectedBg.contains('.json')) {
-                        debugPrint('Rendering Lottie.network from url');
-                        return Lottie.network(
-                          selectedBg,
-                          fit: BoxFit.fill,
-                          frameRate: FrameRate.max,
-                          errorBuilder: (_, __, ___) => Container(color: Colors.black12),
-                        );
-                      } else {
-                        debugPrint('Rendering CachedNetworkImage from url');
-                        return CachedNetworkImage(
-                          imageUrl: selectedBg,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: Colors.black12),
-                          errorWidget: (_, __, ___) => Container(color: Colors.black12),
-                        );
-                      }
-                    }
-                  },
+      final localBgPath = skinController.localBgPathByUrl(selectedBg ?? '');
+      final fileExists = localBgPath != null && File(localBgPath).existsSync();
+      debugPrint('Local background path: $localBgPath, file exists: $fileExists');
+
+      return WillPopScope(
+        onWillPop: () async {
+          final shouldExit = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('앱 종료'),
+              content: const Text('정말 종료하시겠습니까?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('아니요'),
                 ),
-              ),
-            SafeArea(
-              top: true,
-              bottom: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Builder(
-                    builder: (_) {
-                      debugPrint(_isBannerReady
-                          ? 'Rendering AdBannerService.mainBannerWidget'
-                          : 'Rendering placeholder container for banner');
-                      return const SizedBox.shrink();
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('예'),
+                ),
+              ],
+            ),
+          );
+          return shouldExit ?? false;
+        },
+        child: Scaffold(
+          extendBody: true,
+          body: Stack(
+            children: [
+              if (selectedBg != null)
+                Positioned.fill(
+                  child: Builder(
+                    builder: (context) {
+                      debugPrint('📂 Background source decision -> localPath=$localBgPath, fileExists=$fileExists, selectedBg=$selectedBg');
+                      if (selectedBg.contains('.json')) {
+                        final composition = skinController.compositionCache[selectedBg];
+                        if (composition != null) {
+                          debugPrint('Rendering Lottie from cached composition');
+                          return Lottie(
+                            key: ValueKey(selectedBg),
+                            composition: composition,
+                            fit: BoxFit.fill,
+                          );
+                        }
+                      }
+                      if (fileExists) {
+                        if (selectedBg.contains('.json')) {
+                          debugPrint('🟢 Using local Lottie file: $localBgPath');
+                          debugPrint('Rendering Lottie.file from localBgPath');
+                          return Lottie.file(
+                            File(localBgPath!),
+                            fit: BoxFit.fill,
+                            frameRate: FrameRate.max,
+                            errorBuilder: (_, __, ___) => Container(color: Colors.black12),
+                          );
+                        } else {
+                          debugPrint('🟢 Using local image file: $localBgPath');
+                          debugPrint('Rendering Image.file from localBgPath');
+                          return Image.file(
+                            File(localBgPath!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(color: Colors.black12),
+                          );
+                        }
+                      } else {
+                        if (selectedBg.contains('.json')) {
+                          debugPrint('🟡 Loading Lottie from network: $selectedBg');
+                          debugPrint('Rendering Lottie.network from url');
+                          return Lottie.network(
+                            selectedBg,
+                            fit: BoxFit.fill,
+                            frameRate: FrameRate.max,
+                            errorBuilder: (_, __, ___) => Container(color: Colors.black12),
+                          );
+                        } else {
+                          debugPrint('🟡 Loading image from network: $selectedBg');
+                          debugPrint('Rendering CachedNetworkImage from url');
+                          return CachedNetworkImage(
+                            imageUrl: selectedBg,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(color: Colors.black12),
+                            errorWidget: (_, __, ___) => Container(color: Colors.black12),
+                          );
+                        }
+                      }
                     },
                   ),
-                  if (_isBannerReady) ...[
-                    AdBannerService.mainBannerWidget(),
-                  ] else ...[
-                    Container(
-                      height: AdSize.banner.height.toDouble(),
-                      color: const Color(0xFF1E272E),
-                    ),
-                  ],
-                  const SizedBox(height: 6),
-                  if (userModel != null) ...[
+                ),
+              SafeArea(
+                top: true,
+                bottom: true,
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
                     Builder(
                       builder: (_) {
-                        debugPrint('Rendering AppHeader because userModel is not null');
-                        return const AppHeader();
+                        debugPrint(_isBannerReady
+                            ? 'Rendering AdBannerService.mainBannerWidget'
+                            : 'Rendering placeholder container for banner');
+                        return const SizedBox.shrink();
                       },
                     ),
+                    if (_isBannerReady) ...[
+                      AdBannerService.mainBannerWidget(),
+                    ] else ...[
+                      Container(
+                        height: AdSize.banner.height.toDouble(),
+                        color: const Color(0xFF1E272E),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    if (userModel != null) ...[
+                      Builder(
+                        builder: (_) {
+                          debugPrint('Rendering AppHeader because userModel is not null');
+                          return const AppHeader();
+                        },
+                      ),
+                    ],
+                    Expanded(
+                      child: IndexedStack(
+                        index: _currentIndex,
+                        children: _screens,
+                      ),
+                    ),
                   ],
-                  Builder(
-                    builder: (_) {
-                      debugPrint('Rendering screen widget at index $_currentIndex');
-                      return _screens[_currentIndex];
-                    },
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
-        ),
-        bottomNavigationBar: AppFooter(
-          currentIndex: _currentIndex,
-          onTap: _onTap,
+            ],
+          ),
+          bottomNavigationBar: AppFooter(
+            currentIndex: _currentIndex,
+            onTap: _onTap,
+          ),
         ),
       );
     } catch (e, stack) {

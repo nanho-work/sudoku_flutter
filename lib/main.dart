@@ -154,31 +154,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class SplashScreenWrapper extends StatefulWidget {
+class SplashScreenWrapper extends StatelessWidget {
   final bool isLoggedIn;
   const SplashScreenWrapper({super.key, required this.isLoggedIn});
 
   @override
-  State<SplashScreenWrapper> createState() => _SplashScreenWrapperState();
-}
-
-class _SplashScreenWrapperState extends State<SplashScreenWrapper> {
-  bool _done = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _start();
-  }
-
-  void _start() async {
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _done = true);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (!_done) return const SplashScreen();
-    return widget.isLoggedIn ? const MainLayout() : const LoginScreen();
+    return const SplashScreen();
   }
 }

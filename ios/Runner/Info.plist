@@ -43,11 +43,7 @@
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-4675113529695126~9415247904</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>GADIsAdManagerApp</key>
-	<false/>
 </dict>
 </plist>

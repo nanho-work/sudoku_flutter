@@ -33,7 +33,7 @@ android {
         create("release") {
             keyAlias = kpKeyAlias
             keyPassword = kpKeyPassword
-            storeFile = if (kpStoreFilePath.isNotEmpty()) File(rootDir, kpStoreFilePath) else null
+            storeFile = if (kpStoreFilePath.isNotEmpty()) File(kpStoreFilePath) else null
             storePassword = kpStorePassword
         }
     }

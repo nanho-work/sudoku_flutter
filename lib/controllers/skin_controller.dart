@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:lottie/lottie.dart';
 import '../models/skin_model.dart';
 import '../services/skin_service.dart';
 import '../services/skin_local_cache.dart';
@@ -11,13 +12,19 @@ class SkinController extends ChangeNotifier {
   SkinState? _state;
 
   final Map<String, String?> _localImagePath = {};
+  // Use background URL as key for background path mapping
   final Map<String, String?> _localBgPath = {};
+  final Map<String, LottieComposition> _compositionCache = {};
 
   List<SkinItem> get catalog => _catalog;
   SkinState? get state => _state;
+  Map<String, LottieComposition> get compositionCache => _compositionCache;
 
   String? localImagePathById(String id) => _localImagePath[id];
+  // For backward compatibility, but _localBgPath is now keyed by URL.
   String? localBgPathById(String id) => _localBgPath[id];
+  // Retrieve local background path by URL
+  String? localBgPathByUrl(String url) => _localBgPath[url];
 
   SkinItem? get selectedChar =>
       _catalog.firstWhere((e) => e.id == _state?.selectedCharId, orElse: () => _fallbackChar());
@@ -45,7 +52,7 @@ class SkinController extends ChangeNotifier {
       if (item.bgUrl != null) {
         final bgLocalPath = await SkinLocalCache.getLocalPath(item.bgUrl!);
         if (bgLocalPath != null) {
-          _localBgPath[item.id] = bgLocalPath;
+          _localBgPath[item.bgUrl!] = bgLocalPath; // Use bgUrl as key
         }
       }
     }
@@ -174,4 +181,14 @@ class SkinController extends ChangeNotifier {
     await _preloadLocalPaths();
   }
 
+  void cacheComposition(String url, LottieComposition composition) {
+    _compositionCache[url] = composition;
+    notifyListeners();
+  }
+
+  void setComposition(String url, LottieComposition composition) {
+    _compositionCache[url] = composition;
+  }
+
+  LottieComposition? getComposition(String url) => _compositionCache[url];
 }

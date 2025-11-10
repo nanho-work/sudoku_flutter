@@ -63,82 +63,89 @@ class StageCard extends StatelessWidget {
             ),
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(stage.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 8),
-                if (stage.thumbnail != null && stage.thumbnail!.isNotEmpty)
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: _buildThumbnail(stage.thumbnail!),
-                      ),
-                      if (cleared)
-                        Positioned(
-                          top: 6,
-                          right: 6,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.9),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              '클리어',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(stage.name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  if (stage.thumbnail != null && stage.thumbnail!.isNotEmpty)
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: _buildThumbnail(stage.thumbnail!),
+                        ),
+                        if (cleared)
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                '클리어',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 8),
+                  Text(stage.description,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 12)),
+                  const SizedBox(height: 8),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      StarRewardWidget(
+                        stars: stars,
+                        rewardsClaimed: rewards,
+                        rewards: stage.rewards,
+                        stageModel: stage,
+                        onClaim: (key) {
+                          if (currentUser == null) return;
+                          context
+                              .read<StageProgressProvider>()
+                              .claimReward(stage.id, key, stage, currentUser!);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: locked
+                            ? null
+                            : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        StagePlayScreen(stage: stage, user: currentUser),
+                                  ),
+                                ).then((_) {
+                                  context
+                                      .read<StageProgressProvider>()
+                                      .loadProgress([stage.id]);
+                                });
+                              },
+                        child: const Text('도전'),
+                      ),
                     ],
                   ),
-                const SizedBox(height: 8),
-                Text(stage.description,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 12)),
-                const SizedBox(height: 8),
-                StarRewardWidget(
-                  stars: stars,
-                  rewardsClaimed: rewards,
-                  rewards: stage.rewards,
-                  stageModel: stage,
-                  onClaim: (key) {
-                    if (currentUser == null) return;
-                    context
-                        .read<StageProgressProvider>()
-                        .claimReward(stage.id, key, stage, currentUser!);
-                  },
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: locked
-                      ? null
-                      : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  StagePlayScreen(stage: stage, user: currentUser),
-                            ),
-                          ).then((_) {
-                            context
-                                .read<StageProgressProvider>()
-                                .loadProgress([stage.id]);
-                          });
-                        },
-                  child: const Text('도전'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

@@ -65,6 +65,35 @@ class _StagePageViewState extends State<StagePageView> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentIndex > 0)
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  _controller.previousPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut);
+                },
+              )
+            else
+              const SizedBox(width: 12),
+            Text("${_currentIndex + 1} / $total"),
+            if (_currentIndex < total - 1)
+              IconButton(
+                icon: const Icon(Icons.arrow_forward_ios),
+                onPressed: () {
+                  _controller.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut);
+                },
+              )
+            else
+              const SizedBox(width: 48),
+          ],
+        ),
+        const SizedBox(height: 8),
         Expanded(
           child: PageView.builder(
             controller: _controller,
@@ -98,34 +127,6 @@ class _StagePageViewState extends State<StagePageView> {
               );
             },
           ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (_currentIndex > 0)
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new),
-                onPressed: () {
-                  _controller.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut);
-                },
-              )
-            else
-              const SizedBox(width: 12),
-            Text("${_currentIndex + 1} / $total"),
-            if (_currentIndex < total - 1)
-              IconButton(
-                icon: const Icon(Icons.arrow_forward_ios),
-                onPressed: () {
-                  _controller.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut);
-                },
-              )
-            else
-              const SizedBox(width: 48),
-          ],
         ),
       ],
     );

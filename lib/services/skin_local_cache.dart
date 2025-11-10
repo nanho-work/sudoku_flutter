@@ -59,9 +59,17 @@ class SkinLocalCache {
 
       final name = segments.last.split('?').first;
       final file = File('$folderPath/$name');
-      if (await file.exists()) return;
+      if (await file.exists()) {
+        debugPrint('📂 캐시 존재하여 다운로드 생략: $name, path=${file.path}');
+        return;
+      }
+      debugPrint('📄 다운로드 시도 파일명: $name');
+      debugPrint('📍 예상 저장 경로: ${file.path}');
 
       final res = await http.get(Uri.parse(url));
+      debugPrint('🌐 HTTP 응답 상태코드: ${res.statusCode}');
+      debugPrint('📦 content-type: ${res.headers['content-type']}');
+
       final contentType = res.headers['content-type'] ?? '';
       final isJson = url.toLowerCase().endsWith('.json') ||
           contentType.contains('application/json');
@@ -71,24 +79,70 @@ class SkinLocalCache {
       } else {
         await file.writeAsBytes(res.bodyBytes, flush: true);
       }
+      debugPrint('💾 파일 저장 확인: exists=${await file.exists()}, size=${await file.length()} bytes, path=${file.path}');
       debugPrint('✅ 다운로드 완료: $name');
     } catch (e) {
       debugPrint('⚠️ 다운로드 실패 ($url): $e');
     }
   }
 
-  static Future<String?> getLocalPath(String url) async {
-    if (url.isEmpty) return null;
+  static Future<String?> getLocalPath(String key) async {
+    if (key.isEmpty) return null;
     try {
+      debugPrint('🧭 getLocalPath() 호출됨 - key: $key');
+
       final dir = await getApplicationDocumentsDirectory();
-      final name = Uri.parse(url).pathSegments.last.split('?').first;
-      final file = File('${dir.path}/skins/$name');
-      if (await file.exists()) {
-        return file.path;
+      final folder = Directory('${dir.path}/skins');
+
+      if (!await folder.exists()) {
+        debugPrint('⚠️ 스킨 폴더 없음: ${folder.path}');
+        return null;
+      }
+
+      // 1) key가 URL이면 파일명만 추출, 아니면 그대로 사용
+      String decodedName;
+      if (key.startsWith('http')) {
+        debugPrint('🔍 URL 기반 키 감지, 파일명 파싱 시도');
+        final uri = Uri.parse(key);
+        final rawName = uri.pathSegments.last.split('?').first;
+        final decoded = Uri.decodeComponent(rawName);
+        decodedName = decoded.contains('/')
+            ? decoded.split('/').last
+            : decoded;
+      } else {
+        // URL이 아닌 경우(id 또는 파일명 자체)
+        decodedName = key;
+      }
+
+      debugPrint('🔍 기본 매칭 이름: $decodedName');
+
+      // 2) 정확히 일치하는 파일 먼저 탐색
+      final exactFile = File('${folder.path}/$decodedName');
+      if (await exactFile.exists()) {
+        debugPrint('📂 캐시 파일(정확 일치) 발견: ${exactFile.path}');
+        return exactFile.path;
+      }
+
+      // 3) 접두사 기반 확장자 매칭 (bg_koofy_lv1 → bg_koofy_lv1.json / .png 등)
+      final files = folder.listSync();
+      for (final f in files.whereType<File>()) {
+        final name = f.uri.pathSegments.last;
+        if (name == decodedName || name.startsWith('$decodedName.')) {
+          debugPrint('🔎 접두사 매칭 발견: $name → ${f.path}');
+          return f.path;
+        }
+      }
+
+      debugPrint('🟠 캐시 파일 없음: $decodedName');
+      try {
+        final dirList = folder.listSync().map((e) => e.path).join(', ');
+        debugPrint('📁 현재 스킨 폴더 파일: $dirList');
+      } catch (e2) {
+        debugPrint('⚠️ 상위폴더 조회 실패: $e2');
       }
       return null;
     } catch (e) {
-      debugPrint('⚠️ 로컬 경로 조회 실패 ($url): $e');
+      debugPrint('⚠️ 로컬 경로 조회 실패 ($key): $e');
       return null;
     }
   }
