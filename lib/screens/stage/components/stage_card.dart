@@ -73,32 +73,55 @@ class StageCard extends StatelessWidget {
                           fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   if (stage.thumbnail != null && stage.thumbnail!.isNotEmpty)
-                    Stack(
+                    Column(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: _buildThumbnail(stage.thumbnail!),
-                        ),
-                        if (cleared)
-                          Positioned(
-                            top: 6,
-                            right: 6,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                '클리어',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                        Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: _buildThumbnail(stage.thumbnail!),
+                            ),
+                            if (cleared)
+                              Positioned(
+                                top: 6,
+                                right: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(0.9),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    '클리어',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: locked
+                              ? null
+                              : () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          StagePlayScreen(stage: stage, user: currentUser),
+                                    ),
+                                  ).then((_) {
+                                    context
+                                        .read<StageProgressProvider>()
+                                        .loadProgress([stage.id]);
+                                  });
+                                },
+                          child: const Text('도전'),
+                        ),
                       ],
                     ),
                   const SizedBox(height: 8),
@@ -124,24 +147,6 @@ class StageCard extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: locked
-                            ? null
-                            : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        StagePlayScreen(stage: stage, user: currentUser),
-                                  ),
-                                ).then((_) {
-                                  context
-                                      .read<StageProgressProvider>()
-                                      .loadProgress([stage.id]);
-                                });
-                              },
-                        child: const Text('도전'),
-                      ),
                     ],
                   ),
                 ],

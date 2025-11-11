@@ -5,6 +5,7 @@ class DifficultyCard extends StatefulWidget {
   final String title;        // 난이도 이름 (쉬움, 보통, 어려움)
   final String subtitle;     // 설명 텍스트
   final Color color;         // 카드 배경색
+  final IconData icon;       // 난이도별 아이콘
   final VoidCallback onTap;  // 클릭 시 실행할 함수
 
   const DifficultyCard({
@@ -12,6 +13,7 @@ class DifficultyCard extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.color,
+    required this.icon,
     required this.onTap,
   });
 
@@ -36,7 +38,7 @@ class _DifficultyCardState extends State<DifficultyCard> {
         padding: const EdgeInsets.all(20.0),
         child: Row(
           children: [
-            Icon(Icons.extension, size: 36, color: Colors.black87), // 퍼즐 아이콘
+            Icon(widget.icon, size: 36, color: Colors.black87), // 난이도별 아이콘
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -45,7 +47,7 @@ class _DifficultyCardState extends State<DifficultyCard> {
                   Text(
                     widget.title,
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
