@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../controllers/skin_controller.dart';
 import '../../../models/skin_model.dart';
+import '../../../services/skin_purchase_service.dart';
 import 'skin_card.dart';
 
 class SkinList extends StatelessWidget {
@@ -78,7 +79,27 @@ class SkinList extends StatelessWidget {
           item: item,
           unlocked: unlocked,
           isSelected: selected,
-          onTap: () => ctrl.select(uid, charId: item.id),
+          onTap: () async {
+            // 이미 보유 → 착용
+            if (unlocked) {
+              ctrl.select(uid, charId: item.id);
+              return;
+            }
+
+            // 미보유 + 비용 있음 → 구매 시도
+            if (item.unlockCost > 0) {
+              final result = await SkinPurchaseService.purchaseSkin(
+                userId: uid,
+                skinId: item.id,
+                cost: item.unlockCost,
+              );
+
+              if (result == PurchaseResult.success) {
+                await ctrl.setUnlocked(uid, item.id, true);
+                ctrl.select(uid, charId: item.id);
+              }
+            }
+          },
         );
       },
     );

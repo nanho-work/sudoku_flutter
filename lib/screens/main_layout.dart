@@ -32,6 +32,7 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   AudioController? audio;
   int _currentIndex = 2;
   bool _isBannerReady = false;
+  bool _isMainReady = false;
 
   final List<Widget> _screens = [
     MissionScreen(),
@@ -44,80 +45,85 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    debugPrint('MainLayout initState started');
     WidgetsBinding.instance.addObserver(this);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       audio = context.read<AudioController>();
+      audio?.startMainBgm();
+      await _waitForMainResources();
       if (mounted) {
-        audio?.startMainBgm();
+        setState(() {
+          _isMainReady = true;
+        });
       }
     });
 
     AdBannerService.loadMainBanner(
       onLoaded: () => setState(() {
         _isBannerReady = true;
-        debugPrint('AdBannerService: Main banner loaded and ready');
       }),
       onFailed: (_) => setState(() {
         _isBannerReady = false;
-        debugPrint('AdBannerService: Main banner failed to load');
       }),
     );
   }
 
+  Future<void> _waitForMainResources() async {
+    final skinController = context.read<SkinController>();
+    while (skinController.catalog.isEmpty || skinController.state == null) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    await Future.delayed(const Duration(milliseconds: 300));
+  }
+
   @override
   void dispose() {
-    debugPrint('MainLayout dispose called: disposing main banner and removing observer');
     AdBannerService.disposeMainBanner();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   void _onTap(int index) {
-    debugPrint('MainLayout _onTap called: changing tab from $_currentIndex to $index');
     setState(() => _currentIndex = index);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    debugPrint('MainLayout didChangeAppLifecycleState: current state is $state');
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       audio?.pauseAll();
-      debugPrint('AudioController: paused all audio due to app lifecycle state $state');
     } else if (state == AppLifecycleState.resumed) {
       audio?.resumeAll();
-      debugPrint('AudioController: resumed all audio due to app lifecycle state resumed');
     }
   }
 
   bool _isValidImageUrl(String url) {
     final lower = url.toLowerCase();
-    return lower.endsWith('.png') ||
-        lower.endsWith('.jpg') ||
-        lower.endsWith('.jpeg') ||
-        lower.endsWith('.webp');
+    return lower.endsWith('.png');
   }
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🔍 MainLayout build() 시작');
     try {
+      if (!_isMainReady) {
+        return const Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+        );
+      }
       final colors = context.watch<ThemeController>().colors;
       final skinController = context.watch<SkinController>();
       final userModel = context.watch<UserModel?>();
       final selectedBg = skinController.selectedBg?.imageUrl;
 
-      debugPrint('MainLayout build _currentIndex: $_currentIndex, userModel is null: ${userModel == null}, selectedCharId: ${skinController.state?.selectedCharId}, selectedBg: $selectedBg');
-
       if (selectedBg != null && _isValidImageUrl(selectedBg)) {
         precacheImage(CachedNetworkImageProvider(selectedBg), context)
-            .catchError((_) => debugPrint('⚠️ Background precache failed.'));
+            .catchError((_) {});
       }
 
       final localBgPath = skinController.localBgPathByUrl(selectedBg ?? '');
       final fileExists = localBgPath != null && File(localBgPath).existsSync();
-      debugPrint('Local background path: $localBgPath, file exists: $fileExists');
 
       return WillPopScope(
         onWillPop: () async {
@@ -148,11 +154,9 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                 Positioned.fill(
                   child: Builder(
                     builder: (context) {
-                      debugPrint('📂 Background source decision -> localPath=$localBgPath, fileExists=$fileExists, selectedBg=$selectedBg');
                       if (selectedBg.contains('.json')) {
                         final composition = skinController.compositionCache[selectedBg];
                         if (composition != null) {
-                          debugPrint('Rendering Lottie from cached composition');
                           return Lottie(
                             key: ValueKey(selectedBg),
                             composition: composition,
@@ -162,8 +166,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                       }
                       if (fileExists) {
                         if (selectedBg.contains('.json')) {
-                          debugPrint('🟢 Using local Lottie file: $localBgPath');
-                          debugPrint('Rendering Lottie.file from localBgPath');
                           return Lottie.file(
                             File(localBgPath!),
                             fit: BoxFit.fill,
@@ -171,8 +173,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                             errorBuilder: (_, __, ___) => Container(color: Colors.black12),
                           );
                         } else {
-                          debugPrint('🟢 Using local image file: $localBgPath');
-                          debugPrint('Rendering Image.file from localBgPath');
                           return Image.file(
                             File(localBgPath!),
                             fit: BoxFit.cover,
@@ -181,8 +181,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                         }
                       } else {
                         if (selectedBg.contains('.json')) {
-                          debugPrint('🟡 Loading Lottie from network: $selectedBg');
-                          debugPrint('Rendering Lottie.network from url');
                           return Lottie.network(
                             selectedBg,
                             fit: BoxFit.fill,
@@ -190,8 +188,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                             errorBuilder: (_, __, ___) => Container(color: Colors.black12),
                           );
                         } else {
-                          debugPrint('🟡 Loading image from network: $selectedBg');
-                          debugPrint('Rendering CachedNetworkImage from url');
                           return CachedNetworkImage(
                             imageUrl: selectedBg,
                             fit: BoxFit.cover,
@@ -211,9 +207,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                   children: [
                     Builder(
                       builder: (_) {
-                        debugPrint(_isBannerReady
-                            ? 'Rendering AdBannerService.mainBannerWidget'
-                            : 'Rendering placeholder container for banner');
                         return const SizedBox.shrink();
                       },
                     ),
@@ -229,7 +222,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                     if (userModel != null) ...[
                       Builder(
                         builder: (_) {
-                          debugPrint('Rendering AppHeader because userModel is not null');
                           return const AppHeader();
                         },
                       ),
@@ -252,7 +244,6 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
         ),
       );
     } catch (e, stack) {
-      debugPrint('Error in MainLayout build: $e\n$stack');
       rethrow;
     }
   }

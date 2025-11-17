@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:lottie/lottie.dart';
 import '../models/skin_model.dart';
@@ -15,6 +16,9 @@ class SkinController extends ChangeNotifier {
   // Use background URL as key for background path mapping
   final Map<String, String?> _localBgPath = {};
   final Map<String, LottieComposition> _compositionCache = {};
+
+  final Map<String, String?> bgLocalCache = {};
+  final Map<String, String?> charLocalCache = {};
 
   List<SkinItem> get catalog => _catalog;
   SkinState? get state => _state;
@@ -190,5 +194,32 @@ class SkinController extends ChangeNotifier {
     _compositionCache[url] = composition;
   }
 
+  Future<void> fullPreloadAll() async {
+    for (final item in catalog) {
+      final bg = item.bgUrl ?? '';
+      final char = item.imageUrl;
+
+      await SkinLocalCache.downloadToDocuments(bg);
+      final bgLocal = await SkinLocalCache.getLocalPath(bg);
+
+      await SkinLocalCache.downloadToDocuments(char);
+      final charLocal = await SkinLocalCache.getLocalPath(char);
+
+      bgLocalCache[item.id] = bgLocal;
+      charLocalCache[item.id] = charLocal;
+
+      if (bg.contains('.json') && bgLocal != null) {
+        final comp = await LottieComposition.fromBytes(File(bgLocal).readAsBytesSync());
+        cacheComposition(item.id + '_bg', comp);
+      }
+
+      if (char.contains('.json') && charLocal != null) {
+        final comp = await LottieComposition.fromBytes(File(charLocal).readAsBytesSync());
+        cacheComposition(item.id + '_char', comp);
+      }
+    }
+  }
+
   LottieComposition? getComposition(String url) => _compositionCache[url];
+
 }

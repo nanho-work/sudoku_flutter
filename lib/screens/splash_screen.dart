@@ -1,22 +1,21 @@
 import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../controllers/audio_controller.dart';
 import '../controllers/skin_controller.dart';
 import '../services/stage_service.dart';
 import '../services/skin_local_cache.dart';
 import 'main_layout.dart';
 import 'login/login_screen.dart';
-import 'package:provider/provider.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:lottie/lottie.dart';
-import 'dart:io';
-import 'package:flutter/rendering.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,15 +27,14 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AudioController _audio;
-  bool _updateRequired = false;
+  late final AnimationController _textFadeController;
   double _progress = 0;
   String _statusText = '리소스를 준비하는 중입니다...';
-  late final AnimationController _textFadeController;
+  bool _updateRequired = false;
 
   @override
   void initState() {
     super.initState();
-
     _textFadeController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -56,250 +54,147 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _initSplash() async {
-    debugPrint('🚀 Splash init 시작');
-    _audio = context.read<AudioController>();
-    debugPrint('🟢 Splash init try-block 시작');
     try {
+      _audio = context.read<AudioController>();
       final skinController = context.read<SkinController>();
-      final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+      setState(() {
+        _statusText = '리소스를 불러오는 중입니다...';
+        _progress = 0.1;
+      });
 
-      if (mounted) {
-        setState(() {
-          _statusText = '스킨 정보를 불러오는 중입니다...';
-        });
-      }
+      // [1] 모든 리소스 다운로드&프리캐시, composition 파싱까지 await
+      await _preloadAllAssets(skinController, context);
 
-      debugPrint('🔹 1) 스킨 초기화 시작');
-      await skinController.initSkins(userId);
-      debugPrint('✅ 스킨 초기화 완료');
-      if (mounted) {
-        setState(() {
-          _progress = 0.2;
-          _statusText = '리소스를 다운로드 중입니다...';
-        });
-      }
+      setState(() {
+        _progress = 0.9;
+        _statusText = '최적화 완료...';
+      });
 
-      debugPrint('🔹 로컬 캐시 프리로드 시작');
-      await skinController.ensureLocalPreload();
-      debugPrint('✅ 로컬 캐시 프리로드 완료 — 캐시 디렉토리 점검 중');
-      final cacheDir = await getApplicationDocumentsDirectory();
-      final files = cacheDir.listSync();
-      debugPrint('📂 캐시 디렉토리 파일 수: ${files.length}');
-      for (final f in files) {
-        debugPrint(' - ${f.path}');
-      }
-      if (mounted) {
-        setState(() {
-          _progress = 0.4;
-          _statusText = '최적화 중...';
-        });
-      }
-
-      debugPrint('🔹 캐릭터 리소스 프리캐시 시작');
-      await _precacheAllSkins(context, skinController);
-      debugPrint('✅ 캐릭터 리소스 프리캐시 완료');
-      if (mounted) {
-        setState(() {
-          _progress = 0.6;
-          _statusText = '캐릭터 리소스를 불러오는 중입니다...';
-        });
-      }
-
-      debugPrint('🔹 스테이지 썸네일 프리캐시 시작');
-      await _precacheStageThumbnails(context);
-      debugPrint('✅ 스테이지 썸네일 프리캐시 완료');
-      if (mounted) {
-        setState(() {
-          _progress = 0.8;
-          _statusText = '스테이지 썸네일을 준비하는 중입니다...';
-        });
-      }
-
-      debugPrint('🔹 배경 로티 프리로드 시작');
-      final skinState = skinController.state;
-      if (skinState?.selectedBgId != null && skinState!.selectedBgId!.isNotEmpty) {
-        final localBgPath = await SkinLocalCache.getLocalPath(skinState.selectedBgId!);
-        if (localBgPath != null && localBgPath.contains('.json')) {
-          try {
-            final file = File(localBgPath);
-            final completer = Completer<void>();
-            final lottie = Lottie.file(
-              file,
-              fit: BoxFit.fill,
-              onLoaded: (_) {
-                debugPrint('🎬 Lottie first frame loaded (GPU ready)');
-                completer.complete();
-              },
-            );
-
-            OverlayEntry? entry;
-            entry = OverlayEntry(
-              builder: (_) => Offstage(child: lottie),
-            );
-            Overlay.of(context).insert(entry);
-
-            await completer.future;
-            entry.remove();
-
-            debugPrint('✅ GPU Lottie preload complete');
-            debugPrint('✅ 배경 로티 프리로드 완료');
-          } catch (e) {
-            debugPrint('⚠️ 배경 로티 프리로드 실패(GPU 단계): $e');
-          }
-        }
-      }
-      if (mounted) {
-        setState(() {
-          _progress = 0.9;
-          _statusText = '배경 애니메이션을 준비하는 중입니다...';
-        });
-      }
-
-      debugPrint('🔹 원격 업데이트 확인 시작');
       await _checkForUpdate();
-      debugPrint('✅ 업데이트 체크 완료, 결과: $_updateRequired');
       if (_updateRequired || !mounted) return;
 
-      if (mounted) {
-        setState(() {
-          _progress = 0.95;
-          _statusText = '잠시 후 입장합니다...';
-        });
-      }
+      setState(() {
+        _progress = 1.0;
+        _statusText = '준비 완료!';
+      });
 
-      // 약간의 딜레이 후 화면 전환
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return;
-
-      if (mounted) {
-        setState(() {
-          _progress = 1.0;
-          _statusText = '잠시 후 입장합니다...';
-        });
-      }
-
+      await Future.delayed(const Duration(milliseconds: 300)); // 부드러운 UX
       final isLoggedIn = FirebaseAuth.instance.currentUser != null;
-      debugPrint('➡️ 메인 레이아웃 진입 준비 (isLoggedIn=$isLoggedIn)');
-      if (_progress >= 0.99) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                isLoggedIn ? const MainLayout() : const LoginScreen(),
-          ),
-        );
-        debugPrint('✅ 메인 레이아웃으로 전환 완료 — Splash 종료');
-        debugPrint('🏁 Splash init 정상 종료');
-      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => isLoggedIn ? const MainLayout() : const LoginScreen(),
+        ),
+      );
     } catch (e, st) {
-      debugPrint('❌ Splash init 실패');
-      debugPrint('⚠️ Splash init error: $e\n$st');
     }
   }
 
-  Future<void> _precacheAllSkins(
-      BuildContext context, SkinController controller) async {
-    try {
-      for (final skin in controller.catalog) {
-        // 캐릭터 이미지 (PNG/JPG/WebP 등)만 프리캐시
-        if (skin.imageUrl.isNotEmpty && _isImageUrl(skin.imageUrl)) {
+  Future<void> _preloadAllAssets(SkinController skinController, BuildContext context) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+    await skinController.initSkins(userId);
+    await skinController.loadAll(userId);
+    await skinController.ensureLocalPreload();
+
+    await _precacheAllSkins(context, skinController);
+    await _precacheStageThumbnails(context);
+
+    final skinState = skinController.state;
+    if (skinState?.selectedBgId != null && skinState!.selectedBgId!.isNotEmpty) {
+      final localBgPath = await SkinLocalCache.getLocalPath(skinState.selectedBgId!);
+      if (localBgPath != null && localBgPath.contains('.json')) {
+        // ✅ Lottie composition 파싱 후 SkinController에 캐싱!
+        final bytes = await File(localBgPath).readAsBytes();
+        final composition = await LottieComposition.fromBytes(bytes);
+        skinController.cacheComposition(skinState.selectedBgId!, composition);
+      }
+    }
+  }
+
+  Future<void> _precacheAllSkins(BuildContext context, SkinController controller) async {
+    for (final skin in controller.catalog) {
+      if (skin.imageUrl.isNotEmpty && _isImageUrl(skin.imageUrl)) {
+        if (!mounted) return;
+        await precacheImage(
+          CachedNetworkImageProvider(skin.imageUrl),
+          context,
+        );
+      }
+      if (skin.imageUrl.isNotEmpty) {
+        await SkinLocalCache.downloadToDocuments(skin.imageUrl);
+      }
+      if (skin.bgUrl != null && skin.bgUrl!.isNotEmpty) {
+        final bg = skin.bgUrl!;
+        final isLottie = bg.toLowerCase().contains('.json');
+        if (!isLottie && _isImageUrl(bg)) {
           if (!mounted) return;
           await precacheImage(
-            CachedNetworkImageProvider(skin.imageUrl),
+            CachedNetworkImageProvider(bg),
             context,
           );
         }
-        // 이미지든 JSON이든 모두 로컬로 다운로드 (오프라인 캐시 목적)
-        if (skin.imageUrl.isNotEmpty) {
-          await SkinLocalCache.downloadToDocuments(skin.imageUrl);
-        }
-
-        if (skin.bgUrl != null && skin.bgUrl!.isNotEmpty) {
-          final bg = skin.bgUrl!;
-          final isLottie = bg.toLowerCase().contains('.json');
-
-          if (!isLottie && _isImageUrl(bg)) {
-            if (!mounted) return;
-            await precacheImage(
-              CachedNetworkImageProvider(bg),
-              context,
-            );
-          }
-
-          await SkinLocalCache.downloadToDocuments(bg);
-        }
+        await SkinLocalCache.downloadToDocuments(bg);
       }
-      debugPrint('✅ 모든 캐릭터 이미지 프리캐시 + 로컬 캐시 완료');
-    } catch (e) {
-      debugPrint('⚠️ 캐릭터 프리캐시 중 오류: $e');
     }
   }
 
   Future<void> _precacheStageThumbnails(BuildContext context) async {
-    try {
-      final stages = await StageService().loadStages();
-      for (final stage in stages) {
-        final thumb = stage.thumbnail;
-        if (thumb != null && thumb.isNotEmpty) {
-          if (thumb.startsWith('http')) {
-            if (!mounted) return;
-            await precacheImage(CachedNetworkImageProvider(thumb), context);
-            await SkinLocalCache.downloadToDocuments(thumb);
-          } else {
-            if (!mounted) return;
-            await precacheImage(AssetImage(thumb), context);
-          }
+    final stages = await StageService().loadStages();
+    for (final stage in stages) {
+      final thumb = stage.thumbnail;
+      if (thumb != null && thumb.isNotEmpty) {
+        if (thumb.startsWith('http')) {
+          if (!mounted) return;
+          await precacheImage(CachedNetworkImageProvider(thumb), context);
+          await SkinLocalCache.downloadToDocuments(thumb);
+        } else {
+          if (!mounted) return;
+          await precacheImage(AssetImage(thumb), context);
         }
       }
-      debugPrint('✅ 모든 스테이지 썸네일 프리캐시 + 캐시 완료');
-    } catch (e) {
-      debugPrint('⚠️ 스테이지 썸네일 프리캐시 중 오류: $e');
     }
   }
 
   Future<void> _checkForUpdate() async {
-    try {
-      final remoteConfig = FirebaseRemoteConfig.instance;
-      await remoteConfig.setConfigSettings(
-        RemoteConfigSettings(
-          fetchTimeout: const Duration(seconds: 5),
-          minimumFetchInterval: Duration.zero,
+    final remoteConfig = FirebaseRemoteConfig.instance;
+    await remoteConfig.setConfigSettings(
+      RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 5),
+        minimumFetchInterval: Duration.zero,
+      ),
+    );
+    await remoteConfig.fetchAndActivate();
+
+    final latestVersion = remoteConfig.getString('latest_version');
+    final info = await PackageInfo.fromPlatform();
+    final currentBuild = int.tryParse(info.buildNumber) ?? 0;
+    final latestBuild = int.tryParse(latestVersion.split('+').last) ?? 0;
+
+    if (currentBuild < latestBuild) {
+      _updateRequired = true;
+      if (!mounted) return;
+
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          title: const Text('업데이트 필요'),
+          content: const Text('새로운 버전이 출시되었습니다.\n업데이트 후 이용해주세요.'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                final url = Uri.parse(
+                    'https://play.google.com/store/apps/details?id=com.koofy.sudoku');
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: const Text('업데이트하러 가기'),
+            ),
+          ],
         ),
       );
-      await remoteConfig.fetchAndActivate();
-
-      final latestVersion = remoteConfig.getString('latest_version');
-      final info = await PackageInfo.fromPlatform();
-      final currentBuild = int.tryParse(info.buildNumber) ?? 0;
-      final latestBuild = int.tryParse(latestVersion.split('+').last) ?? 0;
-
-      if (currentBuild < latestBuild) {
-        _updateRequired = true;
-        if (!mounted) return;
-
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => AlertDialog(
-            title: const Text('업데이트 필요'),
-            content: const Text('새로운 버전이 출시되었습니다.\n업데이트 후 이용해주세요.'),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  final url = Uri.parse(
-                      'https://play.google.com/store/apps/details?id=com.koofy.sudoku');
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(url, mode: LaunchMode.externalApplication);
-                  }
-                },
-                child: const Text('업데이트하러 가기'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e, st) {
-      debugPrint('⚠️ Remote Config 확인 실패: $e\n$st');
     }
   }
 
