@@ -80,14 +80,74 @@ class SkinList extends StatelessWidget {
           unlocked: unlocked,
           isSelected: selected,
           onTap: () async {
-            // 이미 보유 → 착용
+            final uid = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+
+            // 보유 스킨 → 착용 전 확인 다이얼로그
             if (unlocked) {
-              ctrl.select(uid, charId: item.id);
+              final confirmed = await showDialog<bool>(
+                context: context,
+                barrierDismissible: false,
+                builder: (ctx) => AlertDialog(
+                  title: const Text("착용하시겠습니까?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text("아니오"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text("예"),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed == true) {
+                await ctrl.select(uid, charId: item.id);
+
+                // 착용 완료 안내 팝업
+                await showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text("착용되었습니다"),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text("확인"),
+                      ),
+                    ],
+                  ),
+                );
+              }
               return;
             }
 
-            // 미보유 + 비용 있음 → 구매 시도
+            // 미보유 + 비용 있음 → 구매 시도 (확인 후 구매, 자동 착용 없음)
             if (item.unlockCost > 0) {
+              // 1차 확인: 구매 여부
+              final confirmPurchase = await showDialog<bool>(
+                context: context,
+                barrierDismissible: false,
+                builder: (ctx) => AlertDialog(
+                  title: const Text("구매하시겠습니까?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text("아니오"),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text("예"),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmPurchase != true) {
+                return;
+              }
+
               final result = await SkinPurchaseService.purchaseSkin(
                 userId: uid,
                 skinId: item.id,
@@ -95,8 +155,19 @@ class SkinList extends StatelessWidget {
               );
 
               if (result == PurchaseResult.success) {
-                await ctrl.setUnlocked(uid, item.id, true);
-                ctrl.select(uid, charId: item.id);
+                await showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text("구매가 완료되었습니다"),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text("확인"),
+                      ),
+                    ],
+                  ),
+                );
               }
             }
           },

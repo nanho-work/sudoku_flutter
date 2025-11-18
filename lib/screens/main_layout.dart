@@ -122,7 +122,9 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
             .catchError((_) {});
       }
 
-      final localBgPath = skinController.localBgPathByUrl(selectedBg ?? '');
+      // NOTE: Splash + SkinController guarantee all local paths are preloaded.
+      // MainLayout must use ONLY synchronous local lookups — no async/await here.
+      final localBgPath = skinController.getLocalBgPathSync(selectedBg ?? '');
       final fileExists = localBgPath != null && File(localBgPath).existsSync();
 
       return WillPopScope(
@@ -154,18 +156,14 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                 Positioned.fill(
                   child: Builder(
                     builder: (context) {
-                      if (selectedBg.contains('.json')) {
-                        final composition = skinController.compositionCache[selectedBg];
-                        if (composition != null) {
-                          return Lottie(
-                            key: ValueKey(selectedBg),
-                            composition: composition,
-                            fit: BoxFit.fill,
-                          );
-                        }
+                      if (selectedBg == null) {
+                        return Container(color: Colors.black);
                       }
+
+                      final isJson = selectedBg.split('?').first.toLowerCase().endsWith('.json');
+
                       if (fileExists) {
-                        if (selectedBg.contains('.json')) {
+                        if (isJson) {
                           return Lottie.file(
                             File(localBgPath!),
                             fit: BoxFit.fill,
@@ -179,22 +177,22 @@ class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
                             errorBuilder: (_, __, ___) => Container(color: Colors.black12),
                           );
                         }
+                      }
+
+                      if (isJson) {
+                        return Lottie.network(
+                          selectedBg,
+                          fit: BoxFit.fill,
+                          frameRate: FrameRate.max,
+                          errorBuilder: (_, __, ___) => Container(color: Colors.black12),
+                        );
                       } else {
-                        if (selectedBg.contains('.json')) {
-                          return Lottie.network(
-                            selectedBg,
-                            fit: BoxFit.fill,
-                            frameRate: FrameRate.max,
-                            errorBuilder: (_, __, ___) => Container(color: Colors.black12),
-                          );
-                        } else {
-                          return CachedNetworkImage(
-                            imageUrl: selectedBg,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(color: Colors.black12),
-                            errorWidget: (_, __, ___) => Container(color: Colors.black12),
-                          );
-                        }
+                        return CachedNetworkImage(
+                          imageUrl: selectedBg,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => Container(color: Colors.black12),
+                          errorWidget: (_, __, ___) => Container(color: Colors.black12),
+                        );
                       }
                     },
                   ),

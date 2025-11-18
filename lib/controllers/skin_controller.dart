@@ -13,30 +13,58 @@ class SkinController extends ChangeNotifier {
   SkinState? _state;
 
   final Map<String, String?> _localImagePath = {};
-  // Use background URL as key for background path mapping
   final Map<String, String?> _localBgPath = {};
   final Map<String, LottieComposition> _compositionCache = {};
 
-  final Map<String, String?> bgLocalCache = {};
-  final Map<String, String?> charLocalCache = {};
-
   List<SkinItem> get catalog => _catalog;
   SkinState? get state => _state;
-  Map<String, LottieComposition> get compositionCache => _compositionCache;
 
-  String? localImagePathById(String id) => _localImagePath[id];
-  // For backward compatibility, but _localBgPath is now keyed by URL.
-  String? localBgPathById(String id) => _localBgPath[id];
-  // Retrieve local background path by URL
+  LottieComposition? getComposition(String key) => _compositionCache[key];
+
+  void cacheComposition(String url, LottieComposition comp) {
+    _compositionCache[url] = comp;
+  }
+
   String? localBgPathByUrl(String url) => _localBgPath[url];
 
-  SkinItem? get selectedChar =>
-      _catalog.firstWhere((e) => e.id == _state?.selectedCharId, orElse: () => _fallbackChar());
+
+  Future<String?> getLocalImagePath(String url) async {
+    if (url.isEmpty) return null;
+    final cached = _localImagePath[url];
+    if (cached != null) return cached;
+    return await SkinLocalCache.getLocalPath(url);
+  }
+
+  Future<String?> getLocalBgPath(String url) async {
+    if (url.isEmpty) return null;
+    final cached = _localBgPath[url];
+    if (cached != null) return cached;
+    return await SkinLocalCache.getLocalPath(url);
+  }
+
+  /// 동기: 이미지 로컬 경로 반환
+  String? getLocalImagePathSync(String url) {
+    if (url.isEmpty) return null;
+    return _localImagePath[url];
+  }
+
+  /// 동기: 배경 로컬 경로 반환
+  String? getLocalBgPathSync(String url) {
+    if (url.isEmpty) return null;
+    return _localBgPath[url];
+  }
+  
+
+  SkinItem? get selectedChar => _catalog.firstWhere(
+        (e) => e.id == _state?.selectedCharId,
+        orElse: () => _fallbackChar(),
+      );
+
   SkinItem? get selectedBg {
     final char = selectedChar;
-    if (char == null || char.bgUrl == null) return null;
+    if (char?.bgUrl == null) return null;
     return SkinItem(
-      id: 'bg_virtual_${char.id}',
+      id: 'bg_virtual_${char!.id}',
       type: 'bg',
       name: '${char.name} 배경',
       imageUrl: char.bgUrl!,
@@ -49,64 +77,18 @@ class SkinController extends ChangeNotifier {
 
   Future<void> _preloadLocalPaths() async {
     for (final item in _catalog) {
-      final imageLocalPath = await SkinLocalCache.getLocalPath(item.imageUrl);
-      if (imageLocalPath != null) {
-        _localImagePath[item.id] = imageLocalPath;
-      }
+      final localImg = await SkinLocalCache.getLocalPath(item.imageUrl);
+      if (localImg != null) _localImagePath[item.imageUrl] = localImg;
+
       if (item.bgUrl != null) {
-        final bgLocalPath = await SkinLocalCache.getLocalPath(item.bgUrl!);
-        if (bgLocalPath != null) {
-          _localBgPath[item.bgUrl!] = bgLocalPath; // Use bgUrl as key
-        }
+        final localBg = await SkinLocalCache.getLocalPath(item.bgUrl!);
+        if (localBg != null) _localBgPath[item.bgUrl!] = localBg;
       }
     }
   }
 
-  /// ✅ 캐시 우선 → 서버 동기화 비동기
   Future<void> initSkins(String userId) async {
     try {
-      final cachedCatalog = await SkinLocalCache.loadCatalog();
-      final cachedState = await SkinLocalCache.loadState();
-
-      _catalog = cachedCatalog ?? SkinService.fallbackCatalog();
-      _state = cachedState ??
-          SkinState(
-            selectedCharId: 'char_koofy_lv1',
-            selectedBgId: 'bg_koofy_lv1',
-            unlockedIds: {'char_koofy_lv1', 'bg_koofy_lv1'},
-            updatedAt: DateTime.now(),
-          );
-      await _preloadLocalPaths();
-      notifyListeners(); // 캐시 즉시 반영
-
-      // 백그라운드 서버 동기화
-      unawaited(loadAll(userId));
-    } catch (_) {
-      _catalog = SkinService.fallbackCatalog();
-      _state = SkinState(
-        selectedCharId: 'char_koofy_lv1',
-        selectedBgId: 'bg_koofy_lv1',
-        unlockedIds: {'char_koofy_lv1', 'bg_koofy_lv1'},
-        updatedAt: DateTime.now(),
-      );
-      notifyListeners();
-    }
-  }
-
-  /// 서버 로드: 성공 시 캐시 갱신
-  Future<void> loadAll(String userId) async {
-    try {
-      final remoteCatalog = await SkinService.fetchCatalog();
-      _catalog = remoteCatalog.isNotEmpty
-          ? remoteCatalog
-          : SkinService.fallbackCatalog();
-      await SkinLocalCache.saveCatalog(_catalog);
-
-      _state = await SkinService.fetchOrInitUserState(userId, _catalog);
-      await SkinLocalCache.saveState(_state!);
-      await _preloadLocalPaths();
-      notifyListeners();
-    } catch (_) {
       _catalog = await SkinLocalCache.loadCatalog() ?? SkinService.fallbackCatalog();
       _state = await SkinLocalCache.loadState() ??
           SkinState(
@@ -115,111 +97,46 @@ class SkinController extends ChangeNotifier {
             unlockedIds: {'char_koofy_lv1', 'bg_koofy_lv1'},
             updatedAt: DateTime.now(),
           );
+
+      await _preloadLocalPaths();
       notifyListeners();
-    }
+
+      unawaited(loadAll(userId));
+    } catch (_) {}
   }
 
-  bool isUnlocked(String skinId) => _state?.unlockedIds.contains(skinId) ?? false;
-
-  Future<void> setUnlocked(String userId, String skinId, bool unlocked) async {
-    if (_state == null) return;
-    final next = {..._state!.unlockedIds};
-    unlocked ? next.add(skinId) : next.remove(skinId);
-    _state = _state!.copyWith(unlockedIds: next, updatedAt: DateTime.now());
-    await SkinLocalCache.saveState(_state!);
-    notifyListeners();
+  Future<void> loadAll(String userId) async {
     try {
-      await SkinService.setUnlocked(userId, skinId, unlocked);
+      final remoteCatalog = await SkinService.fetchCatalog();
+      if (remoteCatalog.isNotEmpty) {
+        _catalog = remoteCatalog;
+        await SkinLocalCache.saveCatalog(_catalog);
+      }
+
+      _state = await SkinService.fetchOrInitUserState(userId, _catalog);
+      await SkinLocalCache.saveState(_state!);
+
+      await _preloadLocalPaths();
+      notifyListeners();
     } catch (_) {}
   }
 
   Future<void> select(String userId, {String? charId, String? bgId}) async {
     if (_state == null) return;
-    final next = _state!.copyWith(
+
+    _state = _state!.copyWith(
       selectedCharId: charId ?? _state!.selectedCharId,
       selectedBgId: bgId ?? _state!.selectedBgId,
       updatedAt: DateTime.now(),
     );
-    _state = next;
+
     await SkinLocalCache.saveState(_state!);
     notifyListeners();
+
     try {
       await SkinService.select(userId, charId: charId, bgId: bgId);
     } catch (_) {}
   }
 
-  Future<void> sync(String userId) async {
-    if (_state == null) return;
-    try {
-      await SkinService.syncFromLocal(userId, _state!);
-    } catch (_) {}
-  }
-  /// ✅ 앱 시작 시 캐릭터 목록 프리로드용
-  Future<void> loadSkins() async {
-    try {
-      final cachedCatalog = await SkinLocalCache.loadCatalog();
-      _catalog = cachedCatalog ?? SkinService.fallbackCatalog();
-      _state ??= SkinState(
-        selectedCharId: 'char_koofy_lv1',
-        selectedBgId: 'bg_koofy_lv1',
-        unlockedIds: {'char_koofy_lv1', 'bg_koofy_lv1'},
-        updatedAt: DateTime.now(),
-      );
-      notifyListeners();
-      debugPrint('✅ SkinController.loadSkins() 캐시 기반 프리로드 완료');
-    } catch (e) {
-      _catalog = SkinService.fallbackCatalog();
-      _state = SkinState(
-        selectedCharId: 'char_koofy_lv1',
-        selectedBgId: 'bg_koofy_lv1',
-        unlockedIds: {'char_koofy_lv1', 'bg_koofy_lv1'},
-        updatedAt: DateTime.now(),
-      );
-      notifyListeners();
-      debugPrint('⚠️ SkinController.loadSkins() 실패: $e');
-    }
-  }
-
-  Future<void> ensureLocalPreload() async {
-    if (_localImagePath.isNotEmpty && _localBgPath.isNotEmpty) return;
-    await _preloadLocalPaths();
-  }
-
-  void cacheComposition(String url, LottieComposition composition) {
-    _compositionCache[url] = composition;
-    notifyListeners();
-  }
-
-  void setComposition(String url, LottieComposition composition) {
-    _compositionCache[url] = composition;
-  }
-
-  Future<void> fullPreloadAll() async {
-    for (final item in catalog) {
-      final bg = item.bgUrl ?? '';
-      final char = item.imageUrl;
-
-      await SkinLocalCache.downloadToDocuments(bg);
-      final bgLocal = await SkinLocalCache.getLocalPath(bg);
-
-      await SkinLocalCache.downloadToDocuments(char);
-      final charLocal = await SkinLocalCache.getLocalPath(char);
-
-      bgLocalCache[item.id] = bgLocal;
-      charLocalCache[item.id] = charLocal;
-
-      if (bg.contains('.json') && bgLocal != null) {
-        final comp = await LottieComposition.fromBytes(File(bgLocal).readAsBytesSync());
-        cacheComposition(item.id + '_bg', comp);
-      }
-
-      if (char.contains('.json') && charLocal != null) {
-        final comp = await LottieComposition.fromBytes(File(charLocal).readAsBytesSync());
-        cacheComposition(item.id + '_char', comp);
-      }
-    }
-  }
-
-  LottieComposition? getComposition(String url) => _compositionCache[url];
-
+  bool isUnlocked(String skinId) => _state?.unlockedIds.contains(skinId) ?? false;
 }

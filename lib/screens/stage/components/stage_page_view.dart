@@ -114,7 +114,7 @@ class _StagePageViewState extends State<StagePageView> {
                     alignment: Alignment.topCenter,
                     child: FractionallySizedBox(
                       widthFactor: 0.85,
-                      heightFactor: 0.75,
+                      heightFactor: 0.9,
                       child: StageCard(
                         stage: stage,
                         progress: progress,

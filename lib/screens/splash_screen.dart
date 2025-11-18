@@ -59,15 +59,17 @@ class _SplashScreenState extends State<SplashScreen>
       final skinController = context.read<SkinController>();
       setState(() {
         _statusText = '리소스를 불러오는 중입니다...';
-        _progress = 0.1;
+        _progress = 0.0;
       });
 
-      // [1] 모든 리소스 다운로드&프리캐시, composition 파싱까지 await
+      // [1] 모든 리소스 다운로드 & 프리캐시, composition 파싱까지 await
       await _preloadAllAssets(skinController, context);
 
       setState(() {
-        _progress = 0.9;
         _statusText = '최적화 완료...';
+        if (_progress < 0.9) {
+          _progress = 0.9;
+        }
       });
 
       await _checkForUpdate();
@@ -91,25 +93,62 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  Future<void> _preloadAllAssets(SkinController skinController, BuildContext context) async {
+  Future<void> _preloadAllAssets(
+      SkinController skinController, BuildContext context) async {
+    // 내부에서만 사용하는 진행률 업데이트 헬퍼
+    void _updateProgress(double value) {
+      if (!mounted) return;
+      // 0.0 ~ 1.0 범위로 클램프
+      if (value.isNaN || value.isInfinite) return;
+      if (value < 0) value = 0;
+      if (value > 1) value = 1;
+      // 너무 작은 변화는 무시 (불필요한 rebuild 방지)
+      if ((value - _progress).abs() < 0.005) return;
+      setState(() => _progress = value);
+    }
+
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+
+    // 1) 기본 스킨 및 상태 로딩 단계 (0.0 → 0.1)
+    _updateProgress(0.02);
     await skinController.initSkins(userId);
+    _updateProgress(0.06);
     await skinController.loadAll(userId);
-    await skinController.ensureLocalPreload();
+    _updateProgress(0.1);
 
-    await _precacheAllSkins(context, skinController);
-    await _precacheStageThumbnails(context);
+    // 2) 카탈로그 기반 다운로드 단계 (0.1 → 0.9)
+    final rawCount = skinController.catalog.length * 2; // image + bg
+    final total = rawCount == 0 ? 1 : rawCount; // 0 나누기 방지
+    int completed = 0;
 
-    final skinState = skinController.state;
-    if (skinState?.selectedBgId != null && skinState!.selectedBgId!.isNotEmpty) {
-      final localBgPath = await SkinLocalCache.getLocalPath(skinState.selectedBgId!);
-      if (localBgPath != null && localBgPath.contains('.json')) {
-        // ✅ Lottie composition 파싱 후 SkinController에 캐싱!
-        final bytes = await File(localBgPath).readAsBytes();
-        final composition = await LottieComposition.fromBytes(bytes);
-        skinController.cacheComposition(skinState.selectedBgId!, composition);
+    for (final skin in skinController.catalog) {
+      if (skin.imageUrl.isNotEmpty) {
+        await SkinLocalCache.downloadToDocuments(skin.imageUrl);
+        completed++;
+        _updateProgress(0.1 + (completed / total) * 0.8);
+      }
+      if (skin.bgUrl != null && skin.bgUrl!.isNotEmpty) {
+        await SkinLocalCache.downloadToDocuments(skin.bgUrl!);
+        completed++;
+        _updateProgress(0.1 + (completed / total) * 0.8);
       }
     }
+
+    // 3) 선택된 배경에 대한 Lottie composition 캐싱
+    final selected = skinController.selectedBg;
+    final bgUrl = selected?.bgUrl;
+
+    if (bgUrl != null && bgUrl.isNotEmpty) {
+      final path = await SkinLocalCache.getLocalPath(bgUrl);
+      if (path != null && path.endsWith('.json')) {
+        final bytes = await File(path).readAsBytes();
+        final comp = await LottieComposition.fromBytes(bytes);
+        skinController.cacheComposition(bgUrl, comp);
+      }
+    }
+
+    // 다운로드 개수가 너무 적어 0.9까지 못 채웠을 수 있으므로 보정
+    _updateProgress(0.9);
   }
 
   Future<void> _precacheAllSkins(BuildContext context, SkinController controller) async {
@@ -222,9 +261,16 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             FadeTransition(
               opacity: _textFadeController,
-              child: Text(
-                _statusText,
-                style: const TextStyle(color: Colors.white),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  _statusText,
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -237,7 +283,17 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             const SizedBox(height: 8),
-            Text('${(_progress * 100).toInt()}%', style: const TextStyle(color: Colors.white)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '${(_progress.isFinite ? (_progress * 100).clamp(0, 100).toInt() : 0)}%',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
             const SizedBox(height: 80),
           ],
         ),

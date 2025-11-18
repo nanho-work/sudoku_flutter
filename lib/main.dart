@@ -29,7 +29,8 @@ Future<void> main() async {
   final audioController = AudioController();
   final themeController = ThemeController();
   final skinController = SkinController();
-  await skinController.loadSkins();
+  // no initial loadSkins() here; done in SplashScreen
+
 
   runApp(
     MultiProvider(
